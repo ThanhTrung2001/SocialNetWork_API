@@ -1,0 +1,6 @@
+@EnVietSocialNetWorkAPI_HostAddress = http://localhost:5296
+
+GET {{EnVietSocialNetWorkAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
