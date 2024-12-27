@@ -1,6 +1,4 @@
-﻿using EnVietSocialNetWorkAPI.Entities.Models.SocialNetwork;
-
-namespace EnVietSocialNetWorkAPI.Entities.Commands
+﻿namespace EnVietSocialNetWorkAPI.Entities.Commands
 {
     public class NewMessage
     {

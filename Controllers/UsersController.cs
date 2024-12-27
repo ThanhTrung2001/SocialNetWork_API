@@ -2,7 +2,6 @@
 using EnVietSocialNetWorkAPI.DataConnection;
 using EnVietSocialNetWorkAPI.Entities.Commands;
 using EnVietSocialNetWorkAPI.Entities.Models;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Data;
 
@@ -32,7 +31,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
         [HttpPost]
         public async Task<IActionResult> AddNewUser(NewUser user)
         {
-            var query = @"INSERT INTO Users (Id, CreatedAt, UpdatedAt, IsDeleted, UserName, Password, Email, AvatarUrl, Role)
+            var exec = @"INSERT INTO Users (Id, CreatedAt, UpdatedAt, IsDeleted, UserName, Password, Email, AvatarUrl, Role)
                         VALUES 
                         (NEWID(), GETDATE(), GETDATE(), 0, @UserName, @Password, @Email, @AvatarUrl, @Role);";
             var parameters = new DynamicParameters();
@@ -43,7 +42,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
             parameters.Add("Role", user.Role, DbType.Int32);
             using (var connection = _context.CreateConnection())
             {
-                var result = await connection.ExecuteAsync(query, parameters);
+                var result = await connection.ExecuteAsync(exec, parameters);
                 return Ok(result);
             }
         }
@@ -54,7 +53,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
             var query = "SELECT * FROM Users where Id = @Id";
             using (var connection = _context.CreateConnection())
             {
-                var result = await connection.QueryAsync<User>(query, new{ Id = id });
+                var result = await connection.QueryAsync<User>(query, new { Id = id });
                 return result;
             }
         }
@@ -62,7 +61,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> EditUserByID(Guid id, NewUser edit)
         {
-            var query = "UPDATE Users SET UserName = @UserName, Password = @Password, Email = @Email, AvatarUrl = @AvatarUrl, Role = @Role WHERE Id = @Id";
+            var exec = "UPDATE Users SET UserName = @UserName, Password = @Password, Email = @Email, AvatarUrl = @AvatarUrl, Role = @Role WHERE Id = @Id";
             var parameters = new DynamicParameters();
             parameters.Add("UserName", edit.UserName, DbType.String);
             parameters.Add("Password", edit.Password, DbType.String);
@@ -72,7 +71,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
             parameters.Add("Id", id);
             using (var connection = _context.CreateConnection())
             {
-                var result = await connection.QueryAsync<User>(query, parameters);
+                var result = await connection.ExecuteAsync(exec, parameters);
                 return Ok(result);
             }
         }
@@ -80,10 +79,10 @@ namespace EnVietSocialNetWorkAPI.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(Guid id)
         {
-            var query = "Update Users SET isDeleted = 1 WHERE Id = @Id";
+            var exec = "Update Users SET isDeleted = 1 WHERE Id = @Id";
             using (var connection = _context.CreateConnection())
             {
-                await connection.ExecuteAsync(query, new { Id = id });
+                await connection.ExecuteAsync(exec, new { Id = id });
                 return Ok();
             }
         }

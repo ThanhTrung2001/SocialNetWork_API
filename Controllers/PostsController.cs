@@ -1,13 +1,9 @@
 ﻿using Dapper;
 using EnVietSocialNetWorkAPI.DataConnection;
-using EnVietSocialNetWorkAPI.Entities;
 using EnVietSocialNetWorkAPI.Entities.Commands;
-using EnVietSocialNetWorkAPI.Entities.Models.SocialNetwork;
 using EnVietSocialNetWorkAPI.Entities.Queries;
-using EnVietSocialNetWorkAPI.Old;
 using Microsoft.AspNetCore.Mvc;
 using System.Data;
-using System.Net;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -28,22 +24,35 @@ namespace EnVietSocialNetWorkAPI.Controllers
         [HttpGet]
         public async Task<IEnumerable<PostBasicQuery>> Get()
         {
-            string query = @"
+            var query = @"
             SELECT 
                 p.Id AS PostId,
                 p.Content AS PostContent,
                 p.PostType,
+                p.CreatedAt,
+                p.PostDestination,
                 u.Id AS UserId,
                 u.UserName,
                 u.Email,
                 u.AvatarUrl,
-                m.URL AS MediaUrl
+                m.URL AS MediaUrl,
+                c.Id AS CommentId,
+                c.Content AS CommentContent,
+                c.MediaURL AS CommentMediaUrl,
+                c.CreatedAt AS CommentCreatedAt,
+                c.UserId AS CommentUserId,
+                uc.UserName AS CommentUserName,
+                uc.AvatarUrl AS CommentUserAvatarUrl
             FROM 
                 Posts p
             INNER JOIN 
                 Users u ON p.OwnerId = u.Id
             LEFT JOIN
                 MediaItems m ON p.Id = m.PostId
+            LEFT JOIN
+                Comments c ON p.Id = c.PostId
+            LEFT JOIN
+                Users uc ON c.UserId = uc.Id
             WHERE 
                 p.IsDeleted = 0;";
 
@@ -53,32 +62,31 @@ namespace EnVietSocialNetWorkAPI.Controllers
 
                 using (var connection = _context.CreateConnection())
                 {
-                    var result = await connection.QueryAsync<PostBasicQuery, string, PostBasicQuery>(
+                    var result = await connection.QueryAsync<PostBasicQuery, string, PostCommentQuery, PostBasicQuery>(
                     query,
-                    (post, mediaUrl) =>
+                    map: (post, mediaUrl, comment) =>
                     {
-                        // Ensure we have a dictionary entry for the post
                         if (!postDict.TryGetValue(post.PostId, out var postEntry))
                         {
                             postEntry = post;
                             postDict.Add(post.PostId, postEntry);
                         }
 
-                        // Add the media URL to the post's list of media
-                        if (!string.IsNullOrEmpty(mediaUrl))
+                        if (!string.IsNullOrEmpty(mediaUrl) && !postEntry.MediaUrls.Any((item) => item == mediaUrl))
                         {
                             postEntry.MediaUrls.Add(mediaUrl);
                         }
 
+                        if (comment != null && !postEntry.Comments.Any((item) => item.CommentId == comment.CommentId))
+                        {
+                            postEntry.Comments.Add(comment);
+                        }
                         return postEntry;
                     },
-                    splitOn: "MediaUrl");
 
-                    // Return the list of all posts with media
+                    splitOn: "MediaUrl,CommentId");
                     return postDict.Values.ToList();
                 }
-                // Execute query and map result to DTOs
-
             }
             catch
             {
@@ -133,70 +141,48 @@ namespace EnVietSocialNetWorkAPI.Controllers
 
             + @"SELECT URL 
                 FROM MediaItems 
-                WHERE PostId = @Id";
+                WHERE PostId = @Id;"
+
+            + @"SELECT 
+                c.Id AS CommentId,
+                c.Content AS CommentContent,
+                c.MediaURL AS CommentMediaUrl,
+                c.CreatedAt AS CommentCreatedAt,
+                c.UserId AS CommentUserId,
+                uc.UserName AS CommentUserName,
+                uc.AvatarUrl AS CommentUserAvatarUrl
+                FROM Comments c
+                JOIN
+                Users uc ON c.UserId = uc.Id
+                WHERE 
+                c.IsDeleted = 0 AND c.PostId = @Id;";
 
             using (var connection = _context.CreateConnection())
             using (var multi = await connection.QueryMultipleAsync(query, new { id }))
             {
                 var post = await multi.ReadSingleOrDefaultAsync<PostBasicQuery>();
                 if (post != null)
-                    post.MediaUrls = (await multi.ReadAsync<string>()).ToList();
+                {
+                    foreach (string mediaUrl in (await multi.ReadAsync<string>()).ToList())
+                    {
+                        if (!string.IsNullOrEmpty(mediaUrl) && !post.MediaUrls.Any((item) => item == mediaUrl))
+                        {
+                            post.MediaUrls.Add(mediaUrl);
+                        }
+                    }
+                    foreach (PostCommentQuery comment in (await multi.ReadAsync<PostCommentQuery>()).ToList())
+                    {
+
+                        if (comment != null && !post.Comments.Any((item) => item.CommentId == comment.CommentId))
+                        {
+                            post.Comments.Add(comment);
+                        }
+                    }
+                }
                 return post;
             }
 
-            //var query = @"
-            //SELECT 
-            //    p.Id AS PostId,
-            //    p.Content AS PostContent,
-            //    p.PostType,
-            //    u.Id AS UserId,
-            //    u.UserName,
-            //    u.Email,
-            //    u.AvatarUrl,
-            //    m.URL AS MediaUrl
-            //FROM 
-            //    Posts p
-            //INNER JOIN 
-            //    Users u ON p.OwnerId = u.Id
-            //LEFT JOIN
-            //    MediaItems m ON p.Id = m.PostId
-            //WHERE 
-            //    p.IsDeleted = 0 AND p.Id=@Id;";
 
-            //try
-            //{
-            //    var postDict = new Dictionary<Guid, PostBasicQuery>();
-
-            //    using (var connection = _context.CreateConnection())
-            //    {
-            //        var result = await connection.QueryAsync<PostBasicQuery, string, PostBasicQuery>(
-            //        query,
-            //        (post, mediaUrl) =>
-            //        {
-            //            if (!postDict.TryGetValue(post.PostId, out var postEntry))
-            //            {
-            //                postEntry = post;
-            //                postDict.Add(post.PostId, postEntry);
-            //            }
-
-            //            // Add the media URL to the post's list of media
-            //            if (!string.IsNullOrEmpty(mediaUrl))
-            //            {
-            //                postEntry.MediaUrls.Add(mediaUrl);
-            //            }
-            //            return postEntry;
-            //        },
-            //        new { Id = id },
-            //        splitOn: "MediaUrl");
-
-            //        // Return the result as a list of posts with media URLs
-            //        return postDict.Values.FirstOrDefault();
-            //    } // Execute query and map result to DTOs
-            //}
-            //catch
-            //{
-            //    throw;
-            //}
         }
 
         // PUT api/<PostController>/5
@@ -230,3 +216,57 @@ namespace EnVietSocialNetWorkAPI.Controllers
         }
     }
 }
+
+//var query = @"
+//SELECT 
+//    p.Id AS PostId,
+//    p.Content AS PostContent,
+//    p.PostType,
+//    u.Id AS UserId,
+//    u.UserName,
+//    u.Email,
+//    u.AvatarUrl,
+//    m.URL AS MediaUrl
+//FROM 
+//    Posts p
+//INNER JOIN 
+//    Users u ON p.OwnerId = u.Id
+//LEFT JOIN
+//    MediaItems m ON p.Id = m.PostId
+//WHERE 
+//    p.IsDeleted = 0 AND p.Id=@Id;";
+
+//try
+//{
+//    var postDict = new Dictionary<Guid, PostBasicQuery>();
+
+//    using (var connection = _context.CreateConnection())
+//    {
+//        var result = await connection.QueryAsync<PostBasicQuery, string, PostBasicQuery>(
+//        query,
+//        (post, mediaUrl) =>
+//        {
+//            if (!postDict.TryGetValue(post.PostId, out var postEntry))
+//            {
+//                postEntry = post;
+//                postDict.Add(post.PostId, postEntry);
+//            }
+
+//            // Add the media URL to the post's list of media
+//            if (!string.IsNullOrEmpty(mediaUrl))
+//            {
+//                postEntry.MediaUrls.Add(mediaUrl);
+//            }
+//            return postEntry;
+//        },
+//        new { Id = id },
+//        splitOn: "MediaUrl");
+
+//        // Return the result as a list of posts with media URLs
+//        return postDict.Values.FirstOrDefault();
+//    } // Execute query and map result to DTOs
+//}
+//catch
+//{
+//    throw;
+//}
