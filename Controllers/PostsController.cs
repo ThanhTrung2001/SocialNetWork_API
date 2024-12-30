@@ -92,31 +92,6 @@ namespace EnVietSocialNetWorkAPI.Controllers
             {
                 throw;
             }
-
-
-        }
-
-        // POST api/<PostController>
-        [HttpPost]
-        public async Task<IActionResult> Post(CreatePostRequest request)
-        {
-            var userId = Guid.Parse(request.UserId);
-            var newPost = request.NewPost;
-            var query = @"INSERT INTO Posts (Id, CreatedAt, UpdatedAt, IsDeleted, DestinationId, IsNotification, PostType, PostDestination, Content, OwnerId)
-                        VALUES 
-                        (NEWID(), GETDATE(), GETDATE(), 0, 'dest1', @IsNotification, @PostType, 'All', @Content, @UserId)";
-            var parameters = new DynamicParameters();
-            parameters.Add("IsNotification", newPost.IsNotification, DbType.Boolean);
-            parameters.Add("PostType", newPost.PostType, DbType.String);
-            parameters.Add("PostDestination", newPost.PostDestination, DbType.String);
-            parameters.Add("Content", newPost.Content, DbType.String);
-            parameters.Add("UserId", userId, DbType.Guid);
-
-            using (var connection = _context.CreateConnection())
-            {
-                await connection.ExecuteAsync(query, parameters);
-            }
-            return Ok();
         }
 
         // GET api/<PostController>/5
@@ -158,31 +133,54 @@ namespace EnVietSocialNetWorkAPI.Controllers
                 c.IsDeleted = 0 AND c.PostId = @Id;";
 
             using (var connection = _context.CreateConnection())
-            using (var multi = await connection.QueryMultipleAsync(query, new { id }))
             {
-                var post = await multi.ReadSingleOrDefaultAsync<PostBasicQuery>();
-                if (post != null)
+                using (var multi = await connection.QueryMultipleAsync(query, new { id }))
                 {
-                    foreach (string mediaUrl in (await multi.ReadAsync<string>()).ToList())
+                    var post = await multi.ReadSingleOrDefaultAsync<PostBasicQuery>();
+                    if (post != null)
                     {
-                        if (!string.IsNullOrEmpty(mediaUrl) && !post.MediaUrls.Any((item) => item == mediaUrl))
+                        foreach (string mediaUrl in (await multi.ReadAsync<string>()).ToList())
                         {
-                            post.MediaUrls.Add(mediaUrl);
+                            if (!string.IsNullOrEmpty(mediaUrl) && !post.MediaUrls.Any((item) => item == mediaUrl))
+                            {
+                                post.MediaUrls.Add(mediaUrl);
+                            }
                         }
-                    }
-                    foreach (PostCommentQuery comment in (await multi.ReadAsync<PostCommentQuery>()).ToList())
-                    {
+                        foreach (PostCommentQuery comment in (await multi.ReadAsync<PostCommentQuery>()).ToList())
+                        {
 
-                        if (comment != null && !post.Comments.Any((item) => item.CommentId == comment.CommentId))
-                        {
-                            post.Comments.Add(comment);
+                            if (comment != null && !post.Comments.Any((item) => item.CommentId == comment.CommentId))
+                            {
+                                post.Comments.Add(comment);
+                            }
                         }
                     }
+                    return post;
                 }
-                return post;
             }
+        }
 
+        // POST api/<PostController>
+        [HttpPost]
+        public async Task<IActionResult> Post(CreatePostRequest request)
+        {
+            var userId = Guid.Parse(request.UserId);
+            var newPost = request.NewPost;
+            var query = @"INSERT INTO Posts (Id, CreatedAt, UpdatedAt, IsDeleted, DestinationId, IsNotification, PostType, PostDestination, Content, OwnerId)
+                        VALUES 
+                        (NEWID(), GETDATE(), GETDATE(), 0, 'dest1', @IsNotification, @PostType, 'All', @Content, @UserId)";
+            var parameters = new DynamicParameters();
+            parameters.Add("IsNotification", newPost.IsNotification, DbType.Boolean);
+            parameters.Add("PostType", newPost.PostType, DbType.String);
+            parameters.Add("PostDestination", newPost.PostDestination, DbType.String);
+            parameters.Add("Content", newPost.Content, DbType.String);
+            parameters.Add("UserId", userId, DbType.Guid);
 
+            using (var connection = _context.CreateConnection())
+            {
+                await connection.ExecuteAsync(query, parameters);
+            }
+            return Ok();
         }
 
         // PUT api/<PostController>/5

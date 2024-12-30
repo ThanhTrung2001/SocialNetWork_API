@@ -2,8 +2,11 @@
 {
     public class ChatBoxQuery
     {
-        public Guid ChatBoxId { get; set; }
+        public Guid Id { get; set; }
+        public string BoxName { get; set; }
         public string BoxType { get; set; }
+        public string Theme { get; set; }
+        public List<Guid> Users { get; set; } = new List<Guid>();
     }
 
     //public class ChatBoxItemQuery

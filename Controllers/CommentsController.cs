@@ -1,13 +1,13 @@
 ﻿using Dapper;
 using EnVietSocialNetWorkAPI.DataConnection;
 using EnVietSocialNetWorkAPI.Entities.Commands;
-using EnVietSocialNetWorkAPI.Entities.Models.SocialNetwork;
+using EnVietSocialNetWorkAPI.Entities.Queries;
 using Microsoft.AspNetCore.Mvc;
 using System.Data;
 
 namespace EnVietSocialNetWorkAPI.Controllers
 {
-    [Route("api/[controller]/post")]
+    [Route("api/[controller]")]
     [ApiController]
     public class CommentsController : ControllerBase
     {
@@ -17,18 +17,21 @@ namespace EnVietSocialNetWorkAPI.Controllers
             _context = context;
         }
 
-        [HttpGet("{postId}")]
-        public async Task<IEnumerable<Comment>> GetCommentByPostID(Guid postId)
+        [HttpGet("post/{postId}")]
+        public async Task<IEnumerable<CommentQuery>> GetCommentsByPostID(Guid postId)
         {
-            var query = "SELECT * FROM Comments Where PostId = @Id";
+            var query = @"SELECT c.Id, c.Content, c.MediaURL, c.UpdatedAt, u.Id as UserId, u.Username, u.AvatarUrl 
+                          FROM Comments c
+                          INNER JOIN Users u ON c.UserId = u.Id 
+                          Where c.PostId = @Id";
             using (var connection = _context.CreateConnection())
             {
-                var result = await connection.QueryAsync<Comment>(query, new { Id = postId });
+                var result = await connection.QueryAsync<CommentQuery>(query, new { Id = postId });
                 return result;
             }
         }
 
-        [HttpPost("{postId}")]
+        [HttpPost("post/{postId}")]
         public async Task<IActionResult> CreateComment(Guid postId, NewComment comment)
         {
             var query = @"INSERT INTO Comments (Id, CreatedAt, UpdatedAt, IsDeleted, Content, MediaURL, UserId, PostId)
@@ -46,6 +49,19 @@ namespace EnVietSocialNetWorkAPI.Controllers
             }
         }
 
+        [HttpGet("{id}")]
+        public async Task<CommentQuery> GetCommentByID(Guid id)
+        {
+            var query = @"SELECT c.Id, c.Content, c.MediaURL, c.UpdatedAt, u.Id as UserId, u.Username, u.AvatarUrl 
+                          FROM Comments c
+                          INNER JOIN Users u ON c.UserId = u.Id 
+                          Where c.Id = @Id";
+            using (var connection = _context.CreateConnection())
+            {
+                var result = await connection.QueryFirstOrDefaultAsync<CommentQuery>(query, new { Id = id });
+                return result;
+            }
+        }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> EditComment(Guid id, NewComment comment)

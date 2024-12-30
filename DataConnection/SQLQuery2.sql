@@ -163,3 +163,34 @@ CREATE TABLE Notifications (
     NotiType INT NOT NULL FOREIGN KEY REFERENCES NotificationType(Id),
     DestinationId UNIQUEIDENTIFIER
 );
+
+ALTER TABLE Notifications
+ADD 
+    StartedAt DATETIME NULL, -- DateTime when the notification starts
+    EndedAt DATETIME NULL,   -- DateTime when the notification ends
+    OrganizeName NVARCHAR(255) NULL; -- Name of the organizing entity
+
+
+--Create Table UserChatBox
+--(
+--	UserId Uniqueidentifier NOT NULL,
+--    ChatBoxId Uniqueidentifier NOT NULL,
+--    CONSTRAINT PK_UserChatBox PRIMARY KEY
+--    (
+--        UserId,
+--        ChatBoxId
+--    ),
+--    FOREIGN KEY (UserId) REFERENCES Users (Id),
+--    FOREIGN KEY (ChatBoxId) REFERENCES Chatboxes (Id)
+--)
+
+CREATE TABLE UserGroup (
+    UserId UNIQUEIDENTIFIER NOT NULL,    -- Foreign Key to Users table
+    GroupId UNIQUEIDENTIFIER NOT NULL,   -- Foreign Key to Groups table
+    RoleId INT NOT NULL,                 -- Foreign Key to Role table
+    JoinedAt DATETIME NOT NULL DEFAULT GETDATE(), -- Tracks when the user joined the group
+    PRIMARY KEY (UserId, GroupId),       -- Composite Primary Key
+    FOREIGN KEY (UserId) REFERENCES Users(Id),
+    FOREIGN KEY (GroupId) REFERENCES Groups(Id),
+    FOREIGN KEY (RoleId) REFERENCES UserRole(Id) -- Links to Role table
+);

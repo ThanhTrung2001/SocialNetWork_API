@@ -1,10 +1,12 @@
 using EnVietSocialNetWorkAPI.DataConnection;
 using EnVietSocialNetWorkAPI.RealTime;
+using EnVietSocialNetWorkAPI.RealTime.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddSingleton<DapperContext>();
+builder.Services.AddScoped<IChatRepository, ChatRepository>();
 //builder.Services.AddSingleton<ChatHub>();
 builder.Services.AddSignalR();
 //builder.Services.AddSingleton<Database>();

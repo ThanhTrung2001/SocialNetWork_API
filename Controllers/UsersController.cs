@@ -28,6 +28,29 @@ namespace EnVietSocialNetWorkAPI.Controllers
             }
         }
 
+        [HttpGet("/search")]
+        public async Task<IEnumerable<User>> GetBySearch([FromQuery] string name)
+        {
+            var query = @"SELECT * FROM Users WHERE UserName LIKE @name;";
+
+            using (var connection = _context.CreateConnection())
+            {
+                var result = await connection.QueryAsync<User>(query, new { name = $"%{name}%" });
+                return result;
+            }
+        }
+
+        [HttpGet("{id}")]
+        public async Task<User> GetByID(Guid id)
+        {
+            var query = "SELECT * FROM Users where Id = @Id";
+            using (var connection = _context.CreateConnection())
+            {
+                var result = await connection.QueryFirstOrDefaultAsync<User>(query, new { Id = id });
+                return result;
+            }
+        }
+
         [HttpPost]
         public async Task<IActionResult> AddNewUser(NewUser user)
         {
@@ -47,16 +70,6 @@ namespace EnVietSocialNetWorkAPI.Controllers
             }
         }
 
-        [HttpGet("{id}")]
-        public async Task<IEnumerable<User>> GetByID(Guid id)
-        {
-            var query = "SELECT * FROM Users where Id = @Id";
-            using (var connection = _context.CreateConnection())
-            {
-                var result = await connection.QueryAsync<User>(query, new { Id = id });
-                return result;
-            }
-        }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> EditUserByID(Guid id, NewUser edit)

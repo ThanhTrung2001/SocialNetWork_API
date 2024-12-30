@@ -1,16 +1,13 @@
 ﻿using Dapper;
 using EnVietSocialNetWorkAPI.DataConnection;
 using EnVietSocialNetWorkAPI.Entities.Commands;
-using EnVietSocialNetWorkAPI.Entities.Models;
-using EnVietSocialNetWorkAPI.Entities.Models.SocialNetwork;
-using EnVietSocialNetWorkAPI.Entities.Models.SocialNetwork.Chat;
-using Microsoft.AspNetCore.Http;
+using EnVietSocialNetWorkAPI.Entities.Queries;
 using Microsoft.AspNetCore.Mvc;
 using System.Data;
 
 namespace EnVietSocialNetWorkAPI.Controllers
 {
-    [Route("api/[controller]/chatbox")]
+    [Route("api/[controller]")]
     [ApiController]
     public class MessagesController : ControllerBase
     {
@@ -21,18 +18,21 @@ namespace EnVietSocialNetWorkAPI.Controllers
             _context = context;
         }
 
-        [HttpGet("{chatBoxId}")]
-        public async Task<IEnumerable<Message>> GetByPostID(Guid chatBoxId)
+        [HttpGet("chatbox/{chatBoxId}")]
+        public async Task<IEnumerable<MessageQuery>> GetByPostID(Guid chatBoxId)
         {
-            var query = @"SELECT * FROM Messages Where ChatBoxId = @Id";
+            var query = @"SELECT m.Id, m.Content, m.CreatedAt, u.Id as UserId, u.UserName, u.AvatarUrl 
+                          FROM Messages m 
+                          INNER JOIN Users u ON m.UserId = u.Id
+                          WHERE m.ChatBoxId = @Id";
             using (var connection = _context.CreateConnection())
             {
-                var result = await connection.QueryAsync<Message>(query, new {Id = chatBoxId });
+                var result = await connection.QueryAsync<MessageQuery>(query, new { Id = chatBoxId });
                 return result;
             }
         }
 
-        [HttpPost("{chatBoxId}")]
+        [HttpPost("chatbox/{chatBoxId}")]
         public async Task<IActionResult> AddNewMessage(Guid chatBoxId, NewMessage message)
         {
             var query = @"INSERT INTO Messages (Id, CreatedAt, UpdatedAt, IsDeleted, Content, UserId, ChatBoxId)
