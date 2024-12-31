@@ -2,11 +2,14 @@
 using EnVietSocialNetWorkAPI.DataConnection;
 using EnVietSocialNetWorkAPI.Entities.Commands;
 using EnVietSocialNetWorkAPI.Entities.Models;
+using EnVietSocialNetWorkAPI.Entities.Queries;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Data;
 
 namespace EnVietSocialNetWorkAPI.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class UsersController : ControllerBase
@@ -18,12 +21,12 @@ namespace EnVietSocialNetWorkAPI.Controllers
         }
 
         [HttpGet]
-        public async Task<IEnumerable<User>> Get()
+        public async Task<IEnumerable<UserQuery>> Get()
         {
-            var query = "SELECT * FROM Users";
+            var query = "SELECT Id, UserName, AvatarUrl, Email FROM Users";
             using (var connection = _context.CreateConnection())
             {
-                var result = await connection.QueryAsync<User>(query);
+                var result = await connection.QueryAsync<UserQuery>(query);
                 return result;
             }
         }
@@ -31,7 +34,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
         [HttpGet("/search")]
         public async Task<IEnumerable<User>> GetBySearch([FromQuery] string name)
         {
-            var query = @"SELECT * FROM Users WHERE UserName LIKE @name;";
+            var query = @"SELECT Id, UserName, AvatarUrl, Email FROM Users WHERE UserName LIKE @name;";
 
             using (var connection = _context.CreateConnection())
             {
@@ -43,11 +46,97 @@ namespace EnVietSocialNetWorkAPI.Controllers
         [HttpGet("{id}")]
         public async Task<User> GetByID(Guid id)
         {
-            var query = "SELECT * FROM Users where Id = @Id";
+            var query = "SELECT Id, UserName, AvatarUrl, Email FROM Users where Id = @Id";
             using (var connection = _context.CreateConnection())
             {
                 var result = await connection.QueryFirstOrDefaultAsync<User>(query, new { Id = id });
                 return result;
+            }
+        }
+
+        [HttpGet("{id}/posts")]
+        public async Task<IEnumerable<PostBasicQuery>> GetUserPostByUserID(Guid id)
+        {
+            var query = @"
+            SELECT 
+                p.Id AS PostId,
+                p.Content AS PostContent,
+                p.PostType,
+                p.CreatedAt,
+                p.PostDestination,
+                u.Id AS UserId,
+                u.UserName,
+                u.Email,
+                u.AvatarUrl,
+                m.URL AS MediaUrl,
+                c.Id AS CommentId,
+                c.Content AS CommentContent,
+                c.MediaURL AS CommentMediaUrl,
+                c.CreatedAt AS CommentCreatedAt,
+                c.UserId AS CommentUserId,
+                uc.UserName AS CommentUserName,
+                uc.AvatarUrl AS CommentUserAvatarUrl,
+                r.Id AS ReactId,
+                r.ReactType,
+                ur.Id AS ReactUserId,
+                ur.UserName AS ReactUserName,
+                ur.AvatarUrl AS ReactUserAvatar
+            FROM 
+                Posts p
+            INNER JOIN 
+                Users u ON p.OwnerId = u.Id
+            LEFT JOIN
+                MediaItems m ON p.Id = m.PostId
+            LEFT JOIN
+                Comments c ON p.Id = c.PostId
+            LEFT JOIN
+                Users uc ON c.UserId = uc.Id
+            LEFT JOIN 
+                Reacts r ON p.Id = r.PostId
+            LEFT JOIN
+                Users ur ON r.UserId = ur.Id 
+            WHERE 
+                p.IsDeleted = 0 AND p.OwnerId = @Id AND p.PostType = 'personal';";
+
+            try
+            {
+                var postDict = new Dictionary<Guid, PostBasicQuery>();
+
+                using (var connection = _context.CreateConnection())
+                {
+                    var result = await connection.QueryAsync<PostBasicQuery, string, PostCommentQuery, PostReactQuery, PostBasicQuery>(
+                    query,
+                    map: (post, mediaUrl, comment, react) =>
+                    {
+                        if (!postDict.TryGetValue(post.PostId, out var postEntry))
+                        {
+                            postEntry = post;
+                            postDict.Add(post.PostId, postEntry);
+                        }
+
+                        if (!string.IsNullOrEmpty(mediaUrl) && !postEntry.MediaUrls.Any((item) => item == mediaUrl))
+                        {
+                            postEntry.MediaUrls.Add(mediaUrl);
+                        }
+
+                        if (comment != null && !postEntry.Comments.Any((item) => item.CommentId == comment.CommentId))
+                        {
+                            postEntry.Comments.Add(comment);
+                        }
+                        if (react != null && !postEntry.Reacts.Any((item) => item.ReactId == react.ReactId))
+                        {
+                            postEntry.Reacts.Add(react);
+                        }
+                        return postEntry;
+                    },
+                    new { Id = id },
+                    splitOn: "MediaUrl,CommentId, ReactId");
+                    return postDict.Values.ToList();
+                }
+            }
+            catch
+            {
+                throw;
             }
         }
 
@@ -69,7 +158,6 @@ namespace EnVietSocialNetWorkAPI.Controllers
                 return Ok(result);
             }
         }
-
 
         [HttpPut("{id}")]
         public async Task<IActionResult> EditUserByID(Guid id, NewUser edit)

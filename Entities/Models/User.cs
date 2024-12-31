@@ -1,8 +1,4 @@
-﻿using EnVietSocialNetWorkAPI.Entities.Models.SocialNetwork;
-using EnVietSocialNetWorkAPI.Entities.Models.SocialNetwork.Chat;
-using FluentMigrator.Builder.Create.Index;
-
-namespace EnVietSocialNetWorkAPI.Entities.Models
+﻿namespace EnVietSocialNetWorkAPI.Entities.Models
 {
     public class User : BaseClass
     {
@@ -12,19 +8,20 @@ namespace EnVietSocialNetWorkAPI.Entities.Models
         public string AvatarUrl { get; set; }
         public UserRole Role { get; set; }
 
-        public ICollection<Post> Posts { get; set; }
-        public ICollection<Comment> Comment { get; set; }
-        public ICollection<React> Reacts { get; set; }
-        //public ICollection<CommentReact> CommentReacts { get; set; }
-        //public ICollection<MessageReact> MessageReacts { get; set; }
-        public ICollection<Message> Messages { get; set; }
+        //public ICollection<Post> Posts { get; set; }
+        //public ICollection<Comment> Comment { get; set; }
+        //public ICollection<React> Reacts { get; set; }
+        ////public ICollection<CommentReact> CommentReacts { get; set; }
+        ////public ICollection<MessageReact> MessageReacts { get; set; }
+        //public ICollection<Message> Messages { get; set; }
 
-        public ICollection<ChatBox>? ChatBoxes { get; set; }
-        public ICollection<UserChatBox>? UserChatBoxes { get; set; } = [];
-        public ICollection<SurveyItem> SurveyItems { get; set; }
+        //public ICollection<ChatBox>? ChatBoxes { get; set; }
+        //public ICollection<UserChatBox>? UserChatBoxes { get; set; } = [];
+        //public ICollection<SurveyItem> SurveyItems { get; set; }
     }
 
-    public enum UserRole {
+    public enum UserRole
+    {
         CEO = 1,
         Admin = 2,
         EMployee = 3

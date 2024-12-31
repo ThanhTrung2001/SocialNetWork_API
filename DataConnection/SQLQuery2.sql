@@ -194,3 +194,28 @@ CREATE TABLE UserGroup (
     FOREIGN KEY (GroupId) REFERENCES Groups(Id),
     FOREIGN KEY (RoleId) REFERENCES UserRole(Id) -- Links to Role table
 );
+
+CREATE TABLE UserGroups (
+    UserId UNIQUEIDENTIFIER NOT NULL,    -- Foreign Key to Users table
+    GroupId UNIQUEIDENTIFIER NOT NULL,   -- Foreign Key to Groups table
+    RoleId INT NOT NULL,                 -- Foreign Key to Role table
+    JoinedAt DATETIME NOT NULL DEFAULT GETDATE(), -- Tracks when the user joined the group
+    PRIMARY KEY (UserId, GroupId),       -- Composite Primary Key
+    FOREIGN KEY (UserId) REFERENCES Users(Id),
+    FOREIGN KEY (GroupId) REFERENCES Groups(Id),
+    FOREIGN KEY (RoleId) REFERENCES UserRole(Id) -- Links to Role table
+);
+
+ALTER TABLE Messages
+ADD IsPinned BIT NOT NULL DEFAULT 0;
+
+CREATE TABLE SharePosts (
+    Id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+    SharedPostId UNIQUEIDENTIFIER NOT NULL, -- ID bài viết gốc
+    SharedByUserId UNIQUEIDENTIFIER NOT NULL, -- Người chia sẻ bài viết
+    TargetType NVARCHAR(50) NOT NULL, -- Loại đối tượng chia sẻ (User, Group, Page)
+    TargetId UNIQUEIDENTIFIER, -- ID của đối tượng nhận bài viết
+    SharedAt DATETIME NOT NULL DEFAULT GETDATE(), -- Thời điểm chia sẻ
+    FOREIGN KEY (SharedPostId) REFERENCES Posts(Id), -- Liên kết với bài viết gốc
+    FOREIGN KEY (SharedByUserId) REFERENCES Users(Id) -- Liên kết với người chia sẻ
+);

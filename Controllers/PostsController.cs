@@ -2,6 +2,7 @@
 using EnVietSocialNetWorkAPI.DataConnection;
 using EnVietSocialNetWorkAPI.Entities.Commands;
 using EnVietSocialNetWorkAPI.Entities.Queries;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Data;
 
@@ -11,6 +12,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class PostsController : ControllerBase
     {
         private readonly DapperContext _context;
@@ -42,7 +44,12 @@ namespace EnVietSocialNetWorkAPI.Controllers
                 c.CreatedAt AS CommentCreatedAt,
                 c.UserId AS CommentUserId,
                 uc.UserName AS CommentUserName,
-                uc.AvatarUrl AS CommentUserAvatarUrl
+                uc.AvatarUrl AS CommentUserAvatarUrl,
+                r.Id AS ReactId,
+                r.ReactType,
+                ur.Id AS ReactUserId,
+                ur.UserName AS ReactUserName,
+                ur.AvatarUrl AS ReactUserAvatar
             FROM 
                 Posts p
             INNER JOIN 
@@ -53,6 +60,10 @@ namespace EnVietSocialNetWorkAPI.Controllers
                 Comments c ON p.Id = c.PostId
             LEFT JOIN
                 Users uc ON c.UserId = uc.Id
+            LEFT JOIN 
+                Reacts r ON p.Id = r.PostId
+            LEFT JOIN
+                Users ur ON r.UserId = ur.Id 
             WHERE 
                 p.IsDeleted = 0;";
 
@@ -62,9 +73,9 @@ namespace EnVietSocialNetWorkAPI.Controllers
 
                 using (var connection = _context.CreateConnection())
                 {
-                    var result = await connection.QueryAsync<PostBasicQuery, string, PostCommentQuery, PostBasicQuery>(
+                    var result = await connection.QueryAsync<PostBasicQuery, string, PostCommentQuery, PostReactQuery, PostBasicQuery>(
                     query,
-                    map: (post, mediaUrl, comment) =>
+                    map: (post, mediaUrl, comment, react) =>
                     {
                         if (!postDict.TryGetValue(post.PostId, out var postEntry))
                         {
@@ -81,10 +92,14 @@ namespace EnVietSocialNetWorkAPI.Controllers
                         {
                             postEntry.Comments.Add(comment);
                         }
+                        if (react != null && !postEntry.Reacts.Any((item) => item.ReactId == react.ReactId))
+                        {
+                            postEntry.Reacts.Add(react);
+                        }
                         return postEntry;
                     },
 
-                    splitOn: "MediaUrl,CommentId");
+                    splitOn: "MediaUrl,CommentId, ReactId");
                     return postDict.Values.ToList();
                 }
             }
@@ -130,7 +145,18 @@ namespace EnVietSocialNetWorkAPI.Controllers
                 JOIN
                 Users uc ON c.UserId = uc.Id
                 WHERE 
-                c.IsDeleted = 0 AND c.PostId = @Id;";
+                c.IsDeleted = 0 AND c.PostId = @Id;"
+
+             + @"SELECT 
+                 r.Id AS ReactId,
+                 r.ReactType,
+                 ur.Id AS ReactUserId,
+                 ur.UserName AS ReactUserName,
+                 ur.AvatarUrl AS ReactUserAvatar
+                 FROM Reacts r
+                 JOIN Users ur ON r.UserId = ur.Id
+                 WHERE 
+                 r.IsDeleted = 0 AND r.PostId = @Id";
 
             using (var connection = _context.CreateConnection())
             {
@@ -154,6 +180,15 @@ namespace EnVietSocialNetWorkAPI.Controllers
                                 post.Comments.Add(comment);
                             }
                         }
+                        foreach (PostReactQuery react in (await multi.ReadAsync<PostReactQuery>()).ToList())
+                        {
+
+                            if (react != null && !post.Reacts.Any((item) => item.ReactId == react.ReactId))
+                            {
+                                post.Reacts.Add(react);
+                            }
+                        }
+
                     }
                     return post;
                 }

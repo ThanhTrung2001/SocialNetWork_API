@@ -1,11 +1,14 @@
 ﻿using Dapper;
 using EnVietSocialNetWorkAPI.DataConnection;
 using EnVietSocialNetWorkAPI.Entities.Commands;
+using EnVietSocialNetWorkAPI.Entities.Queries;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Data;
 
 namespace EnVietSocialNetWorkAPI.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class ReactsController : ControllerBase
@@ -15,6 +18,26 @@ namespace EnVietSocialNetWorkAPI.Controllers
         public ReactsController(DapperContext context)
         {
             _context = context;
+        }
+
+        [HttpGet("{postId}")]
+        public async Task<IEnumerable<PostReactQuery>> Get(Guid postId)
+        {
+            var query = @"SELECT 
+                 r.Id AS ReactId,
+                 r.ReactType,
+                 ur.Id AS ReactUserId,
+                 ur.UserName AS ReactUserName,
+                 ur.AvatarUrl AS ReactUserAvatar
+                 FROM Reacts r
+                 JOIN Users ur ON r.UserId = ur.Id
+                 WHERE 
+                 r.IsDeleted = 0 AND r.PostId = @Id";
+            using (var connection = _context.CreateConnection())
+            {
+                var result = await connection.QueryAsync<PostReactQuery>(query, new { Id = postId });
+                return result;
+            }
         }
 
         [HttpPost]

@@ -1,10 +1,11 @@
 ﻿using Dapper;
 using EnVietSocialNetWorkAPI.DataConnection;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EnVietSocialNetWorkAPI.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class SurveysController : ControllerBase

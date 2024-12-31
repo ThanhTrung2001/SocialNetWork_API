@@ -2,11 +2,13 @@
 using EnVietSocialNetWorkAPI.DataConnection;
 using EnVietSocialNetWorkAPI.Entities.Commands;
 using EnVietSocialNetWorkAPI.Entities.Queries;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Data;
 
 namespace EnVietSocialNetWorkAPI.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class CommentsController : ControllerBase
@@ -31,6 +33,20 @@ namespace EnVietSocialNetWorkAPI.Controllers
             }
         }
 
+        [HttpGet("{id}")]
+        public async Task<CommentQuery> GetCommentByID(Guid id)
+        {
+            var query = @"SELECT c.Id, c.Content, c.MediaURL, c.UpdatedAt, u.Id as UserId, u.Username, u.AvatarUrl 
+                          FROM Comments c
+                          INNER JOIN Users u ON c.UserId = u.Id 
+                          Where c.Id = @Id";
+            using (var connection = _context.CreateConnection())
+            {
+                var result = await connection.QueryFirstOrDefaultAsync<CommentQuery>(query, new { Id = id });
+                return result;
+            }
+        }
+
         [HttpPost("post/{postId}")]
         public async Task<IActionResult> CreateComment(Guid postId, NewComment comment)
         {
@@ -46,20 +62,6 @@ namespace EnVietSocialNetWorkAPI.Controllers
             {
                 var result = await connection.ExecuteAsync(query, parameters);
                 return Ok();
-            }
-        }
-
-        [HttpGet("{id}")]
-        public async Task<CommentQuery> GetCommentByID(Guid id)
-        {
-            var query = @"SELECT c.Id, c.Content, c.MediaURL, c.UpdatedAt, u.Id as UserId, u.Username, u.AvatarUrl 
-                          FROM Comments c
-                          INNER JOIN Users u ON c.UserId = u.Id 
-                          Where c.Id = @Id";
-            using (var connection = _context.CreateConnection())
-            {
-                var result = await connection.QueryFirstOrDefaultAsync<CommentQuery>(query, new { Id = id });
-                return result;
             }
         }
 

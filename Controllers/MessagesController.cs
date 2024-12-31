@@ -2,11 +2,13 @@
 using EnVietSocialNetWorkAPI.DataConnection;
 using EnVietSocialNetWorkAPI.Entities.Commands;
 using EnVietSocialNetWorkAPI.Entities.Queries;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Data;
 
 namespace EnVietSocialNetWorkAPI.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class MessagesController : ControllerBase
@@ -19,7 +21,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
         }
 
         [HttpGet("chatbox/{chatBoxId}")]
-        public async Task<IEnumerable<MessageQuery>> GetByPostID(Guid chatBoxId)
+        public async Task<IEnumerable<MessageQuery>> GetByChatBoxID(Guid chatBoxId)
         {
             var query = @"SELECT m.Id, m.Content, m.CreatedAt, u.Id as UserId, u.UserName, u.AvatarUrl 
                           FROM Messages m 
