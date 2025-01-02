@@ -209,13 +209,23 @@ CREATE TABLE UserGroups (
 ALTER TABLE Messages
 ADD IsPinned BIT NOT NULL DEFAULT 0;
 
+ALTER TABLE Surveys
+ADD Question Nvarchar(Max) NULL;
+
 CREATE TABLE SharePosts (
     Id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
     SharedPostId UNIQUEIDENTIFIER NOT NULL, -- ID bài viết gốc
     SharedByUserId UNIQUEIDENTIFIER NOT NULL, -- Người chia sẻ bài viết
     TargetType NVARCHAR(50) NOT NULL, -- Loại đối tượng chia sẻ (User, Group, Page)
     TargetId UNIQUEIDENTIFIER, -- ID của đối tượng nhận bài viết
-    SharedAt DATETIME NOT NULL DEFAULT GETDATE(), -- Thời điểm chia sẻ
+    Content nvarchar(max), -- Nội dung cá nhân khi share
     FOREIGN KEY (SharedPostId) REFERENCES Posts(Id), -- Liên kết với bài viết gốc
     FOREIGN KEY (SharedByUserId) REFERENCES Users(Id) -- Liên kết với người chia sẻ
+);
+
+CREATE TABLE SurveyVotes (
+    VoteId INT IDENTITY(1,1) PRIMARY KEY,
+    OptionId UNIQUEIDENTIFIER NOT NULL FOREIGN KEY REFERENCES SurveyItems(Id),
+    UserId UNIQUEIDENTIFIER NOT NULL FOREIGN KEY REFERENCES Users(Id),
+    VotedAt DATETIME DEFAULT GETDATE()
 );

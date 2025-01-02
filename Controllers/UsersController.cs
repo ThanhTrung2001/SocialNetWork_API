@@ -141,9 +141,10 @@ namespace EnVietSocialNetWorkAPI.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddNewUser(NewUser user)
+        public async Task<Guid> AddNewUser(NewUser user)
         {
             var exec = @"INSERT INTO Users (Id, CreatedAt, UpdatedAt, IsDeleted, UserName, Password, Email, AvatarUrl, Role)
+                        OUTPUT Inserted.Id
                         VALUES 
                         (NEWID(), GETDATE(), GETDATE(), 0, @UserName, @Password, @Email, @AvatarUrl, @Role);";
             var parameters = new DynamicParameters();
@@ -154,8 +155,8 @@ namespace EnVietSocialNetWorkAPI.Controllers
             parameters.Add("Role", user.Role, DbType.Int32);
             using (var connection = _context.CreateConnection())
             {
-                var result = await connection.ExecuteAsync(exec, parameters);
-                return Ok(result);
+                var result = await connection.QuerySingleAsync<Guid>(exec, parameters);
+                return result;
             }
         }
 

@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace EnVietSocialNetWorkAPI.Controllers
 {
-    [Authorize]
+    [AllowAnonymous]
     [Route("api/[controller]")]
     [ApiController]
     public class SessionController : ControllerBase

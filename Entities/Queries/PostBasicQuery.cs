@@ -16,6 +16,7 @@
         public List<string> MediaUrls { get; set; } = new List<string>();
         public List<PostCommentQuery> Comments { get; set; } = new List<PostCommentQuery>();
         public List<PostReactQuery> Reacts { get; set; } = new List<PostReactQuery>();
+        public PostSurveyQuery Survey { get; set; }
     }
 
     public class PostCommentQuery
@@ -36,6 +37,30 @@
         public Guid ReactUserId { get; set; }
         public string ReactUserName { get; set; }
         public string ReactUserAvatar { get; set; }
+    }
+
+    public class PostSurveyQuery
+    {
+        public Guid SurveyId { get; set; }
+        public DateTime ExpiredIn { get; set; }
+        public string SurveyQuestion { get; set; }
+        public List<SurveyItemQuery> SurveyItems { get; set; } = new List<SurveyItemQuery>();
+    }
+
+    public class SurveyItemQuery
+    {
+        public Guid SurveyItemId { get; set; }
+        public string SurveyItemContent { get; set; }
+        public int SurveyItemVotes { get; set; }
+        public List<SurveyItemVote> SurveyVotes { get; set; } = new List<SurveyItemVote>();
+    }
+
+    public class SurveyItemVote
+    {
+        public Guid VoteId { get; set; }
+        public Guid VoteUserId { get; set; }
+        public string VoteUserName { get; set; }
+        public string VoteUserAvatar { get; set; }
     }
 
     public class ShareUserQuery
@@ -68,6 +93,5 @@
         public string AvatarUrl { get; set; }
 
         public List<string> MediaUrls { get; set; } = new List<string>();
-
     }
 }

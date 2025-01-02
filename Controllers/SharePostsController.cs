@@ -11,11 +11,11 @@ namespace EnVietSocialNetWorkAPI.Controllers
     [Authorize]
     [Route("api/[controller]")]
     [ApiController]
-    public class SharePostController : ControllerBase
+    public class SharePostsController : ControllerBase
     {
         private readonly DapperContext _context;
 
-        public SharePostController(DapperContext context)
+        public SharePostsController(DapperContext context)
         {
             _context = context;
         }

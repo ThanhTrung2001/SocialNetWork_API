@@ -1,7 +1,7 @@
 ﻿using Dapper;
 using EnVietSocialNetWorkAPI.DataConnection;
 using EnVietSocialNetWorkAPI.Entities.Commands;
-using EnVietSocialNetWorkAPI.Entities.Models.SocialNetwork;
+using EnVietSocialNetWorkAPI.Entities.Queries;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Data;
@@ -20,34 +20,34 @@ namespace EnVietSocialNetWorkAPI.Controllers
         }
 
         [HttpGet]
-        public async Task<IEnumerable<Notification>> GetNotifications()
+        public async Task<IEnumerable<NotificationQuery>> GetNotifications()
         {
-            var query = "SELECT * FROM Notifications WHERE IsDeleted = 0;";
+            var query = "SELECT Id, Title, Description, NotiType, DestinationId, OrganizeName, StartedAt, EndedAt FROM Notifications WHERE IsDeleted = 0;";
             using (var connection = _context.CreateConnection())
             {
-                var result = await connection.QueryAsync<Notification>(query);
+                var result = await connection.QueryAsync<NotificationQuery>(query);
                 return result;
             }
         }
 
         [HttpGet("/type")]
-        public async Task<IEnumerable<Notification>> GetNotificationsBySearch([FromQuery] int notiType)
+        public async Task<IEnumerable<NotificationQuery>> GetNotificationsBySearch([FromQuery] int notiType)
         {
-            var query = "SELECT * FROM Notifications WHERE IsDeleted = 0 AND NotiType = @notiType;";
+            var query = "SELECT Id, Title, Description, NotiType, DestinationId, OrganizeName, StartedAt, EndedAt FROM Notifications WHERE IsDeleted = 0 AND NotiType = @notiType;";
             using (var connection = _context.CreateConnection())
             {
-                var result = await connection.QueryAsync<Notification>(query, new { notiType });
+                var result = await connection.QueryAsync<NotificationQuery>(query, new { notiType });
                 return result;
             }
         }
 
         [HttpGet("{id}")]
-        public async Task<Notification> GetNotification(Guid id)
+        public async Task<NotificationQuery> GetNotification(Guid id)
         {
-            var query = "SELECT * FROM Notifications WHERE IsDeleted = 0 AND Id = @Id;";
+            var query = "SELECT Id, Title, Description, NotiType, DestinationId, OrganizeName, StartedAt, EndedAt FROM Notifications WHERE IsDeleted = 0 AND Id = @Id;";
             using (var connection = _context.CreateConnection())
             {
-                var result = await connection.QueryFirstOrDefaultAsync<Notification>(query, new { Id = id });
+                var result = await connection.QueryFirstOrDefaultAsync<NotificationQuery>(query, new { Id = id });
                 return result;
             }
         }
