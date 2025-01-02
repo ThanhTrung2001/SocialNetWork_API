@@ -8,6 +8,7 @@
         public int FileType { get; set; }
         public int Level { get; set; }
         public Guid? ParentId { get; set; }
+        public bool IsDeleted { get; set; }
         public List<OrganizeNode> ChildrenNodes { get; set; } = new List<OrganizeNode>();
     }
 }

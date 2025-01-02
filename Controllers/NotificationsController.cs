@@ -74,7 +74,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
             }
         }
 
-        [HttpPatch("{id}")]
+        [HttpPut("{id}")]
         public async Task<IActionResult> Edit(Guid id, NewNotification notification)
         {
             var query = @"UPDATE Notifications

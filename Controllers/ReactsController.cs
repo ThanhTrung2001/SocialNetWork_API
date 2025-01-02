@@ -32,10 +32,12 @@ namespace EnVietSocialNetWorkAPI.Controllers
                  FROM Reacts r
                  JOIN Users ur ON r.UserId = ur.Id
                  WHERE 
-                 r.IsDeleted = 0 AND r.PostId = @Id";
+                 r.IsDeleted = 0 AND r.PostId = @PostId";
+            var parameters = new DynamicParameters();
+            parameters.Add("PostId", postId);
             using (var connection = _context.CreateConnection())
             {
-                var result = await connection.QueryAsync<PostReactQuery>(query, new { Id = postId });
+                var result = await connection.QueryAsync<PostReactQuery>(query, parameters);
                 return result;
             }
         }

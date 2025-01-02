@@ -210,7 +210,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
                                 }
                             }
                         }
-
+                        //When we share post, we only need the post overview (facebook reference) 
                         //if (comment != null && !shareEntry.Comments.Any((item) => item.CommentId == comment.CommentId))
                         //{
                         //    shareEntry.Comments.Add(comment);
@@ -232,15 +232,13 @@ namespace EnVietSocialNetWorkAPI.Controllers
             }
         }
 
-
-
         [HttpGet("post/{postId}/users")]
         public async Task<IEnumerable<ShareUserQuery>> GetShareUsersByPostId(Guid postId)
         {
             var query = @" SELECT s.Id, s.Content AS ShareContent, u.Id AS ShareUserId, u.UserName AS ShareUserName, u.AvatarUrl as ShareUserAvatar
                            FROM SharePosts s
                            LEFT JOIN User u ON s.ShareByUserId = u.Id
-                           WHERE s.SharePostId = @PostId";
+                           WHERE s.SharePostId = @PostId AND s.IsDeleted = 0";
             using (var connection = _context.CreateConnection())
             {
                 var result = await connection.QueryAsync<ShareUserQuery>(query, new { PostId = postId });

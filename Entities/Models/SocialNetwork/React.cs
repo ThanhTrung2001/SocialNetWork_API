@@ -7,19 +7,19 @@
         public virtual Post Post { get; set; }
     }
 
-    public class CommentReact
-    {
-        public Guid UserId { get; set; }
-        public ReactType ReactType { get; set; }
-        public Guid CommentId { get; set; }
-    }
+    //public class CommentReact
+    //{
+    //    public Guid UserId { get; set; }
+    //    public ReactType ReactType { get; set; }
+    //    public Guid CommentId { get; set; }
+    //}
 
-    public class MessageReact : BaseClass
-    {
-        public Guid UserId { get; set; }
-        public Guid MessageId { get; set; }
-        public ReactType ReactType { get; set; }
-    }
+    //public class MessageReact : BaseClass
+    //{
+    //    public Guid UserId { get; set; }
+    //    public Guid MessageId { get; set; }
+    //    public ReactType ReactType { get; set; }
+    //}
 
     public enum ReactType
     {

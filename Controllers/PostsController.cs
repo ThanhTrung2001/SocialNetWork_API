@@ -273,7 +273,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
 
         // GET api/<PostController>/5
         [HttpGet("{id}")]
-        public async Task<PostBasicQuery> Get(Guid id)
+        public async Task<PostBasicQuery> GetByID(Guid id)
         {
             var query = @"
             SELECT 
@@ -492,66 +492,14 @@ namespace EnVietSocialNetWorkAPI.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(Guid id)
         {
-            var query = "DELETE FROM Posts WHERE Id = @Id";
+            var query = "Update Posts SET isDeleted = 1 WHERE Id = @Id";
+            var parameters = new DynamicParameters();
+            parameters.Add("Id", id);
             using (var connection = _context.CreateConnection())
             {
-                await connection.ExecuteAsync(query, new { Id = id });
+                await connection.ExecuteAsync(query, parameters);
                 return Ok();
             }
         }
     }
 }
-
-//var query = @"
-//SELECT 
-//    p.Id AS PostId,
-//    p.Content AS PostContent,
-//    p.PostType,
-//    u.Id AS UserId,
-//    u.UserName,
-//    u.Email,
-//    u.AvatarUrl,
-//    m.URL AS MediaUrl
-//FROM 
-//    Posts p
-//INNER JOIN 
-//    Users u ON p.OwnerId = u.Id
-//LEFT JOIN
-//    MediaItems m ON p.Id = m.PostId
-//WHERE 
-//    p.IsDeleted = 0 AND p.Id=@Id;";
-
-//try
-//{
-//    var postDict = new Dictionary<Guid, PostBasicQuery>();
-
-//    using (var connection = _context.CreateConnection())
-//    {
-//        var result = await connection.QueryAsync<PostBasicQuery, string, PostBasicQuery>(
-//        query,
-//        (post, mediaUrl) =>
-//        {
-//            if (!postDict.TryGetValue(post.PostId, out var postEntry))
-//            {
-//                postEntry = post;
-//                postDict.Add(post.PostId, postEntry);
-//            }
-
-//            // Add the media URL to the post's list of media
-//            if (!string.IsNullOrEmpty(mediaUrl))
-//            {
-//                postEntry.MediaUrls.Add(mediaUrl);
-//            }
-//            return postEntry;
-//        },
-//        new { Id = id },
-//        splitOn: "MediaUrl");
-
-//        // Return the result as a list of posts with media URLs
-//        return postDict.Values.FirstOrDefault();
-//    } // Execute query and map result to DTOs
-//}
-//catch
-//{
-//    throw;
-//}
