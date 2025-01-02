@@ -43,9 +43,9 @@ namespace EnVietSocialNetWorkAPI.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(NewReact react)
         {
-            var query = @"INSERT INTO Comments (Id, CreatedAt, UpdatedAt, IsDeleted, ReacType, UserId, PostId)
+            var query = @"INSERT INTO Reacts (Id, CreatedAt, UpdatedAt, IsDeleted, ReactType, UserId, PostId)
                         VALUES 
-                        (NEWID(), GETDATE(), GETDATE(), 0, @ReactType @UserId, @PostId)";
+                        (NEWID(), GETDATE(), GETDATE(), 0, @ReactType, @UserId, @PostId)";
             var parameter = new DynamicParameters();
             parameter.Add("ReactType", react.ReactType, DbType.Int32);
             parameter.Add("UserId", react.UserId, DbType.Guid);
@@ -60,7 +60,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> Edit(Guid id, NewReact react)
         {
-            var query = @"UPDATE Comments SET ReactType = @ReactType WHERE Id = @Id";
+            var query = @"UPDATE Reacts SET ReactType = @ReactType WHERE Id = @Id";
             var parameter = new DynamicParameters();
             parameter.Add("ReactType", react.ReactType, DbType.Int32);
             parameter.Add("Id", id, DbType.Guid);

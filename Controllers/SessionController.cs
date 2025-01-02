@@ -29,7 +29,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
             var parameter = new DynamicParameters();
             parameter.Add("Email", request.Email);
             parameter.Add("Password", request.Password);
-            var token = "";
+            var token = new JWTReturn();
             using (var connection = _context.CreateConnection())
             {
                 var result = await connection.QueryFirstOrDefaultAsync<UserQuery>(query, parameter);

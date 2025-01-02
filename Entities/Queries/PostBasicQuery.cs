@@ -93,5 +93,6 @@
         public string AvatarUrl { get; set; }
 
         public List<string> MediaUrls { get; set; } = new List<string>();
+        public PostSurveyQuery Survey { get; set; }
     }
 }

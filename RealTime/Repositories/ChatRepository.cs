@@ -73,30 +73,6 @@ namespace EnVietSocialNetWorkAPI.RealTime.Repositories
             }
         }
 
-        //public async Task<ChatBoxQuery> GetChatBoxDetail(Guid id)
-        //{
-        //    var query = @"SELECT Id, BoxName, BoxType, Theme 
-        //                  FROM ChatBoxes
-        //                  WHERE Id = @Id;"
-        //              + @"SELECT UserId FROM UserChatBox WHERE ChatBoxId = @Id;";
-        //    using (var connection = _context.CreateConnection())
-        //    using (var multi = await connection.QueryMultipleAsync(query, new { id }))
-        //    {
-        //        var chatbox = await multi.ReadSingleOrDefaultAsync<ChatBoxQuery>();
-        //        if (chatbox != null)
-        //        {
-        //            foreach (Guid userId in (await multi.ReadAsync<Guid>()).ToList())
-        //            {
-        //                if (userId != Guid.Empty && !chatbox.Users.Any((item) => item == userId))
-        //                {
-        //                    chatbox.Users.Add(userId);
-        //                }
-        //            }
-        //        }
-        //        return chatbox;
-        //    }
-        //}
-
         public async Task AddUserToChatBox(Guid id, Guid UserId)
         {
             var query = @"INSERT INTO UserChatBox (UserId, ChatBoxId) VALUES (@UserId, @ChatBoxId)";

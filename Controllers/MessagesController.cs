@@ -23,7 +23,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
         [HttpGet("chatbox/{chatBoxId}")]
         public async Task<IEnumerable<MessageQuery>> GetByChatBoxID(Guid chatBoxId)
         {
-            var query = @"SELECT m.Id, m.Content, m.CreatedAt, u.Id as UserId, u.UserName, u.AvatarUrl 
+            var query = @"SELECT m.Id, m.Content, m.CreatedAt, m.IsPinned, u.Id as UserId, u.UserName, u.AvatarUrl 
                           FROM Messages m 
                           INNER JOIN Users u ON m.UserId = u.Id
                           WHERE m.ChatBoxId = @Id";
@@ -37,9 +37,9 @@ namespace EnVietSocialNetWorkAPI.Controllers
         [HttpPost("chatbox/{chatBoxId}")]
         public async Task<IActionResult> AddNewMessage(Guid chatBoxId, NewMessage message)
         {
-            var query = @"INSERT INTO Messages (Id, CreatedAt, UpdatedAt, IsDeleted, Content, UserId, ChatBoxId)
+            var query = @"INSERT INTO Messages (Id, CreatedAt, UpdatedAt, IsDeleted, Content, UserId, ChatBoxId, IsPinned)
                         VALUES 
-                        (NEWID(), GETDATE(), GETDATE(), 0, @Content, @UserId, @ChatBoxId);";
+                        (NEWID(), GETDATE(), GETDATE(), 0, @Content, @UserId, @ChatBoxId, 0);";
             var parameters = new DynamicParameters();
             parameters.Add("Content", message.Content, DbType.String);
             parameters.Add("UserId", message.UserId, DbType.Guid);
@@ -55,6 +55,21 @@ namespace EnVietSocialNetWorkAPI.Controllers
         public async Task<IActionResult> EditMessage(Guid id, NewMessage message)
         {
             var query = "UPDATE Messages SET Content = @Content WHERE Id = @Id AND UserId = @UserId";
+            var parameters = new DynamicParameters();
+            parameters.Add("Content", message.Content, DbType.String);
+            parameters.Add("UserId", message.UserId, DbType.Guid);
+            parameters.Add("Id", id, DbType.Guid);
+            using (var connection = _context.CreateConnection())
+            {
+                var result = await connection.ExecuteAsync(query, parameters);
+                return Ok();
+            }
+        }
+
+        [HttpPut("pin/{id}")]
+        public async Task<IActionResult> PinMessage(Guid id, NewMessage message)
+        {
+            var query = "UPDATE Messages SET IsPinned = 1 WHERE Id = @Id AND UserId = @UserId";
             var parameters = new DynamicParameters();
             parameters.Add("Content", message.Content, DbType.String);
             parameters.Add("UserId", message.UserId, DbType.Guid);

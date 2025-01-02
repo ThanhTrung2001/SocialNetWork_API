@@ -39,7 +39,21 @@ namespace EnVietSocialNetWorkAPI.Controllers
                             up.UserName,
                             up.Email,
                             up.AvatarUrl,
-                            m.URL AS MediaUrl
+                            m.URL AS MediaUrl,
+                            
+                            su.Id AS SurveyId,
+                            su.ExpiredIn,
+                            su.Question AS SurveyQuestion,
+
+                            si.Id AS SurveyItemId,
+                            si.Content AS SurveyItemContent,
+                            si.Votes AS SurveyItemVotes,
+
+                            sv.VoteId,
+                            sv.UserId AS VoteUserId,              
+                            usv.UserName AS VoteUserName,
+                            usv.AvatarUrl AS VoteUserAvatar
+
                          FROM SharePosts s
                          INNER JOIN Users us ON s.SharedByUserId = us.ID
                          LEFT JOIN Posts p ON p.Id = s.SharedPostId
@@ -47,16 +61,24 @@ namespace EnVietSocialNetWorkAPI.Controllers
                             Users up ON p.OwnerId = up.Id
                          LEFT JOIN
                             MediaItems m ON p.Id = m.PostId
-                         WHERE s.IsDeleted = 0";
+                         LEFT JOIN 
+                            Surveys su ON p.Id = su.PostId
+                        LEFT JOIN 
+                            SurveyItems si ON su.Id = si.SurveyId
+                        LEFT JOIN
+                            SurveyVotes sv ON si.Id = sv.OptionId
+                        LEFT JOIN 
+                            Users usv ON usv.Id = sv.UserId 
+                        WHERE s.IsDeleted = 0";
             try
             {
                 var shareDict = new Dictionary<Guid, SharePostQuery>();
 
                 using (var connection = _context.CreateConnection())
                 {
-                    var result = await connection.QueryAsync<SharePostQuery, string, SharePostQuery>(
+                    var result = await connection.QueryAsync<SharePostQuery, string, PostSurveyQuery, SurveyItemQuery, SurveyItemVote, SharePostQuery>(
                     query,
-                    map: (share, mediaUrl) =>
+                    map: (share, mediaUrl, survey, surveyItem, vote) =>
                     {
                         if (!shareDict.TryGetValue(share.Id, out var shareEntry))
                         {
@@ -67,6 +89,20 @@ namespace EnVietSocialNetWorkAPI.Controllers
                         if (!string.IsNullOrEmpty(mediaUrl) && !shareEntry.MediaUrls.Any((item) => item == mediaUrl))
                         {
                             shareEntry.MediaUrls.Add(mediaUrl);
+                        }
+
+                        if (share.PostType == "survey" && survey != null)
+                        {
+                            share.Survey = survey;
+                            if (surveyItem != null && !share.Survey.SurveyItems.Any((item) => item.SurveyItemId == surveyItem.SurveyItemId))
+                            {
+                                share.Survey.SurveyItems.Add(surveyItem);
+                                var result = share.Survey.SurveyItems.FirstOrDefault((x) => x.SurveyItemId == surveyItem.SurveyItemId);
+                                if (vote != null && !result.SurveyVotes.Any((item) => item.VoteId == vote.VoteId))
+                                {
+                                    result.SurveyVotes.Add(vote);
+                                }
+                            }
                         }
 
                         //if (comment != null && !shareEntry.Comments.Any((item) => item.CommentId == comment.CommentId))
@@ -80,7 +116,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
                         return shareEntry;
                     },
 
-                    splitOn: "MediaUrl");
+                    splitOn: "MediaUrl, SurveyId, SurveyItemId, VoteId");
                     return shareDict.Values.ToList();
                 }
             }
@@ -109,7 +145,21 @@ namespace EnVietSocialNetWorkAPI.Controllers
                             up.UserName,
                             up.Email,
                             up.AvatarUrl,
-                            m.URL AS MediaUrl
+                            m.URL AS MediaUrl,
+                            
+                            s.Id AS SurveyId,
+                            s.ExpiredIn,
+                            s.Question AS SurveyQuestion,
+
+                            si.Id AS SurveyItemId,
+                            si.Content AS SurveyItemContent,
+                            si.Votes AS SurveyItemVotes,
+
+                            sv.VoteId,
+                            sv.UserId AS VoteUserId,              
+                            usv.UserName AS VoteUserName,
+                            usv.AvatarUrl AS VoteUserAvatar
+
                          FROM SharePosts s
                          INNER JOIN Users us ON s.SharedByUserId = us.ID
                          LEFT JOIN Posts p ON p.Id = s.SharedPostId
@@ -117,16 +167,24 @@ namespace EnVietSocialNetWorkAPI.Controllers
                             Users up ON p.OwnerId = up.Id
                          LEFT JOIN
                             MediaItems m ON p.Id = m.PostId
-                         WHERE s.IsDeleted = 0 & s.SharedByUserId = @Id";
+                         LEFT JOIN 
+                            Surveys su ON p.Id = su.PostId
+                        LEFT JOIN 
+                            SurveyItems si ON su.Id = si.SurveyId
+                        LEFT JOIN
+                            SurveyVotes sv ON si.Id = sv.OptionId
+                        LEFT JOIN 
+                            Users usv ON usv.Id = sv.UserId 
+                        WHERE s.IsDeleted = 0 AND s.SharedByUserId = @Id";
             try
             {
                 var shareDict = new Dictionary<Guid, SharePostQuery>();
 
                 using (var connection = _context.CreateConnection())
                 {
-                    var result = await connection.QueryAsync<SharePostQuery, string, SharePostQuery>(
+                    var result = await connection.QueryAsync<SharePostQuery, string, PostSurveyQuery, SurveyItemQuery, SurveyItemVote, SharePostQuery>(
                     query,
-                    map: (share, mediaUrl) =>
+                    map: (share, mediaUrl, survey, surveyItem, vote) =>
                     {
                         if (!shareDict.TryGetValue(share.Id, out var shareEntry))
                         {
@@ -137,6 +195,20 @@ namespace EnVietSocialNetWorkAPI.Controllers
                         if (!string.IsNullOrEmpty(mediaUrl) && !shareEntry.MediaUrls.Any((item) => item == mediaUrl))
                         {
                             shareEntry.MediaUrls.Add(mediaUrl);
+                        }
+
+                        if (share.PostType == "survey" && survey != null)
+                        {
+                            share.Survey = survey;
+                            if (surveyItem != null && !share.Survey.SurveyItems.Any((item) => item.SurveyItemId == surveyItem.SurveyItemId))
+                            {
+                                share.Survey.SurveyItems.Add(surveyItem);
+                                var result = share.Survey.SurveyItems.FirstOrDefault((x) => x.SurveyItemId == surveyItem.SurveyItemId);
+                                if (vote != null && !result.SurveyVotes.Any((item) => item.VoteId == vote.VoteId))
+                                {
+                                    result.SurveyVotes.Add(vote);
+                                }
+                            }
                         }
 
                         //if (comment != null && !shareEntry.Comments.Any((item) => item.CommentId == comment.CommentId))
@@ -150,7 +222,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
                         return shareEntry;
                     },
                     new { Id = id },
-                    splitOn: "MediaUrl");
+                    splitOn: "MediaUrl, SurveyId, SurveyItemId, VoteId");
                     return shareDict.Values.ToList();
                 }
             }

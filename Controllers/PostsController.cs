@@ -147,6 +147,130 @@ namespace EnVietSocialNetWorkAPI.Controllers
             }
         }
 
+        [HttpGet("user/{id}")]
+        public async Task<IEnumerable<PostBasicQuery>> GetUserPostByUserID(Guid id)
+        {
+            var query = @"
+            SELECT 
+                p.Id AS PostId,
+                p.Content AS PostContent,
+                p.PostType,
+                p.CreatedAt,
+                p.PostDestination,
+                u.Id AS UserId,
+                u.UserName,
+                u.Email,
+                u.AvatarUrl,
+
+                m.URL AS MediaUrl,
+
+                s.Id AS SurveyId,
+                s.ExpiredIn,
+                s.Question AS SurveyQuestion,
+
+                si.Id AS SurveyItemId,
+                si.Content AS SurveyItemContent,
+                si.Votes AS SurveyItemVotes,
+
+                sv.VoteId,
+                sv.UserId AS VoteUserId,              
+                usv.UserName AS VoteUserName,
+                usv.AvatarUrl AS VoteUserAvatar,
+                 
+                c.Id AS CommentId,
+                c.Content AS CommentContent,
+                c.MediaURL AS CommentMediaUrl,
+                c.CreatedAt AS CommentCreatedAt,
+                c.UserId AS CommentUserId,
+                uc.UserName AS CommentUserName,
+                uc.AvatarUrl AS CommentUserAvatarUrl,
+
+                r.Id AS ReactId,
+                r.ReactType,
+                ur.Id AS ReactUserId,
+                ur.UserName AS ReactUserName,
+                ur.AvatarUrl AS ReactUserAvatar
+            FROM 
+                Posts p
+            INNER JOIN 
+                Users u ON p.OwnerId = u.Id
+            LEFT JOIN
+                MediaItems m ON p.Id = m.PostId
+            LEFT JOIN 
+                Surveys s ON p.Id = s.PostId
+            LEFT JOIN 
+                SurveyItems si ON s.Id = si.SurveyId
+            LEFT JOIN
+                SurveyVotes sv ON si.Id = sv.OptionId
+            LEFT JOIN 
+                Users usv ON usv.Id = sv.UserId 
+            LEFT JOIN
+                Comments c ON p.Id = c.PostId
+            LEFT JOIN
+                Users uc ON c.UserId = uc.Id
+            LEFT JOIN 
+                Reacts r ON p.Id = r.PostId
+            LEFT JOIN
+                Users ur ON r.UserId = ur.Id 
+            WHERE 
+                p.IsDeleted = 0 AND p.OwnerId = @Id AND p.PostType = 'personal';";
+
+            try
+            {
+                var postDict = new Dictionary<Guid, PostBasicQuery>();
+
+                using (var connection = _context.CreateConnection())
+                {
+                    var result = await connection.QueryAsync<PostBasicQuery, string, PostSurveyQuery, SurveyItemQuery, SurveyItemVote, PostCommentQuery, PostReactQuery, PostBasicQuery>(
+                    query,
+                    map: (post, mediaUrl, survey, surveyItem, vote, comment, react) =>
+                    {
+                        if (!postDict.TryGetValue(post.PostId, out var postEntry))
+                        {
+                            postEntry = post;
+                            postDict.Add(post.PostId, postEntry);
+                        }
+
+                        if (post.PostType == "media" && !string.IsNullOrEmpty(mediaUrl) && !postEntry.MediaUrls.Any((item) => item == mediaUrl))
+                        {
+                            postEntry.MediaUrls.Add(mediaUrl);
+                        }
+
+                        if (post.PostType == "survey" && survey != null)
+                        {
+                            postEntry.Survey = survey;
+                            if (surveyItem != null && !postEntry.Survey.SurveyItems.Any((item) => item.SurveyItemId == surveyItem.SurveyItemId))
+                            {
+                                postEntry.Survey.SurveyItems.Add(surveyItem);
+                                var result = postEntry.Survey.SurveyItems.FirstOrDefault((x) => x.SurveyItemId == surveyItem.SurveyItemId);
+                                if (vote != null && !result.SurveyVotes.Any((item) => item.VoteId == vote.VoteId))
+                                {
+                                    result.SurveyVotes.Add(vote);
+                                }
+                            }
+                        }
+
+                        if (comment != null && !postEntry.Comments.Any((item) => item.CommentId == comment.CommentId))
+                        {
+                            postEntry.Comments.Add(comment);
+                        }
+                        if (react != null && !postEntry.Reacts.Any((item) => item.ReactId == react.ReactId))
+                        {
+                            postEntry.Reacts.Add(react);
+                        }
+                        return postEntry;
+                    },
+
+                    splitOn: "MediaUrl, SurveyId, SurveyItemId, VoteId, CommentId, ReactId");
+                    return postDict.Values.ToList();
+                }
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
         // GET api/<PostController>/5
         [HttpGet("{id}")]
         public async Task<PostBasicQuery> Get(Guid id)

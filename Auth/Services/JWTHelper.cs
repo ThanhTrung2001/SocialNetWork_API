@@ -1,4 +1,5 @@
-﻿using EnVietSocialNetWorkAPI.Entities.Queries;
+﻿using EnVietSocialNetWorkAPI.Entities.Models;
+using EnVietSocialNetWorkAPI.Entities.Queries;
 using Microsoft.IdentityModel.Tokens;
 using System.Diagnostics;
 using System.IdentityModel.Tokens.Jwt;
@@ -16,7 +17,7 @@ namespace EnVietSocialNetWorkAPI.Auth.Services
             _configuration = configuration;
         }
 
-        public string GenerateJWTToken(UserQuery user)
+        public JWTReturn GenerateJWTToken(UserQuery user)
         {
             var claims = new List<Claim> {
                         new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
@@ -32,11 +33,15 @@ namespace EnVietSocialNetWorkAPI.Auth.Services
                 Subject = new ClaimsIdentity(claims),
                 Issuer = _configuration["JWT:Issuer"],
                 Audience = _configuration["JWT:Audience"],
-                Expires = DateTime.UtcNow.AddDays(10),
+                Expires = DateTime.UtcNow.AddDays(100),
                 SigningCredentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256Signature)
             };
             var token = tokenHandler.CreateToken(tokenDescriptor);
-            return tokenHandler.WriteToken(token);
+            var jwtReturn = new JWTReturn();
+            jwtReturn.CreatedAt = DateTime.UtcNow;
+            jwtReturn.ExpiredIn = tokenDescriptor.Expires;
+            jwtReturn.Token = tokenHandler.WriteToken(token);
+            return jwtReturn;
         }
 
         public static bool IsTokenExpired(string token)
@@ -50,6 +55,30 @@ namespace EnVietSocialNetWorkAPI.Auth.Services
             var isExpired = DateTime.UtcNow > expires;
 
             return isExpired;
+        }
+
+        public List<OrganizeNode> BuildHierarchy(List<OrganizeNode> nodes)
+        {
+            // Find root nodes
+            var rootNodes = nodes.Where(n => n.ParentId == null || n.ParentId == Guid.Empty).ToList();
+
+            foreach (var rootNode in rootNodes)
+            {
+                AttachChildren(rootNode, nodes);
+            }
+
+            return rootNodes;
+        }
+
+        public void AttachChildren(OrganizeNode parentNode, List<OrganizeNode> allNodes)
+        {
+            var children = allNodes.Where(n => n.ParentId == parentNode.Id).ToList();
+            parentNode.ChildrenNodes = children;
+
+            foreach (var child in children)
+            {
+                AttachChildren(child, allNodes);
+            }
         }
     }
 }
