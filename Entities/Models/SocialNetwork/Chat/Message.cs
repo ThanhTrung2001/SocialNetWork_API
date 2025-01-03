@@ -10,4 +10,11 @@
         public virtual ChatBox ChatBox { get; set; }
         //public ICollection<MessageReact>? Reacts { get; set; }
     }
+
+    public class MessageReact : BaseClass
+    {
+        public ReactType ReactType { get; set; }
+        public virtual User User { get; set; }
+        public virtual Message Message { get; set; }
+    }
 }

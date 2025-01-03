@@ -23,14 +23,57 @@ namespace EnVietSocialNetWorkAPI.Controllers
         [HttpGet("chatbox/{chatBoxId}")]
         public async Task<IEnumerable<MessageQuery>> GetByChatBoxID(Guid chatBoxId)
         {
-            var query = @"SELECT m.Id, m.Content, m.CreatedAt, m.IsPinned, u.Id as UserId, u.UserName, u.AvatarUrl 
+            var query = @"SELECT m.Id, m.Content, m.CreatedAt, m.IsPinned, u.Id as UserId, u.UserName, u.AvatarUrl, m.ReactCount
                           FROM Messages m 
                           INNER JOIN Users u ON m.UserId = u.Id
-                          WHERE m.ChatBoxId = @Id";
+                          WHERE m.ChatBoxId = @Id AND m.IsDeleted = 0";
             using (var connection = _context.CreateConnection())
             {
                 var result = await connection.QueryAsync<MessageQuery>(query, new { Id = chatBoxId });
                 return result;
+            }
+        }
+
+        [HttpGet("{id}")]
+        public async Task<MessageDetailQuery> GetByID(Guid id)
+        {
+            var query = @"SELECT m.Id, m.Content, m.MediaURL, m.UpdatedAt, m.UserId, u.Username, u.AvatarUrl, mr.Id AS ReactId, mr.ReactType, mr.UserId AS ReactUserId, umr.UserName AS ReactUserName, umr.AvatarUrl AS ReactUserAvatar 
+                          FROM Messages m
+                          INNER JOIN Users u ON m.UserId = u.Id 
+                          LEFT JOIN MessageReacts mr ON m.Id = mr.MessageId
+                          LEFT JOIN Users umr ON mr.UserId = umr.Id
+                          Where c.Id = @Id & c.IsDeleted = 0";
+            var parameter = new DynamicParameters();
+            parameter.Add("Id", id);
+            try
+            {
+                var messageResult = new MessageDetailQuery();
+
+                using (var connection = _context.CreateConnection())
+                {
+                    var result = await connection.QueryAsync<MessageDetailQuery, MessageReactQuery, MessageDetailQuery>(
+                    query,
+                    map: (message, react) =>
+                    {
+                        if (message != null)
+                        {
+                            messageResult = message;
+                        }
+
+                        if (react != null && !messageResult.Reacts.Any((item) => item.ReactId == react.ReactId))
+                        {
+                            messageResult.Reacts.Add(react);
+                        }
+                        return messageResult;
+                    },
+                    parameter,
+                    splitOn: "ReactId");
+                    return messageResult;
+                }
+            }
+            catch
+            {
+                throw;
             }
         }
 

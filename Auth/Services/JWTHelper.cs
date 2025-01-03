@@ -57,6 +57,8 @@ namespace EnVietSocialNetWorkAPI.Auth.Services
             return isExpired;
         }
 
+        //_helper func for tree hierarchy
+
         public List<OrganizeNode> BuildHierarchy(List<OrganizeNode> nodes)
         {
             // Find root nodes

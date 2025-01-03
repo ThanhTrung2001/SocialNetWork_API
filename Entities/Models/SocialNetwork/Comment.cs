@@ -12,4 +12,11 @@
         //public ICollection<CommentReact>? Reacts { get; set; }
 
     }
+
+    public class CommentReact : BaseClass
+    {
+        public ReactType ReactType { get; set; }
+        public virtual User User { get; set; }
+        public virtual Comment Comment { get; set; }
+    }
 }

@@ -78,9 +78,11 @@ namespace EnVietSocialNetWorkAPI.Controllers
         public async Task<IActionResult> Delete(Guid id)
         {
             var query = "Update Reacts SET isDeleted = 1 WHERE Id = @Id";
+            var parameter = new DynamicParameters();
+            parameter.Add("Id", id);
             using (var connection = _context.CreateConnection())
             {
-                var result = await connection.ExecuteAsync(query, new { Id = id });
+                var result = await connection.ExecuteAsync(query, parameter);
                 return Ok();
             }
         }

@@ -40,9 +40,11 @@ namespace EnVietSocialNetWorkAPI.Controllers
                           FROM ChatBoxes
                           WHERE Id = @Id;"
                       + @"SELECT UserId FROM UserChatBox WHERE ChatBoxId = @Id;";
+            var parameter = new DynamicParameters();
+            parameter.Add("Id", id);
             using (var connection = _context.CreateConnection())
             {
-                using (var multi = await connection.QueryMultipleAsync(query, new { id }))
+                using (var multi = await connection.QueryMultipleAsync(query, parameter))
                 {
                     var chatbox = await multi.ReadSingleOrDefaultAsync<ChatBoxQuery>();
                     if (chatbox != null)
@@ -71,20 +73,17 @@ namespace EnVietSocialNetWorkAPI.Controllers
                     return existResult;
                 }
             }
-            var execChatBox = @"INSERT INTO ChatBoxes (Id, CreatedAt, UpdatedAt, IsDeleted, BoxType, Theme, BoxName, AlterName, UserList)
+            var execChatBox = @"INSERT INTO ChatBoxes (Id, CreatedAt, UpdatedAt, IsDeleted, BoxType, Theme, BoxName, AlterName)
+                        OUTPUT Inserted.Id
                         VALUES 
-                        (@ChatBoxId, GETDATE(), GETDATE(), 0, @BoxType, @Theme, @BoxName, @AlterName , @UserList);";
+                        (NEWID(), GETDATE(), GETDATE(), 0, @BoxType, @Theme, @BoxName, @AlterName);";
             var execUserChatBox = @"INSERT INTO UserChatBox (UserId, ChatBoxId) VALUES (@UserId, @ChatBoxId)";
             //
-            var chatBoxId = Guid.NewGuid();
-            //
             var parameters = new DynamicParameters();
-            parameters.Add("ChatBoxId", chatBoxId, DbType.Guid);
             parameters.Add("BoxName", chatbox.BoxName, DbType.String);
             parameters.Add("BoxType", chatbox.BoxType, DbType.String);
             parameters.Add("Theme", chatbox.Theme, DbType.String);
             parameters.Add("AlterName", "Alter", DbType.String);
-            parameters.Add("UserList", "", DbType.String);
 
             using (var connection = _context.CreateConnection())
             {
@@ -93,9 +92,12 @@ namespace EnVietSocialNetWorkAPI.Controllers
                     var resultChatBox = await connection.ExecuteAsync(execChatBox, parameters);
                     foreach (var userId in chatbox.Users)
                     {
-                        var resultUserChatBox = await connection.ExecuteAsync(execUserChatBox, new { UserId = userId, ChatBoxId = chatBoxId });
+                        parameters = new DynamicParameters();
+                        parameters.Add("UserId", userId);
+                        parameters.Add("ChatBoxId", resultChatBox);
+                        var resultUserChatBox = await connection.ExecuteAsync(execUserChatBox, parameters);
                     }
-                    return chatBoxId;
+                    return resultChatBox;
                 }
                 catch (Exception e)
                 {
@@ -109,9 +111,11 @@ namespace EnVietSocialNetWorkAPI.Controllers
         public async Task<IActionResult> Delete(Guid id)
         {
             var query = "Update ChatBoxes SET isDeleted = 1 WHERE Id = @Id";
+            var parameter = new DynamicParameters();
+            parameter.Add("Id", id);
             using (var connection = _context.CreateConnection())
             {
-                await connection.ExecuteAsync(query, new { Id = id });
+                await connection.ExecuteAsync(query, parameter);
                 return Ok();
             }
         }
@@ -119,31 +123,16 @@ namespace EnVietSocialNetWorkAPI.Controllers
         [HttpGet("user/{userId}")]
         public async Task<IEnumerable<ChatBox>> GetChatBoxesBaseUserID(Guid userId)
         {
-            //var query = @"
-            //SELECT u.ID as UserId, u.UserName
-            //FROM Users u
-            //Where u.Id = @UserId;"
-            //+ @"SELECT c.Id as ChatBoxId, c.BoxType
-            //    FROM ChatBoxes c
-            //    JOIN UserChatBox ucb ON c.Id = ucb.ChatBoxId
-            //    WHERE ucb.UserId = @UserId;";
-            //using (var connection = _context.CreateConnection())
-            //{
-            //    using (var multi = await connection.QueryMultipleAsync(query, new { UserId = id }))
-            //    {
-            //        var result = await multi.ReadSingleOrDefaultAsync<ChatBoxByUserIDQuery>();
-            //        if (result != null)
-            //            result.BoxList = (await multi.ReadAsync<ChatBoxQuery>()).ToList();
-            //        return result;
-            //    }
-            //}
             var query = @"SELECT *
                 FROM ChatBoxes c
                 JOIN UserChatBox ucb ON c.Id = ucb.ChatBoxId
                 WHERE ucb.UserId = @UserId AND c.IsDeleted = 0;";
+            //
+            var parameter = new DynamicParameters();
+            parameter.Add("UserId", userId);
             using (var connection = _context.CreateConnection())
             {
-                var result = await connection.QueryAsync<ChatBox>(query, new { UserId = userId });
+                var result = await connection.QueryAsync<ChatBox>(query, parameter);
                 return result;
             }
         }
@@ -154,9 +143,9 @@ namespace EnVietSocialNetWorkAPI.Controllers
 
             var query = @"SELECT cb.Id AS ChatBoxId
               FROM ChatBoxes cb
-              JOIN UserChatBox ucb1 ON cb.Id = ucb1.ChatBoxId
-              JOIN UserChatBox ucb2 ON cb.Id = ucb2.ChatBoxId                         
-              WHERE ucb1.UserId = @User1Id AND ucb2.UserId = @User2Id;";
+              INNER JOIN UserChatBox ucb1 ON cb.Id = ucb1.ChatBoxId
+              INNER JOIN UserChatBox ucb2 ON cb.Id = ucb2.ChatBoxId                         
+              WHERE ucb1.UserId = @User1Id AND ucb2.UserId = @User2Id AND cb.;";
             using (var connection = _context.CreateConnection())
             {
                 var result = await connection.QueryFirstOrDefaultAsync<Guid>(query, new { User1Id = userId1, User2Id = userId2 });

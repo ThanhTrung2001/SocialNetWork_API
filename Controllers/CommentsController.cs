@@ -22,28 +22,61 @@ namespace EnVietSocialNetWorkAPI.Controllers
         [HttpGet("post/{postId}")]
         public async Task<IEnumerable<CommentQuery>> GetCommentsByPostID(Guid postId)
         {
-            var query = @"SELECT c.Id, c.Content, c.MediaURL, c.UpdatedAt, u.Id as UserId, u.Username, u.AvatarUrl 
+            var query = @"SELECT c.Id, c.Content, c.MediaURL, c.UpdatedAt, u.Id as UserId, u.Username, u.AvatarUrl, c.ReactCount
                           FROM Comments c
                           INNER JOIN Users u ON c.UserId = u.Id 
-                          Where c.PostId = @Id";
+                          Where c.PostId = @Id & c.IsDeleted = 0";
+            var parameter = new DynamicParameters();
+            parameter.Add("Id", postId);
+
             using (var connection = _context.CreateConnection())
             {
-                var result = await connection.QueryAsync<CommentQuery>(query, new { Id = postId });
+                var result = await connection.QueryAsync<CommentQuery>(query, parameter);
+
                 return result;
             }
         }
 
         [HttpGet("{id}")]
-        public async Task<CommentQuery> GetCommentByID(Guid id)
+        public async Task<CommentDetailQuery> GetCommentByID(Guid id)
         {
-            var query = @"SELECT c.Id, c.Content, c.MediaURL, c.UpdatedAt, u.Id as UserId, u.Username, u.AvatarUrl 
+            var query = @"SELECT c.Id, c.Content, c.MediaURL, c.UpdatedAt, u.Id as UserId, u.Username, u.AvatarUrl, cr.Id AS ReactId, cr.ReactType, cr.UserId AS ReactUserId, ucr.UserName AS ReactUserName, ucr.AvatarUrl AS ReactUserAvatar 
                           FROM Comments c
                           INNER JOIN Users u ON c.UserId = u.Id 
-                          Where c.Id = @Id";
-            using (var connection = _context.CreateConnection())
+                          LEFT JOIN CommentReacts cr ON c.Id = cr.CommentId
+                          LEFT JOIN Users ucr ON cr.UserId = ucr.Id
+                          Where c.Id = @Id & c.IsDeleted = 0";
+            var parameter = new DynamicParameters();
+            parameter.Add("Id", id);
+            try
             {
-                var result = await connection.QueryFirstOrDefaultAsync<CommentQuery>(query, new { Id = id });
-                return result;
+                var commentResult = new CommentDetailQuery();
+
+                using (var connection = _context.CreateConnection())
+                {
+                    var result = await connection.QueryAsync<CommentDetailQuery, CommentReactQuery, CommentDetailQuery>(
+                    query,
+                    map: (comment, react) =>
+                    {
+                        if (comment != null)
+                        {
+                            commentResult = comment;
+                        }
+
+                        if (react != null && !commentResult.Reacts.Any((item) => item.ReactId == react.ReactId))
+                        {
+                            commentResult.Reacts.Add(react);
+                        }
+                        return commentResult;
+                    },
+                    parameter,
+                    splitOn: "ReactId");
+                    return commentResult;
+                }
+            }
+            catch
+            {
+                throw;
             }
         }
 
