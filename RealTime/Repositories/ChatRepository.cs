@@ -14,7 +14,7 @@ namespace EnVietSocialNetWorkAPI.RealTime.Repositories
             _context = dapperContext;
         }
 
-        public async Task CreateChatBox(List<Guid> users, NewChatBox chatBox)
+        public async Task CreateChatBox(List<Guid> users, NewChatGroup chatBox)
         {
             if (chatBox.Theme == "private")
             {

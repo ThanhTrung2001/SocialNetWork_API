@@ -1,4 +1,4 @@
-﻿namespace EnVietSocialNetWorkAPI.Entities.Queries
+﻿namespace EnVietSocialNetWorkAPI.Models.Queries
 {
     public class ChatGroupQuery
     {
@@ -17,7 +17,7 @@
     //    public string BoxType { get; set; }
     //}
 
-    public class ChatBoxByUserIDQuery
+    public class ChatGroupByUserIDQuery
     {
         public Guid UserId { get; set; }
         public string UserName { get; set; }

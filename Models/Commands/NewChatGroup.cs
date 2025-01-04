@@ -1,4 +1,4 @@
-﻿namespace EnVietSocialNetWorkAPI.Entities.Commands
+﻿namespace EnVietSocialNetWorkAPI.Models.Commands
 {
     public class NewChatGroup
     {

@@ -3,9 +3,7 @@
     public class Group : BaseClass
     {
         public string GroupName { get; set; }
-        public string WallpaperURL { get; set; }
-
-        public ICollection<User> Users { get; set; }
-        public ICollection<Post> Posts { get; set; }
+        public string Avartar { get; set; }
+        public string Wallpaper { get; set; }
     }
 }

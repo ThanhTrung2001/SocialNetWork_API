@@ -24,7 +24,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
 
         // GET: api/<PostController>
         [HttpGet]
-        public async Task<IEnumerable<PostBasicQuery>> Get()
+        public async Task<IEnumerable<PostQuery>> Get()
         {
             var query = @"
             SELECT 
@@ -93,11 +93,11 @@ namespace EnVietSocialNetWorkAPI.Controllers
 
             try
             {
-                var postDict = new Dictionary<Guid, PostBasicQuery>();
+                var postDict = new Dictionary<Guid, PostQuery>();
 
                 using (var connection = _context.CreateConnection())
                 {
-                    var result = await connection.QueryAsync<PostBasicQuery, string, PostSurveyQuery, SurveyItemQuery, SurveyItemVote, PostCommentQuery, PostReactQuery, PostBasicQuery>(
+                    var result = await connection.QueryAsync<PostQuery, string, PostSurveyQuery, SurveyItemQuery, SurveyItemVote, PostCommentQuery, PostReactQuery, PostQuery>(
                     query,
                     map: (post, mediaUrl, survey, surveyItem, vote, comment, react) =>
                     {
@@ -148,7 +148,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
         }
 
         [HttpGet("user/{id}")]
-        public async Task<IEnumerable<PostBasicQuery>> GetUserPostByUserID(Guid id)
+        public async Task<IEnumerable<PostQuery>> GetUserPostByUserID(Guid id)
         {
             var query = @"
             SELECT 
@@ -217,11 +217,11 @@ namespace EnVietSocialNetWorkAPI.Controllers
 
             try
             {
-                var postDict = new Dictionary<Guid, PostBasicQuery>();
+                var postDict = new Dictionary<Guid, PostQuery>();
 
                 using (var connection = _context.CreateConnection())
                 {
-                    var result = await connection.QueryAsync<PostBasicQuery, string, PostSurveyQuery, SurveyItemQuery, SurveyItemVote, PostCommentQuery, PostReactQuery, PostBasicQuery>(
+                    var result = await connection.QueryAsync<PostQuery, string, PostSurveyQuery, SurveyItemQuery, SurveyItemVote, PostCommentQuery, PostReactQuery, PostQuery>(
                     query,
                     map: (post, mediaUrl, survey, surveyItem, vote, comment, react) =>
                     {
@@ -273,7 +273,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
 
         // GET api/<PostController>/5
         [HttpGet("{id}")]
-        public async Task<PostBasicQuery> GetByID(Guid id)
+        public async Task<PostQuery> GetByID(Guid id)
         {
             var query = @"
             SELECT 
@@ -342,11 +342,11 @@ namespace EnVietSocialNetWorkAPI.Controllers
 
             try
             {
-                PostBasicQuery postBasic = null;
+                PostQuery postBasic = null;
 
                 using (var connection = _context.CreateConnection())
                 {
-                    var result = await connection.QueryAsync<PostBasicQuery, string, PostSurveyQuery, SurveyItemQuery, SurveyItemVote, PostCommentQuery, PostReactQuery, PostBasicQuery>(
+                    var result = await connection.QueryAsync<PostQuery, string, PostSurveyQuery, SurveyItemQuery, SurveyItemVote, PostCommentQuery, PostReactQuery, PostQuery>(
                     query,
                     map: (post, mediaUrl, survey, surveyItem, vote, comment, react) =>
                     {

@@ -34,7 +34,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<ChatBoxQuery> GetChatBoxDetail(Guid id)
+        public async Task<ChatGroupQuery> GetChatBoxDetail(Guid id)
         {
             var query = @"SELECT Id, BoxName, BoxType, Theme 
                           FROM ChatBoxes
@@ -46,7 +46,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
             {
                 using (var multi = await connection.QueryMultipleAsync(query, parameter))
                 {
-                    var chatbox = await multi.ReadSingleOrDefaultAsync<ChatBoxQuery>();
+                    var chatbox = await multi.ReadSingleOrDefaultAsync<ChatGroupQuery>();
                     if (chatbox != null)
                     {
                         foreach (Guid userId in (await multi.ReadAsync<Guid>()).ToList())
@@ -63,7 +63,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
         }
 
         [HttpPost]
-        public async Task<dynamic> CreateChatBox(NewChatBox chatbox)
+        public async Task<dynamic> CreateChatBox(NewChatGroup chatbox)
         {
             if (chatbox.Theme == "private")
             {

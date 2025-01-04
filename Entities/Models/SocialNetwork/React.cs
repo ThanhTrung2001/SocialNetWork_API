@@ -1,25 +1,25 @@
 ﻿namespace EnVietSocialNetWorkAPI.Entities.Models.SocialNetwork
 {
-    public class React : BaseClass
+    public class UserReactPost : BaseClass
     {
+        public Guid UserId { get; set; }
         public ReactType ReactType { get; set; }
-        public virtual User User { get; set; }
-        public virtual Post Post { get; set; }
+        public Guid PostId { get; set; }
     }
 
-    //public class CommentReact
-    //{
-    //    public Guid UserId { get; set; }
-    //    public ReactType ReactType { get; set; }
-    //    public Guid CommentId { get; set; }
-    //}
+    public class UserReactComment : BaseClass
+    {
+        public Guid UserId { get; set; }
+        public ReactType ReactType { get; set; }
+        public Guid CommentId { get; set; }
+    }
 
-    //public class MessageReact : BaseClass
-    //{
-    //    public Guid UserId { get; set; }
-    //    public Guid MessageId { get; set; }
-    //    public ReactType ReactType { get; set; }
-    //}
+    public class UserReactMessage : BaseClass
+    {
+        public Guid UserId { get; set; }
+        public Guid MessageId { get; set; }
+        public ReactType ReactType { get; set; }
+    }
 
     public enum ReactType
     {

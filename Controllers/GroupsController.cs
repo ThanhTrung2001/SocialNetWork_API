@@ -139,7 +139,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
         }
 
         [HttpGet("{id}/posts")]
-        public async Task<IEnumerable<PostBasicQuery>> GetPostsInGroup(Guid id)
+        public async Task<IEnumerable<PostQuery>> GetPostsInGroup(Guid id)
         {
             var query = @"
             SELECT 
@@ -208,11 +208,11 @@ namespace EnVietSocialNetWorkAPI.Controllers
 
             try
             {
-                var postDict = new Dictionary<Guid, PostBasicQuery>();
+                var postDict = new Dictionary<Guid, PostQuery>();
 
                 using (var connection = _context.CreateConnection())
                 {
-                    var result = await connection.QueryAsync<PostBasicQuery, string, PostSurveyQuery, SurveyItemQuery, SurveyItemVote, PostCommentQuery, PostReactQuery, PostBasicQuery>(
+                    var result = await connection.QueryAsync<PostQuery, string, PostSurveyQuery, SurveyItemQuery, SurveyItemVote, PostCommentQuery, PostReactQuery, PostQuery>(
                     query,
                     map: (post, mediaUrl, survey, surveyItem, vote, comment, react) =>
                     {

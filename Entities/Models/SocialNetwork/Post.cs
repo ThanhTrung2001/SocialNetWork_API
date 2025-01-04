@@ -2,17 +2,11 @@
 {
     public class Post : BaseClass
     {
-        public string? DestinationId { get; set; }
-        public bool isNotification { get; set; }
-        public string PostType { get; set; }
-        public string PostDetination { get; set; }
+        public Guid UserId { get; set; }
         public string? Content { get; set; }
-
-        public User Owner { get; set; }
-        public ICollection<Comment>? Comments { get; set; }
-        public ICollection<React>? Reacts { get; set; }
-        public ICollection<Survey>? Surveys { get; set; }
-        public ICollection<MediaItem>? Medias { get; set; }
+        public PostType PostType { get; set; }
+        public bool InGroup { get; set; }
+        public Guid? DestinationId { get; set; }
 
     }
 

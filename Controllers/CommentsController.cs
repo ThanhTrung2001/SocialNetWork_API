@@ -1,7 +1,6 @@
 ﻿using Dapper;
 using EnVietSocialNetWorkAPI.DataConnection;
-using EnVietSocialNetWorkAPI.Entities.Commands;
-using EnVietSocialNetWorkAPI.Entities.Queries;
+using EnVietSocialNetWorkAPI.Models.Queries;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Data;
@@ -22,9 +21,30 @@ namespace EnVietSocialNetWorkAPI.Controllers
         [HttpGet("post/{postId}")]
         public async Task<IEnumerable<CommentQuery>> GetCommentsByPostID(Guid postId)
         {
-            var query = @"SELECT c.Id, c.Content, c.MediaURL, c.UpdatedAt, u.Id as UserId, u.Username, u.AvatarUrl, c.ReactCount
+            var query = @"SELECT c.Id, c.Content, c.IsReponse, c.ReactCount, c.UpdatedAt, c.UserId, ud.FirstName, ud.LastName ud.Avatar
                           FROM Comments c
-                          INNER JOIN Users u ON c.UserId = u.Id 
+                          INNER JOIN UserDetails ud ON c.UserId = ud.UserId 
+                          Where c.PostId = @Id & c.IsDeleted = 0";
+            var parameter = new DynamicParameters();
+            parameter.Add("Id", postId);
+
+            using (var connection = _context.CreateConnection())
+            {
+                var result = await connection.QueryAsync<CommentQuery>(query, parameter);
+
+                return result;
+            }
+        }
+
+        [HttpGet("detail/post/{postId}")]
+        public async Task<IEnumerable<CommentQuery>> GetCommentDetailsByPostID(Guid postId)
+        {
+            var query = @"SELECT 
+                          c.Id, c.Content, c.IsReponse, c.ReactCount, c.UpdatedAt, c.UserId, 
+                          ud.FirstName, ud.LastName ud.Avatar,
+                          urc.UserId, ucr.ReactTypeId, r.TypeName AS
+                          FROM Comments c
+                          INNER JOIN UserDetails ud ON c.UserId = ud.UserId 
                           Where c.PostId = @Id & c.IsDeleted = 0";
             var parameter = new DynamicParameters();
             parameter.Add("Id", postId);
