@@ -2,7 +2,7 @@
 
 namespace EnVietSocialNetWorkAPI.Entities.Commands
 {
-    public class NewNotification
+    public class NotificationCommand
     {
         public string Title { get; set; }
         public string Description { get; set; }

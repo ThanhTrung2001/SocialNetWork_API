@@ -1,5 +1,6 @@
 ﻿using Dapper;
 using EnVietSocialNetWorkAPI.DataConnection;
+using EnVietSocialNetWorkAPI.Models.Commands;
 using EnVietSocialNetWorkAPI.Models.Queries;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -24,7 +25,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
             var query = @"SELECT c.Id, c.Content, c.IsReponse, c.ReactCount, c.UpdatedAt, c.UserId, ud.FirstName, ud.LastName ud.Avatar
                           FROM Comments c
                           INNER JOIN UserDetails ud ON c.UserId = ud.UserId 
-                          Where c.PostId = @Id & c.IsDeleted = 0";
+                          Where c.PostId = @Id AND c.IsDeleted = 0";
             var parameter = new DynamicParameters();
             parameter.Add("Id", postId);
 
@@ -37,21 +38,37 @@ namespace EnVietSocialNetWorkAPI.Controllers
         }
 
         [HttpGet("detail/post/{postId}")]
-        public async Task<IEnumerable<CommentQuery>> GetCommentDetailsByPostID(Guid postId)
+        public async Task<IEnumerable<CommentDetailQuery>> GetCommentDetailsByPostID(Guid postId)
         {
             var query = @"SELECT 
                           c.Id, c.Content, c.IsReponse, c.ReactCount, c.UpdatedAt, c.UserId, 
                           ud.FirstName, ud.LastName ud.Avatar,
-                          urc.UserId, ucr.ReactTypeId, r.TypeName AS
+                          urc.ReactTypeId AS ReactId, urc.UserId as ReactUserId, urc.CreatedAt, 
+                          r.TypeName,
+                          ur.FirstName AS ReactFirstName, ur.LastName AS ReactLastName, ur.Avatar AS ReactAvatar
                           FROM Comments c
                           INNER JOIN UserDetails ud ON c.UserId = ud.UserId 
-                          Where c.PostId = @Id & c.IsDeleted = 0";
+                          LEFT JOIN UserReactComment urc ON c.Id = urc.CommentId
+                          LEFT JOIN React r ON r.Id = urc.ReactTypeId
+                          LEFT JOIN UserDetails ur ON urc.UserId = ur.UserId
+                          Where c.PostId = @Id AND c.IsDeleted = 0";
             var parameter = new DynamicParameters();
             parameter.Add("Id", postId);
-
+            var commentResult = new CommentDetailQuery();
             using (var connection = _context.CreateConnection())
             {
-                var result = await connection.QueryAsync<CommentQuery>(query, parameter);
+                var result = await connection.QueryAsync<CommentDetailQuery, CommentReactQuery, CommentDetailQuery>(query,
+                    map: (comment, react) =>
+                    {
+                        commentResult = comment;
+                        if (react != null && !commentResult.Reacts.Any((item) => item.ReactUserId == react.ReactUserId))
+                        {
+                            commentResult.Reacts.Add(react);
+                        }
+                        return commentResult;
+                    },
+                    parameter,
+                    splitOn: "ReactUserId");
 
                 return result;
             }
@@ -60,12 +77,18 @@ namespace EnVietSocialNetWorkAPI.Controllers
         [HttpGet("{id}")]
         public async Task<CommentDetailQuery> GetCommentByID(Guid id)
         {
-            var query = @"SELECT c.Id, c.Content, c.MediaURL, c.UpdatedAt, u.Id as UserId, u.Username, u.AvatarUrl, cr.Id AS ReactId, cr.ReactType, cr.UserId AS ReactUserId, ucr.UserName AS ReactUserName, ucr.AvatarUrl AS ReactUserAvatar 
+            var query = @"SELECT 
+                          c.Id, c.Content, c.IsReponse, c.ReactCount, c.UpdatedAt, c.UserId, 
+                          ud.FirstName, ud.LastName ud.Avatar,
+                          urc.ReactTypeId AS ReactId, urc.UserId as ReactUserId, urc.CreatedAt, 
+                          r.TypeName,
+                          ur.FirstName AS ReactFirstName, ur.LastName AS ReactLastName, ur.Avatar AS ReactAvatar
                           FROM Comments c
-                          INNER JOIN Users u ON c.UserId = u.Id 
-                          LEFT JOIN CommentReacts cr ON c.Id = cr.CommentId
-                          LEFT JOIN Users ucr ON cr.UserId = ucr.Id
-                          Where c.Id = @Id & c.IsDeleted = 0";
+                          INNER JOIN UserDetails ud ON c.UserId = ud.UserId 
+                          LEFT JOIN UserReactComment urc ON c.Id = urc.CommentId
+                          LEFT JOIN React r ON r.Id = urc.ReactTypeId
+                          LEFT JOIN UserDetails ur ON urc.UserId = ur.UserId
+                          Where c.Id = @Id AND c.IsDeleted = 0";
             var parameter = new DynamicParameters();
             parameter.Add("Id", id);
             try
@@ -83,7 +106,57 @@ namespace EnVietSocialNetWorkAPI.Controllers
                             commentResult = comment;
                         }
 
-                        if (react != null && !commentResult.Reacts.Any((item) => item.ReactId == react.ReactId))
+                        if (react != null && !commentResult.Reacts.Any((item) => item.ReactUserId == react.ReactUserId))
+                        {
+                            commentResult.Reacts.Add(react);
+                        }
+                        return commentResult;
+                    },
+                    parameter,
+                    splitOn: "ReactId");
+                    return commentResult;
+                }
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
+        [HttpGet("{id}/reponse")]
+        public async Task<CommentDetailQuery> GetCommentResponseByID(Guid id)
+        {
+            var query = @"SELECT 
+                          c.Id, c.Content, c.IsReponse, c.ReactCount, c.UpdatedAt, c.UserId, 
+                          ud.FirstName, ud.LastName ud.Avatar,
+                          urc.ReactTypeId AS ReactId, urc.UserId as ReactUserId, urc.CreatedAt, 
+                          r.TypeName,
+                          ur.FirstName AS ReactFirstName, ur.LastName AS ReactLastName, ur.Avatar AS ReactAvatar
+                          FROM Comments c
+                          INNER JOIN UserDetails ud ON c.UserId = ud.UserId 
+                          LEFT JOIN UserCommentReact urc ON c.Id = urc.CommentId
+                          LEFT JOIN React r ON r.Id = urc.ReactTypeId
+                          LEFT JOIN UserDetails ur ON urc.UserId = ur.UserId
+                          LEFT JOIN CommentResponse cmr ON c.Id = cmr.ResponseId
+                          Where c.Id = @Id AND c.IsDeleted = 0 AND c.IsResponse = 1 AND cmr.CommentId = @Id";
+            var parameter = new DynamicParameters();
+            parameter.Add("Id", id);
+            try
+            {
+                var commentResult = new CommentDetailQuery();
+
+                using (var connection = _context.CreateConnection())
+                {
+                    var result = await connection.QueryAsync<CommentDetailQuery, CommentReactQuery, CommentDetailQuery>(
+                    query,
+                    map: (comment, react) =>
+                    {
+                        if (comment != null)
+                        {
+                            commentResult = comment;
+                        }
+
+                        if (react != null && !commentResult.Reacts.Any((item) => item.ReactUserId == react.ReactUserId))
                         {
                             commentResult.Reacts.Add(react);
                         }
@@ -101,14 +174,13 @@ namespace EnVietSocialNetWorkAPI.Controllers
         }
 
         [HttpPost("post/{postId}")]
-        public async Task<IActionResult> CreateComment(Guid postId, NewComment comment)
+        public async Task<IActionResult> CreateComment(Guid postId, CreateCommentCommand comment)
         {
-            var query = @"INSERT INTO Comments (Id, CreatedAt, UpdatedAt, IsDeleted, Content, MediaURL, UserId, PostId)
+            var query = @"INSERT INTO Comments (Id, CreatedAt, UpdatedAt, IsDeleted, Content, IsResponse, ReactCount ,UserId, PostId)
                           VALUES
-                          (NEWID(), GETDATE(), GETDATE(), 0, @Content, @MediaURL, @UserId, @PostId)";
+                          (NEWID(), GETDATE(), GETDATE(), 0, @Content, 0, 0,@UserId, @PostId)";
             var parameters = new DynamicParameters();
             parameters.Add("Content", comment.Content, DbType.String);
-            parameters.Add("MediaURL", comment.MediaURL, DbType.String);
             parameters.Add("UserId", comment.UserId, DbType.Guid);
             parameters.Add("PostId", postId, DbType.Guid);
             using (var connection = _context.CreateConnection())
@@ -118,13 +190,41 @@ namespace EnVietSocialNetWorkAPI.Controllers
             }
         }
 
-        [HttpPut("{id}")]
-        public async Task<IActionResult> EditComment(Guid id, NewComment comment)
+        [HttpPost("{Id}/response")]
+        public async Task<IActionResult> CreateResponseComment(Guid id, CreateResponseCommentCommand comment)
         {
-            var query = "UPDATE Comments SET Content = @Content, MediaURL = @MediaURL WHERE Id = @Id AND UserId = @UserId";
+            var queryComment = @"INSERT INTO Comments (Id, CreatedAt, UpdatedAt, IsDeleted, Content, IsResponse, ReactCount ,UserId, PostId)
+                          OUTPUT Inserted.Id
+                          VALUES
+                          (NEWID(), GETDATE(), GETDATE(), 0, @Content, 1, 0,@UserId, @PostId)";
+            var queryResponse = @"INSERT INTO CommentResponse(CommentId, ResponseId)
+                          VALUES
+                          (@CommentId, @ResponseId)";
             var parameters = new DynamicParameters();
             parameters.Add("Content", comment.Content, DbType.String);
-            parameters.Add("MediaURL", comment.MediaURL, DbType.String);
+            parameters.Add("UserId", comment.UserId, DbType.Guid);
+            parameters.Add("PostId", comment.PostId, DbType.Guid);
+            using (var connection = _context.CreateConnection())
+            {
+                connection.Open();
+                using (var transaction = connection.BeginTransaction())
+                {
+                    var result = await connection.QueryAsync<Guid>(queryComment, parameters);
+                    parameters = new DynamicParameters();
+                    parameters.Add("CommentId", id);
+                    parameters.Add("ResponseId", result);
+                    await connection.ExecuteAsync(queryResponse, parameters);
+                }
+                return Ok();
+            }
+        }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> EditComment(Guid id, EditCommentCommand comment)
+        {
+            var query = "UPDATE Comments SET Content = @Content, UpdatedAt = GETDATE() WHERE Id = @Id AND UserId = @UserId";
+            var parameters = new DynamicParameters();
+            parameters.Add("Content", comment.Content, DbType.String);
             parameters.Add("UserId", comment.UserId, DbType.Guid);
             parameters.Add("Id", id, DbType.Guid);
             using (var connection = _context.CreateConnection())
@@ -137,7 +237,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(Guid id)
         {
-            var query = "Update Comments SET isDeleted = 1 WHERE Id = @Id";
+            var query = "Update Comments SET isDeleted = 1, UpdatedAt = GETDATE() WHERE Id = @Id";
             using (var connection = _context.CreateConnection())
             {
                 await connection.ExecuteAsync(query, new { Id = id });

@@ -1,6 +1,6 @@
 ﻿namespace EnVietSocialNetWorkAPI.Entities.Commands
 {
-    public class NewGroup
+    public class GroupCommand
     {
         public string? GroupName { get; set; }
         public string? WallapperURL { get; set; }

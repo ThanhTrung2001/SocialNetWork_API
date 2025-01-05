@@ -28,7 +28,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
                             ud.FirstName,
                             ud.LastName,
                             ud.Avatar
-                          FROM Users
+                          FROM Users u
                           INNER JOIN UserDetails ud ON u.Id = ud.UserId
                           WHERE u.IsDeleted = 0;";
             using (var connection = _context.CreateConnection())

@@ -1,6 +1,4 @@
-﻿using EnVietSocialNetWorkAPI.Entities.Models.SocialNetwork;
-
-namespace EnVietSocialNetWorkAPI.Entities.Queries
+﻿namespace EnVietSocialNetWorkAPI.Models.Queries
 {
     public class NotificationQuery
     {
@@ -9,8 +7,8 @@ namespace EnVietSocialNetWorkAPI.Entities.Queries
         public string Description { get; set; }
         public string OrganizeName { get; set; }
         public Guid DestinationID { get; set; }
-        public NotificationType NotiType { get; set; }
-        public DateTime? StartedAt { get; set; }
+        public int NotiType { get; set; }
+        public DateTime StartedAt { get; set; }
         public DateTime? EndedAt { get; set; }
 
     }

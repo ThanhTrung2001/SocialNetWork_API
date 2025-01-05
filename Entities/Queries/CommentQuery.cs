@@ -1,4 +1,6 @@
-﻿namespace EnVietSocialNetWorkAPI.Entities.Queries
+﻿using EnVietSocialNetWorkAPI.Models.Queries;
+
+namespace EnVietSocialNetWorkAPI.Entities.Queries
 {
     public class CommentQuery
     {

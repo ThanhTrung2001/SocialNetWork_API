@@ -3,25 +3,24 @@
     public class ChatGroupQuery
     {
         public Guid Id { get; set; }
-        public string BoxName { get; set; }
-        public string BoxType { get; set; }
-        public string Theme { get; set; }
-        public List<Guid> Users { get; set; } = new List<Guid>();
+        public string ChatName { get; set; }
+        public string GroupType { get; set; } //1-1 or group
+        public int Theme { get; set; }
+        public List<UserChatGroupQuery> Users { get; set; } = new List<UserChatGroupQuery>();
     }
-
-    //public class ChatBoxItemQuery
-    //{
-    //    public Guid UserId { get; set; }
-    //    public string UserName { get; set; }
-    //    public Guid ChatBoxId { get; set; }
-    //    public string BoxType { get; set; }
-    //}
 
     public class ChatGroupByUserIDQuery
     {
         public Guid UserId { get; set; }
         public string UserName { get; set; }
         public List<ChatGroupQuery> BoxList { get; set; }
+    }
 
+    public class UserChatGroupQuery
+    {
+        public Guid UserId { get; set; }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+        public string Avatar { get; set; }
     }
 }

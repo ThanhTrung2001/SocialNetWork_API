@@ -2,7 +2,7 @@
 using EnVietSocialNetWorkAPI.Auth.Model;
 using EnVietSocialNetWorkAPI.Auth.Services;
 using EnVietSocialNetWorkAPI.DataConnection;
-using EnVietSocialNetWorkAPI.Entities.Queries;
+using EnVietSocialNetWorkAPI.Models.Queries;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -25,14 +25,18 @@ namespace EnVietSocialNetWorkAPI.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login(LoginRequest request)
         {
-            var query = "SELECT * FROM Users WHERE Email Like @Email AND Password Like @Password;";
+            var query = @"SELECT 
+                          u.Id, u.UserName, u.Email, u.Password, u.Role, ud.Avatar 
+                          FROM Users u
+                          INNER JOIN UserDetails ud ON u.Id = ud.UserId  
+                          WHERE u.Email Like @Email AND u.Password Like @Password;";
             var parameter = new DynamicParameters();
             parameter.Add("Email", request.Email);
             parameter.Add("Password", request.Password);
             var token = new JWTReturn();
             using (var connection = _context.CreateConnection())
             {
-                var result = await connection.QueryFirstOrDefaultAsync<UserQuery>(query, parameter);
+                var result = await connection.QueryFirstOrDefaultAsync<UserAuthQuery>(query, parameter);
                 if (result != null)
                 {
                     token = _helper.GenerateJWTToken(result);

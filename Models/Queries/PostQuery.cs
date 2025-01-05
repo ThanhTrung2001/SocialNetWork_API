@@ -6,24 +6,29 @@
         public string Content { get; set; }
         public int PostTypeId { get; set; }
         public DateTime CreatedAt { get; set; }
+        public DateTime UpdatedAt { get; set; }
+        public bool InGroup { get; set; }
         public Guid? DestinationId { get; set; }
+        public int ReactCount { get; set; }
 
         public Guid UserId { get; set; }
         public string Email { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
-        public string AvatarUrl { get; set; }
+        public string Avatar { get; set; }
 
-        public List<AttachmentQuery> Attachments { get; set; } = new List<AttachmentQuery>();
+        public List<PostAttachmentQuery> Attachments { get; set; } = new List<PostAttachmentQuery>();
         public List<PostCommentQuery> Comments { get; set; } = new List<PostCommentQuery>();
         public List<PostReactQuery> Reacts { get; set; } = new List<PostReactQuery>();
         //ShareQuery
         public PostSurveyQuery? Survey { get; set; }
     }
 
-    public class AttachmentQuery
+    public class PostAttachmentQuery
     {
-
+        public Guid AttachmentId { get; set; }
+        public string Media { get; set; }
+        public string Description { get; set; }
     }
 
     public class PostCommentQuery
@@ -32,7 +37,7 @@
         public Guid CommentUserId { get; set; }
         public string CommentFirstName { get; set; }
         public string CommentLastName { get; set; }
-        public string CommentUserAvatarUrl { get; set; }
+        public string CommentAvatar { get; set; }
         public string CommentContent { get; set; }
         public DateTime CommentCreatedAt { get; set; }
         public List<AttachmentQuery> Attachments { get; set; } = new List<AttachmentQuery>();
@@ -41,25 +46,26 @@
     public class PostSurveyQuery
     {
         public Guid SurveyId { get; set; }
-        public DateTime ExpiredIn { get; set; }
-        public string SurveyQuestion { get; set; }
-        public List<SurveyItemQuery> SurveyItems { get; set; } = new List<SurveyItemQuery>();
+        public DateTime ExpiredAt { get; set; }
+        public string Question { get; set; }
+        public int Total { get; set; }
+        public List<PostSurveyItemQuery> SurveyItems { get; set; } = new List<PostSurveyItemQuery>();
     }
 
-    public class SurveyItemQuery
+    public class PostSurveyItemQuery
     {
         public Guid SurveyItemId { get; set; }
-        public string SurveyItemContent { get; set; }
-        public int SurveyItemVotes { get; set; }
-        public List<SurveyItemVote> SurveyVotes { get; set; } = new List<SurveyItemVote>();
+        public string SurveyItemName { get; set; }
+        public int ItemTotal { get; set; }
+        public List<PostVoteQuery> Votes { get; set; } = new List<PostVoteQuery>();
     }
 
-    public class SurveyItemVote
+    public class PostVoteQuery
     {
-        public Guid VoteId { get; set; }
-        public Guid VoteUserId { get; set; }
-        public string VoteUserName { get; set; }
-        public string VoteUserAvatar { get; set; }
+        public Guid UserVoteId { get; set; }
+        public string VoteFirstName { get; set; }
+        public string VoteLastName { get; set; }
+        public string VoteAvatar { get; set; }
     }
 
     public class ShareUserQuery
@@ -71,27 +77,5 @@
         public string ShareUserAvatar { get; set; }
     }
 
-    public class SharePostQuery
-    {
-        public Guid Id { get; set; }
-        public string ShareContent { get; set; }
-        public DateTime ShareCreatedAt { get; set; }
-        public Guid ShareUserId { get; set; }
-        public string ShareUserName { get; set; }
-        public string ShareUserAvatar { get; set; }
 
-        public Guid PostId { get; set; }
-        public string PostContent { get; set; }
-        public string PostType { get; set; }
-        public DateTime CreatedAt { get; set; }
-        public string PostDestination { get; set; }
-
-        public Guid UserId { get; set; }
-        public string UserName { get; set; }
-        public string Email { get; set; }
-        public string AvatarUrl { get; set; }
-
-        public List<string> MediaUrls { get; set; } = new List<string>();
-        public PostSurveyQuery Survey { get; set; }
-    }
 }

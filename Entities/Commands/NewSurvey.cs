@@ -1,6 +1,6 @@
 ﻿namespace EnVietSocialNetWorkAPI.Entities.Commands
 {
-    public class NewSurvey
+    public class SurveyCommand
     {
         public DateTime ExpiredIn { get; set; }
         public string Question { get; set; }

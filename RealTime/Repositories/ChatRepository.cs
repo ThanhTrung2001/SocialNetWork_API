@@ -94,7 +94,7 @@ namespace EnVietSocialNetWorkAPI.RealTime.Repositories
             }
         }
 
-        public async Task SaveMessage(NewMessage message, Guid chatBoxId)
+        public async Task SaveMessage(MessageCommand message, Guid chatBoxId)
         {
             var query = @"INSERT INTO Messages (Id, CreatedAt, UpdatedAt, IsDeleted, Content, UserId, ChatBoxId)
                         VALUES 

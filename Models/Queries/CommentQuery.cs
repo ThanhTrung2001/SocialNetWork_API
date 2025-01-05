@@ -25,6 +25,5 @@
         public string UserLastName { get; set; }
         public string Avatar { get; set; }
         public List<CommentReactQuery>? Reacts { get; set; } = new List<CommentReactQuery>();
-        public List<CommentDetailQuery>? Responses { get; set; } = new List<CommentDetailQuery>();
     }
 }

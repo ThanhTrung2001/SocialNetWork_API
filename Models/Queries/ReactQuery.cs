@@ -1,26 +1,27 @@
 ﻿namespace EnVietSocialNetWorkAPI.Models.Queries
 {
-    public class ReactTypeQuery
+    public class ReactQuery
     {
-        public int ReactTypeId { get; set; }
-        public string ReactTypeName { get; set; }
+        public int ReactId { get; set; }
+        public string TypeName { get; set; }
         public Guid ReactUserId { get; set; }
         public string ReactFirstName { get; set; }
         public string ReactLastName { get; set; }
+        public string ReactAvatar { get; set; }
         public DateTime CreatedAt { get; set; }
     }
 
-    public class PostReactQuery : ReactTypeQuery
+    public class PostReactQuery : ReactQuery
     {
 
     }
 
-    public class CommentReactQuery : ReactTypeQuery
+    public class CommentReactQuery : ReactQuery
     {
 
     }
 
-    public class MessageReactQuery : ReactTypeQuery
+    public class MessageReactQuery : ReactQuery
     {
 
     }

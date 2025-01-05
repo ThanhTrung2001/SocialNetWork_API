@@ -1,7 +1,7 @@
 ﻿using Dapper;
 using EnVietSocialNetWorkAPI.DataConnection;
 using EnVietSocialNetWorkAPI.Entities.Commands;
-using EnVietSocialNetWorkAPI.Entities.Queries;
+using EnVietSocialNetWorkAPI.Models.Queries;
 using Microsoft.AspNetCore.Mvc;
 using System.Data;
 
@@ -40,7 +40,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
                         VALUES 
                         (NEWID(), GETDATE(), GETDATE(), 0, @ReactType, @UserId, @CommentId)";
             var parameters = new DynamicParameters();
-            parameters.Add("ReactType", react.ReactType, DbType.Int32);
+            //parameters.Add("ReactType", react.ReactType, DbType.Int32);
             parameters.Add("UserId", react.UserId, DbType.Guid);
             parameters.Add("CommentId", react.CommentId);
             using (var connection = _context.CreateConnection())
@@ -55,7 +55,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
         {
             var query = @"UPDATE CommentReacts SET ReactType = @ReactType WHERE Id = @Id";
             var parameters = new DynamicParameters();
-            parameters.Add("ReactType", react.ReactType, DbType.Int32);
+            //parameters.Add("ReactType", react.ReactType, DbType.Int32);
             parameters.Add("Id", id, DbType.Guid);
             using (var connection = _context.CreateConnection())
             {

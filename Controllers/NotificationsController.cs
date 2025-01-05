@@ -1,7 +1,7 @@
 ﻿using Dapper;
 using EnVietSocialNetWorkAPI.DataConnection;
-using EnVietSocialNetWorkAPI.Entities.Commands;
-using EnVietSocialNetWorkAPI.Entities.Queries;
+using EnVietSocialNetWorkAPI.Models.Commands;
+using EnVietSocialNetWorkAPI.Models.Queries;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Data;
@@ -53,7 +53,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create(NewNotification notification)
+        public async Task<IActionResult> Create(CreateNotificationCommand notification)
         {
             var query = @"INSERT INTO Posts (Id, CreatedAt, UpdatedAt, IsDeleted, Title, Description, NotiType, DestinationId, StartedAt, EndedAt, OrganizeName)
                         VALUES 
@@ -75,7 +75,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Edit(Guid id, NewNotification notification)
+        public async Task<IActionResult> Edit(Guid id, CreateNotificationCommand notification)
         {
             var query = @"UPDATE Notifications
                         SET 

@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace EnVietSocialNetWorkAPI.Models;
+﻿namespace EnVietSocialNetWorkAPI.Models;
 
 public partial class ChatGroup
 {
@@ -18,8 +15,6 @@ public partial class ChatGroup
     public int ThemeId { get; set; }
 
     public string GroupType { get; set; } = null!;
-
-    public string? Theme { get; set; }
 
     public virtual ICollection<Message> Messages { get; set; } = new List<Message>();
 

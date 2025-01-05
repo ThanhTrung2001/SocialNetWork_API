@@ -1,6 +1,6 @@
 ﻿namespace EnVietSocialNetWorkAPI.Entities.Commands
 {
-    public class NewOrganizeNode
+    public class OrganizeNodeCommand
     {
         public string Name { get; set; }
         public string Description { get; set; }

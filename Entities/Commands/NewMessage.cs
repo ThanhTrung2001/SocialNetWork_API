@@ -1,6 +1,6 @@
 ﻿namespace EnVietSocialNetWorkAPI.Entities.Commands
 {
-    public class NewMessage
+    public class MessageCommand
     {
         public string Content { get; set; }
         public Guid UserId { get; set; }

@@ -254,7 +254,6 @@ CREATE TABLE OrganizeNodes (
     Id UNIQUEIDENTIFIER PRIMARY KEY,
     Name NVARCHAR(255) NOT NULL,
     Description NVARCHAR(500),
-    FileType INT NOT NULL,
     Level INT NOT NULL,
     ParentId UNIQUEIDENTIFIER NULL,
     EmployeeCount INT NOT NULL

@@ -15,7 +15,7 @@
 
     public class CommentReact : BaseClass
     {
-        public ReactType ReactType { get; set; }
+        //public ReactType ReactType { get; set; }
         public virtual User User { get; set; }
         public virtual Comment Comment { get; set; }
     }

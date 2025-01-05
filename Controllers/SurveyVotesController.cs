@@ -1,7 +1,7 @@
 ﻿using Dapper;
 using EnVietSocialNetWorkAPI.DataConnection;
-using EnVietSocialNetWorkAPI.Entities.Commands;
-using EnVietSocialNetWorkAPI.Entities.Models.SocialNetwork;
+using EnVietSocialNetWorkAPI.Models.Commands;
+using EnVietSocialNetWorkAPI.Models.Queries;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Data;
@@ -20,20 +20,20 @@ namespace EnVietSocialNetWorkAPI.Controllers
         }
 
         [HttpGet("option/{surveyItemId}")]
-        public async Task<IEnumerable<SurveyVote>> GetByOptionId(Guid surveyItemId)
+        public async Task<IEnumerable<SurveyVoteQuery>> GetByOptionId(Guid surveyItemId)
         {
             var query = "SELECT * FROM SurveyVotes WHERE OptionId = @Id";
             var parameters = new DynamicParameters();
             parameters.Add("Id", surveyItemId, DbType.Guid);
             using (var connection = _context.CreateConnection())
             {
-                var result = await connection.QueryAsync<SurveyVote>(query, parameters);
+                var result = await connection.QueryAsync<SurveyVoteQuery>(query, parameters);
                 return result;
             }
         }
 
         [HttpPost("option/{surveyItemId}")]
-        public async Task<IActionResult> CreateByOptionId(Guid surveyItemId, NewSurveyVote vote)
+        public async Task<IActionResult> CreateByOptionId(Guid surveyItemId, CreateSurveyVoteCommand vote)
         {
             var query = @"INSERT INTO SurveyVotes (OptionId, UserId, VotedAt)
                           VALUES

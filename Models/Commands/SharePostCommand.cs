@@ -1,6 +1,6 @@
-﻿namespace EnVietSocialNetWorkAPI.Entities.Commands
+﻿namespace EnVietSocialNetWorkAPI.Models.Commands
 {
-    public class NewSharePost
+    public class SharePostCommand
     {
         public Guid UserId { get; set; }
         public string Content { get; set; }

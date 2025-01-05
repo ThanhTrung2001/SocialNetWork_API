@@ -1,0 +1,19 @@
+﻿namespace EnVietSocialNetWorkAPI.Models.Queries
+{
+    public class OrganizeNodeQuery
+    {
+        public Guid Id { get; set; }
+
+        public string Name { get; set; } = null!;
+
+        public string? Description { get; set; }
+
+        public int Level { get; set; }
+
+        public Guid? ParentId { get; set; }
+
+        public int EmployeeCount { get; set; }
+
+        public List<OrganizeNodeQuery> ChildrenNodes { get; set; } = new List<OrganizeNodeQuery>();
+    }
+}
