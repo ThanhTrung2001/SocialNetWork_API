@@ -4,13 +4,10 @@
     {
         public string Content { get; set; }
         public Guid UserId { get; set; }
-    }
+        public bool IsResponse { get; set; }
+        public Guid? CommentId { get; set; }
+        public List<CreateAttachmentCommand>? Attachments { get; set; } = new List<CreateAttachmentCommand>();
 
-    public class CreateResponseCommentCommand
-    {
-        public string Content { get; set; }
-        public Guid UserId { get; set; }
-        public Guid PostId { get; set; }
     }
 
     public class EditCommentCommand

@@ -15,6 +15,7 @@
         public int ReactCount { get; set; }
         public int MessageTypeId { get; set; }
         public int StatusId { get; set; }
+        public List<AttachmentQuery>? Attachments { get; set; } = new List<AttachmentQuery>();
     }
 
     public class MessageDetailQuery
@@ -32,6 +33,7 @@
         public int ReactCount { get; set; }
         public int MessageType { get; set; }
         public int StatusId { get; set; }
-        public List<MessageReactQuery> Reacts { get; set; } = new List<MessageReactQuery>();
+        public List<AttachmentQuery>? Attachments { get; set; } = new List<AttachmentQuery>();
+        public List<MessageReactQuery>? Reacts { get; set; } = new List<MessageReactQuery>();
     }
 }

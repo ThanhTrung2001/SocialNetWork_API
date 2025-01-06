@@ -93,7 +93,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
             {
                 try
                 {
-                    var resultChatGroup = await connection.ExecuteAsync(execChatGroup, parameters);
+                    var resultChatGroup = await connection.QueryAsync<Guid>(execChatGroup, parameters);
                     foreach (var userId in ChatGroup.Users)
                     {
                         parameters = new DynamicParameters();

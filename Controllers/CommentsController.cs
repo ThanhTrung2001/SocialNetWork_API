@@ -8,7 +8,8 @@ using System.Data;
 
 namespace EnVietSocialNetWorkAPI.Controllers
 {
-    [Authorize]
+    //[Authorize]
+    [AllowAnonymous]
     [Route("api/[controller]")]
     [ApiController]
     public class CommentsController : ControllerBase
@@ -22,18 +23,57 @@ namespace EnVietSocialNetWorkAPI.Controllers
         [HttpGet("post/{postId}")]
         public async Task<IEnumerable<CommentQuery>> GetCommentsByPostID(Guid postId)
         {
-            var query = @"SELECT c.Id, c.Content, c.IsReponse, c.ReactCount, c.UpdatedAt, c.UserId, ud.FirstName, ud.LastName ud.Avatar
+            var query = @"SELECT 
+                            c.Id, c.Content, c.IsResponse, c.ReactCount, c.UpdatedAt, c.UserId,
+                            ud.FirstName AS UserFirstName, ud.LastName AS UserLastName, ud.Avatar,
+                            a.Id AS AttachmentId, a.Media, a.Description
                           FROM Comments c
                           INNER JOIN UserDetails ud ON c.UserId = ud.UserId 
+                          LEFT JOIN
+                            CommentAttachment ca ON ca.CommentId = c.Id
+                          LEFT JOIN
+                            Attachments a ON ca.AttachmentId = a.Id
                           Where c.PostId = @Id AND c.IsDeleted = 0";
             var parameter = new DynamicParameters();
             parameter.Add("Id", postId);
 
-            using (var connection = _context.CreateConnection())
-            {
-                var result = await connection.QueryAsync<CommentQuery>(query, parameter);
+            //using (var connection = _context.CreateConnection())
+            //{
+            //    var result = await connection.QueryAsync<CommentQuery>(query, parameter);
 
-                return result;
+            //    return result;
+            //}
+            try
+            {
+                var commentDict = new Dictionary<Guid, CommentQuery>();
+                using (var connection = _context.CreateConnection())
+                {
+
+                    var result = await connection.QueryAsync<CommentQuery, AttachmentQuery, CommentQuery>(
+                        query,
+                    map: (comment, attachment) =>
+                    {
+                        if (!commentDict.TryGetValue(comment.Id, out var commentEntry))
+                        {
+                            commentEntry = comment;
+                            commentDict.Add(comment.Id, commentEntry);
+                        }
+
+                        if (attachment != null && !commentEntry.Attachments.Any((item) => item.AttachmentId == attachment.AttachmentId))
+                        {
+                            commentEntry.Attachments.Add(attachment);
+                        }
+                        return commentEntry;
+                    },
+                        parameter,
+                        splitOn: "AttachmentId");
+                    return commentDict.Values.ToList();
+                }
+
+            }
+            catch (Exception ex)
+            {
+                throw ex;
             }
         }
 
@@ -41,36 +81,55 @@ namespace EnVietSocialNetWorkAPI.Controllers
         public async Task<IEnumerable<CommentDetailQuery>> GetCommentDetailsByPostID(Guid postId)
         {
             var query = @"SELECT 
-                          c.Id, c.Content, c.IsReponse, c.ReactCount, c.UpdatedAt, c.UserId, 
-                          ud.FirstName, ud.LastName ud.Avatar,
+                          c.Id, c.Content, c.IsResponse, c.ReactCount, c.UpdatedAt, c.UserId, 
+                          ud.FirstName AS UserFirstName, ud.LastName AS UserLastName ,ud.Avatar,
                           urc.ReactTypeId AS ReactId, urc.UserId as ReactUserId, urc.CreatedAt, 
                           r.TypeName,
-                          ur.FirstName AS ReactFirstName, ur.LastName AS ReactLastName, ur.Avatar AS ReactAvatar
+                          ur.FirstName AS ReactFirstName, ur.LastName AS ReactLastName, ur.Avatar AS ReactAvatar,
+                          a.Id AS AttachmentId, a.Media, a.Description
                           FROM Comments c
                           INNER JOIN UserDetails ud ON c.UserId = ud.UserId 
                           LEFT JOIN UserReactComment urc ON c.Id = urc.CommentId
-                          LEFT JOIN React r ON r.Id = urc.ReactTypeId
+                          LEFT JOIN ReactTypes r ON r.Id = urc.ReactTypeId
                           LEFT JOIN UserDetails ur ON urc.UserId = ur.UserId
+                          LEFT JOIN
+                            CommentAttachment ca ON ca.CommentId = c.Id
+                          LEFT JOIN
+                            Attachments a ON ca.AttachmentId = a.Id
                           Where c.PostId = @Id AND c.IsDeleted = 0";
             var parameter = new DynamicParameters();
             parameter.Add("Id", postId);
-            var commentResult = new CommentDetailQuery();
-            using (var connection = _context.CreateConnection())
+            try
             {
-                var result = await connection.QueryAsync<CommentDetailQuery, CommentReactQuery, CommentDetailQuery>(query,
-                    map: (comment, react) =>
-                    {
-                        commentResult = comment;
-                        if (react != null && !commentResult.Reacts.Any((item) => item.ReactUserId == react.ReactUserId))
+                var commentDict = new Dictionary<Guid, CommentDetailQuery>();
+                using (var connection = _context.CreateConnection())
+                {
+                    var result = await connection.QueryAsync<CommentDetailQuery, CommentReactQuery, AttachmentQuery, CommentDetailQuery>(query,
+                        map: (comment, react, attachment) =>
                         {
-                            commentResult.Reacts.Add(react);
-                        }
-                        return commentResult;
-                    },
-                    parameter,
-                    splitOn: "ReactUserId");
-
-                return result;
+                            if (!commentDict.TryGetValue(comment.Id, out var commentEntry))
+                            {
+                                commentEntry = comment;
+                                commentDict.Add(comment.Id, commentEntry);
+                            }
+                            if (react != null && !commentEntry.Reacts.Any((item) => item.ReactUserId == react.ReactUserId))
+                            {
+                                commentEntry.Reacts.Add(react);
+                            }
+                            if (attachment != null && !commentEntry.Attachments.Any((item) => item.AttachmentId == attachment.AttachmentId))
+                            {
+                                commentEntry.Attachments.Add(attachment);
+                            }
+                            return commentEntry;
+                        },
+                        parameter,
+                        splitOn: "ReactUserId, AttachmentId");
+                    return commentDict.Values.ToList();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
             }
         }
 
@@ -78,98 +137,115 @@ namespace EnVietSocialNetWorkAPI.Controllers
         public async Task<CommentDetailQuery> GetCommentByID(Guid id)
         {
             var query = @"SELECT 
-                          c.Id, c.Content, c.IsReponse, c.ReactCount, c.UpdatedAt, c.UserId, 
-                          ud.FirstName, ud.LastName ud.Avatar,
+                          c.Id, c.Content, c.IsResponse, c.ReactCount, c.UpdatedAt, c.UserId, 
+                          ud.FirstName, ud.LastName, ud.Avatar,
                           urc.ReactTypeId AS ReactId, urc.UserId as ReactUserId, urc.CreatedAt, 
                           r.TypeName,
-                          ur.FirstName AS ReactFirstName, ur.LastName AS ReactLastName, ur.Avatar AS ReactAvatar
+                          ur.FirstName AS ReactFirstName, ur.LastName AS ReactLastName, ur.Avatar AS ReactAvatar,
+                          a.Id AS AttachmentId, a.Media, a.Description
                           FROM Comments c
                           INNER JOIN UserDetails ud ON c.UserId = ud.UserId 
                           LEFT JOIN UserReactComment urc ON c.Id = urc.CommentId
-                          LEFT JOIN React r ON r.Id = urc.ReactTypeId
+                          LEFT JOIN ReactTypes r ON r.Id = urc.ReactTypeId
                           LEFT JOIN UserDetails ur ON urc.UserId = ur.UserId
+                          LEFT JOIN
+                            CommentAttachment ca ON ca.CommentId = c.Id
+                          LEFT JOIN
+                            Attachments a ON ca.AttachmentId = a.Id
                           Where c.Id = @Id AND c.IsDeleted = 0";
             var parameter = new DynamicParameters();
             parameter.Add("Id", id);
             try
             {
-                var commentResult = new CommentDetailQuery();
+                var commentDict = new Dictionary<Guid, CommentDetailQuery>();
 
                 using (var connection = _context.CreateConnection())
                 {
-                    var result = await connection.QueryAsync<CommentDetailQuery, CommentReactQuery, CommentDetailQuery>(
+                    var result = await connection.QueryAsync<CommentDetailQuery, CommentReactQuery, AttachmentQuery, CommentDetailQuery>(
                     query,
-                    map: (comment, react) =>
+                    map: (comment, react, attachment) =>
                     {
-                        if (comment != null)
+                        if (!commentDict.TryGetValue(comment.Id, out var commentEntry))
                         {
-                            commentResult = comment;
+                            commentEntry = comment;
+                            commentDict.Add(comment.Id, commentEntry);
                         }
 
-                        if (react != null && !commentResult.Reacts.Any((item) => item.ReactUserId == react.ReactUserId))
+                        if (react != null && !commentEntry.Reacts.Any((item) => item.ReactUserId == react.ReactUserId))
                         {
-                            commentResult.Reacts.Add(react);
+                            commentEntry.Reacts.Add(react);
                         }
-                        return commentResult;
+                        if (attachment != null && !commentEntry.Attachments.Any((item) => item.AttachmentId == attachment.AttachmentId))
+                        {
+                            commentEntry.Attachments.Add(attachment);
+                        }
+                        return commentEntry;
                     },
                     parameter,
-                    splitOn: "ReactId");
-                    return commentResult;
+                    splitOn: "ReactId, AttachmentId");
                 }
+                return commentDict.Values.ToList()[0];
             }
-            catch
+            catch (Exception ex)
             {
-                throw;
+                throw ex;
             }
         }
 
         [HttpGet("{id}/reponse")]
-        public async Task<CommentDetailQuery> GetCommentResponseByID(Guid id)
+        public async Task<IEnumerable<CommentDetailQuery>> GetCommentResponseByID(Guid id)
         {
             var query = @"SELECT 
-                          c.Id, c.Content, c.IsReponse, c.ReactCount, c.UpdatedAt, c.UserId, 
-                          ud.FirstName, ud.LastName ud.Avatar,
+                          c.Id, c.Content, c.IsResponse, c.ReactCount, c.UpdatedAt, c.UserId, 
+                          ud.FirstName, ud.LastName , ud.Avatar,
                           urc.ReactTypeId AS ReactId, urc.UserId as ReactUserId, urc.CreatedAt, 
                           r.TypeName,
-                          ur.FirstName AS ReactFirstName, ur.LastName AS ReactLastName, ur.Avatar AS ReactAvatar
+                          ur.FirstName AS ReactFirstName, ur.LastName AS ReactLastName, ur.Avatar AS ReactAvatar,
+                          a.Id AS AttachmentId, a.Media, a.Description
                           FROM Comments c
                           INNER JOIN UserDetails ud ON c.UserId = ud.UserId 
-                          LEFT JOIN UserCommentReact urc ON c.Id = urc.CommentId
-                          LEFT JOIN React r ON r.Id = urc.ReactTypeId
+                          LEFT JOIN UserReactComment urc ON c.Id = urc.CommentId
+                          LEFT JOIN ReactTypes r ON r.Id = urc.ReactTypeId
                           LEFT JOIN UserDetails ur ON urc.UserId = ur.UserId
                           LEFT JOIN CommentResponse cmr ON c.Id = cmr.ResponseId
-                          Where c.Id = @Id AND c.IsDeleted = 0 AND c.IsResponse = 1 AND cmr.CommentId = @Id";
+                          LEFT JOIN
+                            CommentAttachment ca ON ca.CommentId = c.Id
+                          LEFT JOIN
+                            Attachments a ON ca.AttachmentId = a.Id
+                          Where c.IsDeleted = 0 AND c.IsResponse = 1 AND cmr.CommentId = @Id";
             var parameter = new DynamicParameters();
             parameter.Add("Id", id);
             try
             {
-                var commentResult = new CommentDetailQuery();
-
+                var commentDict = new Dictionary<Guid, CommentDetailQuery>();
                 using (var connection = _context.CreateConnection())
                 {
-                    var result = await connection.QueryAsync<CommentDetailQuery, CommentReactQuery, CommentDetailQuery>(
-                    query,
-                    map: (comment, react) =>
-                    {
-                        if (comment != null)
+                    var result = await connection.QueryAsync<CommentDetailQuery, CommentReactQuery, AttachmentQuery, CommentDetailQuery>(query,
+                        map: (comment, react, attachment) =>
                         {
-                            commentResult = comment;
-                        }
-
-                        if (react != null && !commentResult.Reacts.Any((item) => item.ReactUserId == react.ReactUserId))
-                        {
-                            commentResult.Reacts.Add(react);
-                        }
-                        return commentResult;
-                    },
-                    parameter,
-                    splitOn: "ReactId");
-                    return commentResult;
+                            if (!commentDict.TryGetValue(comment.Id, out var commentEntry))
+                            {
+                                commentEntry = comment;
+                                commentDict.Add(comment.Id, commentEntry);
+                            }
+                            if (react != null && !commentEntry.Reacts.Any((item) => item.ReactUserId == react.ReactUserId))
+                            {
+                                commentEntry.Reacts.Add(react);
+                            }
+                            if (attachment != null && !commentEntry.Attachments.Any((item) => item.AttachmentId == attachment.AttachmentId))
+                            {
+                                commentEntry.Attachments.Add(attachment);
+                            }
+                            return commentEntry;
+                        },
+                        parameter,
+                        splitOn: "ReactId, AttachmentId");
+                    return commentDict.Values.ToList();
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                throw;
+                throw ex;
             }
         }
 
@@ -177,45 +253,63 @@ namespace EnVietSocialNetWorkAPI.Controllers
         public async Task<IActionResult> CreateComment(Guid postId, CreateCommentCommand comment)
         {
             var query = @"INSERT INTO Comments (Id, CreatedAt, UpdatedAt, IsDeleted, Content, IsResponse, ReactCount ,UserId, PostId)
-                          VALUES
-                          (NEWID(), GETDATE(), GETDATE(), 0, @Content, 0, 0,@UserId, @PostId)";
-            var parameters = new DynamicParameters();
-            parameters.Add("Content", comment.Content, DbType.String);
-            parameters.Add("UserId", comment.UserId, DbType.Guid);
-            parameters.Add("PostId", postId, DbType.Guid);
-            using (var connection = _context.CreateConnection())
-            {
-                var result = await connection.ExecuteAsync(query, parameters);
-                return Ok();
-            }
-        }
-
-        [HttpPost("{Id}/response")]
-        public async Task<IActionResult> CreateResponseComment(Guid id, CreateResponseCommentCommand comment)
-        {
-            var queryComment = @"INSERT INTO Comments (Id, CreatedAt, UpdatedAt, IsDeleted, Content, IsResponse, ReactCount ,UserId, PostId)
                           OUTPUT Inserted.Id
                           VALUES
-                          (NEWID(), GETDATE(), GETDATE(), 0, @Content, 1, 0,@UserId, @PostId)";
-            var queryResponse = @"INSERT INTO CommentResponse(CommentId, ResponseId)
-                          VALUES
-                          (@CommentId, @ResponseId)";
+                          (NEWID(), GETDATE(), GETDATE(), 0, @Content, @IsResponse, 0, @UserId, @PostId)";
+            var queryAttachment = @"INSERT INTO Attachments (Id, Media, Description)
+                                    OUTPUT Inserted.Id
+                                    VALUES
+                                    (NEWID(), @Media, @Description)";
+            var queryCommentAttachment = @"INSERT INTO CommentAttachment (CommentId, AttachmentId)
+                                        VALUES
+                                        (@CommentId, @AttachmentId)";
+            var queryResponse = @"INSERT INTO CommentResponse (CommentId, ResponseId)
+                                  VALUES
+                                  (@CommentId, @ResponseId)";
             var parameters = new DynamicParameters();
             parameters.Add("Content", comment.Content, DbType.String);
             parameters.Add("UserId", comment.UserId, DbType.Guid);
-            parameters.Add("PostId", comment.PostId, DbType.Guid);
+            parameters.Add("PostId", postId);
+            parameters.Add("PostId", postId, DbType.Guid);
+            parameters.Add("IsResponse", comment.IsResponse);
             using (var connection = _context.CreateConnection())
             {
                 connection.Open();
                 using (var transaction = connection.BeginTransaction())
                 {
-                    var result = await connection.QueryAsync<Guid>(queryComment, parameters);
-                    parameters = new DynamicParameters();
-                    parameters.Add("CommentId", id);
-                    parameters.Add("ResponseId", result);
-                    await connection.ExecuteAsync(queryResponse, parameters);
+                    try
+                    {
+                        var result = await connection.QuerySingleAsync<Guid>(query, parameters, transaction);
+                        if (comment.Attachments != null)
+                        {
+                            foreach (var item in comment.Attachments!)
+                            {
+                                parameters = new DynamicParameters();
+                                parameters.Add("Media", item.Media);
+                                parameters.Add("Description", item.Description);
+                                var attachmentResult = await connection.QuerySingleAsync<Guid>(queryAttachment, parameters, transaction);
+                                parameters.Add("CommentId", result);
+                                parameters.Add("AttachmentId", attachmentResult);
+                                await connection.ExecuteAsync(queryCommentAttachment, parameters, transaction);
+                            }
+                        }
+                        if (comment.IsResponse == true)
+                        {
+                            parameters = new DynamicParameters();
+                            parameters.Add("CommentId", comment.CommentId);
+                            parameters.Add("ResponseId", result);
+                            await connection.ExecuteAsync(queryResponse, parameters, transaction);
+                        }
+
+                        transaction.Commit();
+                        return Ok();
+                    }
+                    catch (Exception ex)
+                    {
+                        transaction.Rollback();
+                        throw ex;
+                    }
                 }
-                return Ok();
             }
         }
 

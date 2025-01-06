@@ -22,7 +22,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
         [HttpGet("option/{surveyItemId}")]
         public async Task<IEnumerable<SurveyVoteQuery>> GetByOptionId(Guid surveyItemId)
         {
-            var query = "SELECT * FROM SurveyVotes WHERE OptionId = @Id";
+            var query = "SELECT * FROM UserVote WHERE SurveyItemId = @Id";
             var parameters = new DynamicParameters();
             parameters.Add("Id", surveyItemId, DbType.Guid);
             using (var connection = _context.CreateConnection())
@@ -35,11 +35,11 @@ namespace EnVietSocialNetWorkAPI.Controllers
         [HttpPost("option/{surveyItemId}")]
         public async Task<IActionResult> CreateByOptionId(Guid surveyItemId, CreateSurveyVoteCommand vote)
         {
-            var query = @"INSERT INTO SurveyVotes (OptionId, UserId, VotedAt)
+            var query = @"INSERT INTO UserVote (SurveyItemId, UserId)
                           VALUES
-                          (@OptionId, @UserId, GETDATE())";
+                          (@SurveyItemId, @UserId)";
             var parameters = new DynamicParameters();
-            parameters.Add("OptionId", surveyItemId, DbType.Guid);
+            parameters.Add("SurveyItemId", surveyItemId, DbType.Guid);
             parameters.Add("UserId", vote.UserId, DbType.Guid);
             using (var connection = _context.CreateConnection())
             {
@@ -48,12 +48,13 @@ namespace EnVietSocialNetWorkAPI.Controllers
             }
         }
 
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(int id)
+        [HttpDelete("option/{surveyItemId}")]
+        public async Task<IActionResult> Delete(Guid surveyItemId, CreateSurveyVoteCommand command)
         {
-            var query = "DELETE FROM SurveyVotes WHERE Id = @Id";
+            var query = "DELETE FROM userVote WHERE UserId = @UserId AND SurveyItemId = @SurveyItemId";
             var parameters = new DynamicParameters();
-            parameters.Add("Id", id, DbType.Int32);
+            parameters.Add("UserId", command.UserId, DbType.Int32);
+            parameters.Add("SurveyItemId", surveyItemId, DbType.Int32);
             using (var connection = _context.CreateConnection())
             {
                 await connection.ExecuteAsync(query, parameters);

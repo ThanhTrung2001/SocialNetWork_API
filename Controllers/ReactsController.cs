@@ -11,11 +11,11 @@ namespace EnVietSocialNetWorkAPI.Controllers
     [Authorize]
     [Route("api/[controller]")]
     [ApiController]
-    public class ReactsController : ControllerBase
+    public class ReactTypesController : ControllerBase
     {
         private readonly DapperContext _context;
 
-        public ReactsController(DapperContext context)
+        public ReactTypesController(DapperContext context)
         {
             _context = context;
         }
@@ -29,8 +29,8 @@ namespace EnVietSocialNetWorkAPI.Controllers
                  urp.UserId AS ReactUserId,
                  ud.FirstName AS ReactFirstName,
                  ud.LastName AS ReactLastName,
-                 ud.Avatar AS ReactAvatar,
-                 FROM Reacts r
+                 ud.Avatar AS ReactAvatar
+                 FROM ReactTypes r
                  LEFT JOIN UserReactPost urp ON urp.ReactTypeId = r.Id
                  LEFT JOIN UserDetails ud ON urp.UserId = ud.UserId
                  WHERE 
@@ -53,8 +53,8 @@ namespace EnVietSocialNetWorkAPI.Controllers
                  urc.UserId AS ReactUserId,
                  ud.FirstName AS ReactFirstName,
                  ud.LastName AS ReactLastName,
-                 ud.Avatar AS ReactAvatar,
-                 FROM Reacts r
+                 ud.Avatar AS ReactAvatar
+                 FROM ReactTypes r
                  LEFT JOIN UserReactComment urc ON urc.ReactTypeId = r.Id
                  LEFT JOIN UserDetails ud ON urc.UserId = ud.UserId
                  WHERE 
@@ -77,8 +77,8 @@ namespace EnVietSocialNetWorkAPI.Controllers
                  urm.UserId AS ReactUserId,
                  ud.FirstName AS ReactFirstName,
                  ud.LastName AS ReactLastName,
-                 ud.Avatar AS ReactAvatar,
-                 FROM Reacts r
+                 ud.Avatar AS ReactAvatar
+                 FROM ReactTypes r
                  LEFT JOIN UserReactMessage urm ON urm.ReactTypeId = r.Id
                  LEFT JOIN UserDetails ud ON urm.UserId = ud.UserId
                  WHERE 
@@ -95,7 +95,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
         [HttpPost("post")]
         public async Task<IActionResult> CreateByPost(CreatePostReactCommand react)
         {
-            var query = @"INSERT INTO UserReactPost (UserId, PostId, ReactTypeId, CreatedAt, UpdatedAt, IdDeleted)
+            var query = @"INSERT INTO UserReactPost (UserId, PostId, ReactTypeId, CreatedAt, UpdatedAt, IsDeleted)
                         VALUES 
                         (@UserId, @PostId, @ReactTypeId, GETDATE(), GETDATE(), 0)";
 
@@ -113,7 +113,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
         [HttpPost("comment")]
         public async Task<IActionResult> CreateByComment(CreateCommentReactCommand react)
         {
-            var query = @"INSERT INTO UserReactComment (UserId, CommentId, ReactTypeId, CreatedAt, UpdatedAt, IdDeleted)
+            var query = @"INSERT INTO UserReactComment (UserId, CommentId, ReactTypeId, CreatedAt, UpdatedAt, IsDeleted)
                         VALUES 
                         (@UserId, @CommentId, @ReactTypeId, GETDATE(), GETDATE(), 0)";
 
@@ -131,7 +131,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
         [HttpPost("message")]
         public async Task<IActionResult> CreateByMessage(CreateMessageReactCommand react)
         {
-            var query = @"INSERT INTO UserReactMessage (UserId, MessageId, ReactTypeId, CreatedAt, UpdatedAt, IdDeleted)
+            var query = @"INSERT INTO UserReactMessage (UserId, MessageId, ReactTypeId, CreatedAt, UpdatedAt, IsDeleted)
                         VALUES 
                         (@UserId, @MessageId, @ReactTypeId, GETDATE(), GETDATE(), 0)";
 
@@ -149,7 +149,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
         [HttpPut("{id}/post")]
         public async Task<IActionResult> EditPostReact(Guid id, EditReactCommand react)
         {
-            var query = @"UPDATE UserReactPost SET ReactTypeId = @ReactTypeId WHERE Id = @Id AND UserId = @UserId";
+            var query = @"UPDATE UserReactPost SET ReactTypeId = @ReactTypeId WHERE PostId = @Id AND UserId = @UserId";
             var parameter = new DynamicParameters();
             parameter.Add("Id", id, DbType.Guid);
             parameter.Add("ReactTypeId", react.ReactType, DbType.Int32);
@@ -164,7 +164,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
         [HttpPut("{id}/comment")]
         public async Task<IActionResult> EditCommentReact(Guid id, EditReactCommand react)
         {
-            var query = @"UPDATE UserReactComment SET ReactTypeId = @ReactTypeId WHERE Id = @Id AND UserId = @UserId";
+            var query = @"UPDATE UserReactComment SET ReactTypeId = @ReactTypeId WHERE CommentId = @Id AND UserId = @UserId";
             var parameter = new DynamicParameters();
             parameter.Add("Id", id, DbType.Guid);
             parameter.Add("ReactTypeId", react.ReactType, DbType.Int32);
@@ -179,7 +179,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
         [HttpPut("{id}/message")]
         public async Task<IActionResult> EditMessageReact(Guid id, EditReactCommand react)
         {
-            var query = @"UPDATE UserReactMessage SET ReactTypeId = @ReactTypeId WHERE Id = @Id AND UserId = @UserId";
+            var query = @"UPDATE UserReactMessage SET ReactTypeId = @ReactTypeId WHERE MessageId = @Id AND UserId = @UserId";
             var parameter = new DynamicParameters();
             parameter.Add("Id", id, DbType.Guid);
             parameter.Add("ReactTypeId", react.ReactType, DbType.Int32);

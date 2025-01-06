@@ -25,7 +25,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
         [HttpGet]
         public async Task<IEnumerable<OrganizeNodeQuery>> Get()
         {
-            var query = "SELECT * FROM OrganizeNodes WHERE IsDeleted = 0;";
+            var query = "SELECT * FROM OrganizeNodes;";
             using (var connection = _context.CreateConnection())
             {
                 // Fetch all nodes from the database
@@ -39,9 +39,9 @@ namespace EnVietSocialNetWorkAPI.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(CreateOrganizeNodeCommand node)
         {
-            var query = @"INSERT INTO OrganizeNodes (Id, Name, Description, Level, ParentId, EmployeeCount IsDeleted)
+            var query = @"INSERT INTO OrganizeNodes (Id, Name, Description, Level, ParentId, EmployeeCount)
                           VALUES
-                          (NEWID(), @Name, @Description, @Level, @ParentId, 0, 0)";
+                          (NEWID(), @Name, @Description, @Level, @ParentId, 0)";
             var parameter = new DynamicParameters();
             parameter.Add("Name", node.Name);
             parameter.Add("Description", node.Description);

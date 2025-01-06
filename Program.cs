@@ -1,7 +1,6 @@
 using EnVietSocialNetWorkAPI.Auth.Services;
 using EnVietSocialNetWorkAPI.DataConnection;
 using EnVietSocialNetWorkAPI.RealTime;
-using EnVietSocialNetWorkAPI.RealTime.Repositories;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -11,7 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddSingleton<DapperContext>();
-builder.Services.AddScoped<IChatRepository, ChatRepository>();
+//builder.Services.AddScoped<IChatRepository, ChatRepository>();
 builder.Services.AddSingleton<JWTHelper>();
 //builder.Services.AddSingleton<ChatHub>();
 builder.Services.AddSignalR();

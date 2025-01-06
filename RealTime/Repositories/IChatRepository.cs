@@ -1,13 +1,14 @@
-﻿using EnVietSocialNetWorkAPI.Entities.Commands;
+﻿
+using EnVietSocialNetWorkAPI.Models.Commands;
 
 namespace EnVietSocialNetWorkAPI.RealTime.Repositories
 {
     public interface IChatRepository
     {
-        Task CreateChatBox(List<Guid> users, NewChatGroup chatbox);
+        Task CreateChatBox(List<Guid> users, CreateChatGroupCommand chatbox);
         Task AddUserToChatBox(Guid id, Guid userId);
         Task DeleteChatBox(Guid id);
-        Task SaveMessage(MessageCommand message, Guid groupId);
+        Task SaveMessage(CreateMessageCommand message, Guid groupId);
         Task DeleteMessage(Guid messageId);
 
     }

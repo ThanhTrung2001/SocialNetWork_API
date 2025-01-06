@@ -17,18 +17,11 @@
         public string LastName { get; set; }
         public string Avatar { get; set; }
 
-        public List<PostAttachmentQuery> Attachments { get; set; } = new List<PostAttachmentQuery>();
+        public List<AttachmentQuery> Attachments { get; set; } = new List<AttachmentQuery>();
         public List<PostCommentQuery> Comments { get; set; } = new List<PostCommentQuery>();
         public List<PostReactQuery> Reacts { get; set; } = new List<PostReactQuery>();
         //ShareQuery
         public PostSurveyQuery? Survey { get; set; }
-    }
-
-    public class PostAttachmentQuery
-    {
-        public Guid AttachmentId { get; set; }
-        public string Media { get; set; }
-        public string Description { get; set; }
     }
 
     public class PostCommentQuery
@@ -67,15 +60,4 @@
         public string VoteLastName { get; set; }
         public string VoteAvatar { get; set; }
     }
-
-    public class ShareUserQuery
-    {
-        public Guid Id { get; set; }
-        public string ShareContent { get; set; }
-        public Guid ShareUserId { get; set; }
-        public string ShareUserName { get; set; }
-        public string ShareUserAvatar { get; set; }
-    }
-
-
 }

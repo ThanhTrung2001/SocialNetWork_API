@@ -3,7 +3,7 @@
     public class SurveyQuery
     {
         public Guid Id { get; set; }
-        public DateTime ExpiredIn { get; set; }
+        public DateTime ExpiredAt { get; set; }
         public string Question { get; set; }
         public int Total { get; set; }
         public int SurveyTypeId { get; set; }

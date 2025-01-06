@@ -35,30 +35,13 @@ namespace EnVietSocialNetWorkAPI.Controllers
         [HttpGet("{id}")]
         public async Task<SurveyItemQuery> GetById(Guid id)
         {
-            var query = "SELECT * FROM SurveyItemQuerys WHERE IsDelted = 0 AND Id = @Id";
+            var query = "SELECT * FROM SurveyItems WHERE IsDelted = 0 AND Id = @Id";
             var parameters = new DynamicParameters();
             parameters.Add("Id", id, DbType.Guid);
             using (var connection = _context.CreateConnection())
             {
                 var result = await connection.QueryFirstOrDefaultAsync<SurveyItemQuery>(query, parameters);
                 return result;
-            }
-        }
-
-        [HttpPost("survey/{surveyId}")]
-        public async Task<IActionResult> CreateBySurveyId(Guid surveyId, string content)
-        {
-            var query = @"INSERT INTO SurveyItems (ID, CreatedAt, UpdatedAt, IsDeleted, Content, SurveyId, Votes)
-                          VALUES
-                          (NEWID(), GETDATE(), GETDATE(), 0, @Content, @SurveyId, 0)";
-            var parameters = new DynamicParameters();
-            parameters.Add("SurveyId", surveyId, DbType.Guid);
-            parameters.Add("Content", content, DbType.String);
-
-            using (var connection = _context.CreateConnection())
-            {
-                var result = await connection.ExecuteAsync(query, parameters);
-                return Ok();
             }
         }
 
@@ -79,7 +62,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(Guid id)
         {
-            var query = "Update SurveyItemQuerys SET isDeleted = 1 WHERE Id = @Id";
+            var query = "Update SurveyItemQuerys SET isDeleted = 1, UpdatedAt = GETDATE() WHERE Id = @Id";
             var parameters = new DynamicParameters();
             parameters.Add("Id", id, DbType.Guid);
             using (var connection = _context.CreateConnection())

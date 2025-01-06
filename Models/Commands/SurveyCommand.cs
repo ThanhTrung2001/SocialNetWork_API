@@ -2,9 +2,8 @@
 {
     public class CreateSurveyCommand
     {
-        public DateTime ExpiredIn { get; set; }
+        public DateTime ExpiredAt { get; set; }
         public string Question { get; set; }
-        public int Total { get; set; }
         public int SurveyTypeId { get; set; }
         public List<CreateSurveyItemCommand> SurveyItems { get; set; }
     }
@@ -12,8 +11,7 @@
     public class CreateSurveyItemCommand()
     {
         public string OptionName { get; set; }
-        public int ItemTotal { get; set; }
-        public List<CreateSurveyItemCommand> SurveyVotes { get; set; }
+        public List<CreateSurveyItemCommand>? SurveyVotes { get; set; }
     }
 
     public class CreateSurveyVoteCommand

@@ -2,18 +2,18 @@
 {
     public class CreatePostCommand
     {
-        public bool IsNotification { get; set; }
-        public string PostType { get; set; }
-        public string PostDestination { get; set; }
+        public bool InGroup { get; set; }
+        public Guid? DestinationId { get; set; }
+        public int PostTypeId { get; set; }
         public string Content { get; set; }
-        public List<string> MediaUrls { get; set; } = new List<string>();
+        public List<CreateAttachmentCommand>? Attachments { get; set; } = new List<CreateAttachmentCommand>();
         public CreateSurveyCommand? Survey { get; set; }
 
     }
 
     public class CreatePostRequest
     {
-        public string UserId { get; set; }
+        public Guid UserId { get; set; }
         public CreatePostCommand NewPost { get; set; }
     }
 }

@@ -11,6 +11,8 @@
         public string UserFirstName { get; set; }
         public string UserLastName { get; set; }
         public string Avatar { get; set; }
+        public List<AttachmentQuery>? Attachments { get; set; } = new List<AttachmentQuery>();
+
     }
 
     public class CommentDetailQuery
@@ -25,5 +27,7 @@
         public string UserLastName { get; set; }
         public string Avatar { get; set; }
         public List<CommentReactQuery>? Reacts { get; set; } = new List<CommentReactQuery>();
+        public List<AttachmentQuery>? Attachments { get; set; } = new List<AttachmentQuery>();
+
     }
 }
