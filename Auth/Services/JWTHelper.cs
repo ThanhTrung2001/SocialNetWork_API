@@ -1,5 +1,4 @@
-﻿using EnVietSocialNetWorkAPI.Entities.Models;
-using EnVietSocialNetWorkAPI.Entities.Queries;
+﻿using EnVietSocialNetWorkAPI.Model.Queries;
 using Microsoft.IdentityModel.Tokens;
 using System.Diagnostics;
 using System.IdentityModel.Tokens.Jwt;
@@ -17,13 +16,13 @@ namespace EnVietSocialNetWorkAPI.Auth.Services
             _configuration = configuration;
         }
 
-        public JWTReturn GenerateJWTToken(UserQuery user)
+        public JWTReturn GenerateJWTToken(UserAuthQuery user)
         {
             var claims = new List<Claim> {
                         new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                         new Claim(ClaimTypes.Name, user.UserName),
                         new Claim(ClaimTypes.Email, user.Email),
-                        new Claim("AvatarUrl", user.AvatarUrl ?? string.Empty) };
+                        new Claim("AvatarUrl", user.Avatar ?? string.Empty) };
             //
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Key"]!));
@@ -59,7 +58,7 @@ namespace EnVietSocialNetWorkAPI.Auth.Services
 
         //_helper func for tree hierarchy
 
-        public List<OrganizeNode> BuildHierarchy(List<OrganizeNode> nodes)
+        public List<OrganizeNodeQuery> BuildHierarchy(List<OrganizeNodeQuery> nodes)
         {
             // Find root nodes
             var rootNodes = nodes.Where(n => n.ParentId == null || n.ParentId == Guid.Empty).ToList();
@@ -72,7 +71,7 @@ namespace EnVietSocialNetWorkAPI.Auth.Services
             return rootNodes;
         }
 
-        public void AttachChildren(OrganizeNode parentNode, List<OrganizeNode> allNodes)
+        public void AttachChildren(OrganizeNodeQuery parentNode, List<OrganizeNodeQuery> allNodes)
         {
             var children = allNodes.Where(n => n.ParentId == parentNode.Id).ToList();
             parentNode.ChildrenNodes = children;

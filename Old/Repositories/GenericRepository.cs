@@ -1,11 +1,7 @@
 ﻿using Dapper;
 using EnVietSocialNetWorkAPI.DataConnection;
-using EnVietSocialNetWorkAPI.Entities;
 using EnVietSocialNetWorkAPI.Old.Repositories.Interface;
-using Microsoft.AspNetCore.Http.HttpResults;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data;
-using System.Data.Common;
 using System.Linq.Expressions;
 using System.Reflection;
 
