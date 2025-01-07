@@ -1,11 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace EnVietSocialNetWorkAPI.Models;
+﻿namespace EnVietSocialNetWorkAPI.Models;
 
 public partial class Notification
 {
     public Guid Id { get; set; }
+
+    public Guid UserId { get; set; }
 
     public DateTime CreatedAt { get; set; }
 
@@ -23,7 +22,11 @@ public partial class Notification
 
     public string? OrganizationName { get; set; }
 
-    public virtual NotificationType NotiTypeNavigation { get; set; } = null!;
+    public DateTime Startedat { get; set; }
+
+    public DateTime? Endedat { get; set; }
+
+    public virtual User User { get; set; } = null!;
 
     public virtual ICollection<Tag> Tags { get; set; } = new List<Tag>();
 }

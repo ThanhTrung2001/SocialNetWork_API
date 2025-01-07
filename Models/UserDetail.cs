@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace EnVietSocialNetWorkAPI.Models;
+﻿namespace EnVietSocialNetWorkAPI.Models;
 
 public partial class UserDetail
 {
@@ -13,9 +10,17 @@ public partial class UserDetail
 
     public bool IsDeleted { get; set; }
 
-    public string FirstName { get; set; } = null!;
+    public string Firstname { get; set; } = null!;
 
-    public string LastName { get; set; } = null!;
+    public string Lastname { get; set; } = null!;
+
+    public string PhoneNumber { get; set; } = null!;
+
+    public string Address { get; set; } = null!;
+
+    public string City { get; set; } = null!;
+
+    public string Country { get; set; } = null!;
 
     public string? Avatar { get; set; }
 

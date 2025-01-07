@@ -1,6 +1,6 @@
 ﻿namespace EnVietSocialNetWorkAPI.Models;
 
-public partial class Group
+public partial class Page
 {
     public Guid Id { get; set; }
 
@@ -16,5 +16,5 @@ public partial class Group
 
     public string? Wallpaper { get; set; }
 
-    public virtual ICollection<UserGroup> UserGroups { get; set; } = new List<UserGroup>();
+    public virtual ICollection<UserPage> UserPages { get; set; } = new List<UserPage>();
 }

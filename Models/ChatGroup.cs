@@ -10,15 +10,13 @@ public partial class ChatGroup
 
     public bool IsDeleted { get; set; }
 
-    public string ChatName { get; set; } = null!;
+    public string Name { get; set; } = null!;
 
-    public int ThemeId { get; set; }
+    public string Theme { get; set; } = null!;
 
     public string GroupType { get; set; } = null!;
 
     public virtual ICollection<Message> Messages { get; set; } = new List<Message>();
 
-    public virtual Theme ThemeNavigation { get; set; } = null!;
-
-    public virtual ICollection<User> Users { get; set; } = new List<User>();
+    public virtual ICollection<UserChatgroup> UserChatgroups { get; set; } = new List<UserChatgroup>();
 }

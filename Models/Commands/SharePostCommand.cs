@@ -1,4 +1,4 @@
-﻿namespace EnVietSocialNetWorkAPI.Models.Commands
+﻿namespace EnVietSocialNetWorkAPI.Model.Commands
 {
     public class CreateSharePostCommand
     {

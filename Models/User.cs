@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace EnVietSocialNetWorkAPI.Models;
+﻿namespace EnVietSocialNetWorkAPI.Models;
 
 public partial class User
 {
@@ -13,27 +10,31 @@ public partial class User
 
     public bool IsDeleted { get; set; }
 
-    public string UserName { get; set; } = null!;
+    public string Username { get; set; } = null!;
 
     public string Password { get; set; } = null!;
 
     public string Email { get; set; } = null!;
 
-    public int Role { get; set; }
+    public string Role { get; set; } = null!;
 
     public virtual ICollection<Comment> Comments { get; set; } = new List<Comment>();
 
     public virtual ICollection<Message> Messages { get; set; } = new List<Message>();
 
-    public virtual ICollection<Post> Posts { get; set; } = new List<Post>();
-
-    public virtual UserRole RoleNavigation { get; set; } = null!;
+    public virtual ICollection<Notification> Notifications { get; set; } = new List<Notification>();
 
     public virtual ICollection<SharePost> SharePosts { get; set; } = new List<SharePost>();
+
+    public virtual ICollection<UserChatgroup> UserChatgroups { get; set; } = new List<UserChatgroup>();
 
     public virtual ICollection<UserDetail> UserDetails { get; set; } = new List<UserDetail>();
 
     public virtual ICollection<UserGroup> UserGroups { get; set; } = new List<UserGroup>();
+
+    public virtual ICollection<UserOrganization> UserOrganizations { get; set; } = new List<UserOrganization>();
+
+    public virtual ICollection<UserPage> UserPages { get; set; } = new List<UserPage>();
 
     public virtual ICollection<UserReactComment> UserReactComments { get; set; } = new List<UserReactComment>();
 
@@ -41,7 +42,5 @@ public partial class User
 
     public virtual ICollection<UserReactPost> UserReactPosts { get; set; } = new List<UserReactPost>();
 
-    public virtual ICollection<ChatGroup> ChatGroups { get; set; } = new List<ChatGroup>();
-
-    public virtual ICollection<SurveyItem> SurveyItems { get; set; } = new List<SurveyItem>();
+    public virtual ICollection<SurveyItem> Surveyitems { get; set; } = new List<SurveyItem>();
 }

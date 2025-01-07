@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace EnVietSocialNetWorkAPI.Models;
+﻿namespace EnVietSocialNetWorkAPI.Models;
 
 public partial class PostType
 {

@@ -20,7 +20,7 @@ public partial class Comment
 
     public Guid PostId { get; set; }
 
-    public virtual Post Post { get; set; } = null!;
+    public bool IsSharepost { get; set; }
 
     public virtual User User { get; set; } = null!;
 

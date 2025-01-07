@@ -1,12 +1,10 @@
 ﻿namespace EnVietSocialNetWorkAPI.Models;
 
-public partial class UserReactComment
+public partial class UserOrganization
 {
     public Guid UserId { get; set; }
 
-    public Guid Commentid { get; set; }
-
-    public string ReactType { get; set; } = null!;
+    public Guid NodeId { get; set; }
 
     public DateTime CreatedAt { get; set; }
 
@@ -14,7 +12,9 @@ public partial class UserReactComment
 
     public bool IsDeleted { get; set; }
 
-    public virtual Comment Comment { get; set; } = null!;
+    public string OrganizationRole { get; set; } = null!;
+
+    public virtual Organization Node { get; set; } = null!;
 
     public virtual User User { get; set; } = null!;
 }

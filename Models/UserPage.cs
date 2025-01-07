@@ -1,10 +1,10 @@
 ﻿namespace EnVietSocialNetWorkAPI.Models;
 
-public partial class UserGroup
+public partial class UserPage
 {
     public Guid UserId { get; set; }
 
-    public Guid GroupId { get; set; }
+    public Guid PageId { get; set; }
 
     public string Role { get; set; } = null!;
 
@@ -16,7 +16,7 @@ public partial class UserGroup
 
     public bool IsDeleted { get; set; }
 
-    public virtual Group Group { get; set; } = null!;
+    public virtual Page Page { get; set; } = null!;
 
     public virtual User User { get; set; } = null!;
 }

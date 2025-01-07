@@ -2,7 +2,7 @@
 using EnVietSocialNetWorkAPI.Auth.Model;
 using EnVietSocialNetWorkAPI.Auth.Services;
 using EnVietSocialNetWorkAPI.DataConnection;
-using EnVietSocialNetWorkAPI.Models.Queries;
+using EnVietSocialNetWorkAPI.Model.Queries;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -28,7 +28,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
             var query = @"SELECT 
                           u.Id, u.UserName, u.Email, u.Password, u.Role, ud.Avatar 
                           FROM Users u
-                          INNER JOIN UserDetails ud ON u.Id = ud.UserId  
+                          INNER JOIN User_Details ud ON u.Id = ud.User_Id  
                           WHERE u.Email Like @Email AND u.Password Like @Password;";
             var parameter = new DynamicParameters();
             parameter.Add("Email", request.Email);
@@ -43,7 +43,6 @@ namespace EnVietSocialNetWorkAPI.Controllers
                 }
             }
             return Ok(token);
-
         }
     }
 }

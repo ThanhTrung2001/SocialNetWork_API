@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace EnVietSocialNetWorkAPI.Models;
+﻿namespace EnVietSocialNetWorkAPI.Models;
 
 public partial class Survey
 {
@@ -15,17 +12,13 @@ public partial class Survey
 
     public DateTime ExpiredAt { get; set; }
 
-    public int Total { get; set; }
+    public int TotalVote { get; set; }
 
     public int SurveyTypeId { get; set; }
 
-    public Guid? PostId { get; set; }
+    public Guid PostId { get; set; }
 
-    public string? Question { get; set; }
-
-    public virtual Post? Post { get; set; }
+    public virtual Post Post { get; set; } = null!;
 
     public virtual ICollection<SurveyItem> SurveyItems { get; set; } = new List<SurveyItem>();
-
-    public virtual SurveyType SurveyType { get; set; } = null!;
 }

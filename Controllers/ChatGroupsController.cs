@@ -1,15 +1,16 @@
 ﻿using Dapper;
 using EnVietSocialNetWorkAPI.DataConnection;
+using EnVietSocialNetWorkAPI.Model.Commands;
+using EnVietSocialNetWorkAPI.Model.Queries;
 using EnVietSocialNetWorkAPI.Models;
-using EnVietSocialNetWorkAPI.Models.Commands;
-using EnVietSocialNetWorkAPI.Models.Queries;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Data;
 
 namespace EnVietSocialNetWorkAPI.Controllers
 {
-    [Authorize]
+    //[Authorize]
+    [AllowAnonymous]
     [Route("api/[controller]")]
     [ApiController]
     public class ChatGroupsController : ControllerBase
@@ -125,7 +126,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
         }
 
         [HttpGet("user/{userId}")]
-        public async Task<IEnumerable<ChatGroup>> GetChatGroupsBaseUserID(Guid userId)
+        public async Task<IEnumerable<ChatGroup>> GetChatGroupsByUserID(Guid userId)
         {
             var query = @"SELECT *
                 FROM ChatGroups c

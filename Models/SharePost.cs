@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace EnVietSocialNetWorkAPI.Models;
+﻿namespace EnVietSocialNetWorkAPI.Models;
 
 public partial class SharePost
 {
@@ -22,6 +19,8 @@ public partial class SharePost
     public Guid? DestinationId { get; set; }
 
     public string? Content { get; set; }
+
+    public int ReactCount { get; set; }
 
     public virtual User SharedByUser { get; set; } = null!;
 

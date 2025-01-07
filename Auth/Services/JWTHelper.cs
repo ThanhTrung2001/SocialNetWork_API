@@ -1,4 +1,4 @@
-﻿using EnVietSocialNetWorkAPI.Models.Queries;
+﻿using EnVietSocialNetWorkAPI.Model.Queries;
 using Microsoft.IdentityModel.Tokens;
 using System.Diagnostics;
 using System.IdentityModel.Tokens.Jwt;

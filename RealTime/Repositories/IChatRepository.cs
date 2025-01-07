@@ -1,5 +1,5 @@
 ﻿
-using EnVietSocialNetWorkAPI.Models.Commands;
+using EnVietSocialNetWorkAPI.Model.Commands;
 
 namespace EnVietSocialNetWorkAPI.RealTime.Repositories
 {

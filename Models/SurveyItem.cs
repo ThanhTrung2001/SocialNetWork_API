@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace EnVietSocialNetWorkAPI.Models;
+﻿namespace EnVietSocialNetWorkAPI.Models;
 
 public partial class SurveyItem
 {
@@ -15,7 +12,7 @@ public partial class SurveyItem
 
     public string OptionName { get; set; } = null!;
 
-    public int Total { get; set; }
+    public int TotalVote { get; set; }
 
     public Guid SurveyId { get; set; }
 

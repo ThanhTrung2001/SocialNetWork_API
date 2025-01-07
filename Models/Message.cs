@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace EnVietSocialNetWorkAPI.Models;
+﻿namespace EnVietSocialNetWorkAPI.Models;
 
 public partial class Message
 {
@@ -15,13 +12,13 @@ public partial class Message
 
     public Guid SenderId { get; set; }
 
-    public Guid ChatGroupId { get; set; }
+    public Guid ChatgroupId { get; set; }
 
     public string Content { get; set; } = null!;
 
-    public int StatusId { get; set; }
+    public string Status { get; set; } = null!;
 
-    public int TypeId { get; set; }
+    public string Type { get; set; } = null!;
 
     public int ReactCount { get; set; }
 
@@ -29,13 +26,9 @@ public partial class Message
 
     public bool IsPinned { get; set; }
 
-    public virtual ChatGroup ChatGroup { get; set; } = null!;
+    public virtual ChatGroup Chatgroup { get; set; } = null!;
 
     public virtual User Sender { get; set; } = null!;
-
-    public virtual Status Status { get; set; } = null!;
-
-    public virtual MessageType Type { get; set; } = null!;
 
     public virtual ICollection<UserReactMessage> UserReactMessages { get; set; } = new List<UserReactMessage>();
 

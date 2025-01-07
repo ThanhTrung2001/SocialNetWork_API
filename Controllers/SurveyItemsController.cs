@@ -1,13 +1,14 @@
 ﻿using Dapper;
 using EnVietSocialNetWorkAPI.DataConnection;
-using EnVietSocialNetWorkAPI.Models.Queries;
+using EnVietSocialNetWorkAPI.Model.Queries;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Data;
 
 namespace EnVietSocialNetWorkAPI.Controllers
 {
-    [Authorize]
+    //[Authorize]
+    [AllowAnonymous]
     [Route("api/[controller]")]
     [ApiController]
     public class SurveyItemQuerysController : ControllerBase

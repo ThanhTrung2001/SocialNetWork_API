@@ -1,4 +1,4 @@
-﻿namespace EnVietSocialNetWorkAPI.Models.Queries
+﻿namespace EnVietSocialNetWorkAPI.Model.Queries
 {
     public class SharePostQuery
     {

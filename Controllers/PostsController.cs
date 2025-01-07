@@ -1,7 +1,7 @@
 ﻿using Dapper;
 using EnVietSocialNetWorkAPI.DataConnection;
-using EnVietSocialNetWorkAPI.Models.Commands;
-using EnVietSocialNetWorkAPI.Models.Queries;
+using EnVietSocialNetWorkAPI.Model.Commands;
+using EnVietSocialNetWorkAPI.Model.Queries;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,9 +9,10 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace EnVietSocialNetWorkAPI.Controllers
 {
+    //[Authorize]
+    [AllowAnonymous]
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
     public class PostsController : ControllerBase
     {
         private readonly DapperContext _context;
