@@ -1,17 +1,14 @@
-USE SocialNetworkDB
-;
-
 CREATE TABLE [post_types] (
   [id] int PRIMARY KEY IDENTITY(1, 1),
   [name] nvarchar(100) NOT NULL
 )
-;
+GO
 
 CREATE TABLE [tags] (
   [id] int PRIMARY KEY IDENTITY(1, 1),
   [tag_name] nvarchar(100) NOT NULL
 )
-;
+GO
 
 CREATE TABLE [users] (
   [id] uniqueidentifier PRIMARY KEY DEFAULT (newid()),
@@ -23,7 +20,7 @@ CREATE TABLE [users] (
   [email] nvarchar(100) NOT NULL,
   [role] nvarchar(255) NOT NULL CHECK ([role] IN ('Admin', 'Employee'))
 )
-;
+GO
 
 CREATE TABLE [user_details] (
   [id] uniqueidentifier PRIMARY KEY DEFAULT (newid()),
@@ -42,7 +39,7 @@ CREATE TABLE [user_details] (
   [bio] nvarchar(100),
   [user_id] uniqueidentifier NOT NULL
 )
-;
+GO
 
 CREATE TABLE [posts] (
   [id] uniqueidentifier PRIMARY KEY DEFAULT (newid()),
@@ -56,7 +53,7 @@ CREATE TABLE [posts] (
   [user_id] uniqueidentifier NOT NULL,
   [post_type_id] int NOT NULL
 )
-;
+GO
 
 CREATE TABLE [comments] (
   [id] uniqueidentifier PRIMARY KEY DEFAULT (newid()),
@@ -70,7 +67,7 @@ CREATE TABLE [comments] (
   [post_id] uniqueidentifier NOT NULL,
   [is_sharepost] bit NOT NULL DEFAULT (0)
 )
-;
+GO
 
 CREATE TABLE [surveys] (
   [id] uniqueidentifier PRIMARY KEY DEFAULT (newid()),
@@ -78,11 +75,12 @@ CREATE TABLE [surveys] (
   [updated_at] datetime NOT NULL DEFAULT (getdate()),
   [is_deleted] bit NOT NULL DEFAULT (0),
   [expired_at] datetime NOT NULL,
+  [question] nvarchar(max) NOT NULL,
   [total_vote] int NOT NULL DEFAULT (0),
-  [survey_type_id] int NOT NULL,
+  [survey_type] nvarchar(255) NOT NULL CHECK ([survey_type] IN ('MultiOption', 'SingleOption')),
   [post_id] uniqueidentifier NOT NULL
 )
-;
+GO
 
 CREATE TABLE [survey_items] (
   [id] uniqueidentifier PRIMARY KEY DEFAULT (newid()),
@@ -93,7 +91,7 @@ CREATE TABLE [survey_items] (
   [total_vote] int NOT NULL DEFAULT (0),
   [survey_id] uniqueidentifier NOT NULL
 )
-;
+GO
 
 CREATE TABLE [share_posts] (
   [id] uniqueidentifier PRIMARY KEY DEFAULT (newid()),
@@ -107,7 +105,7 @@ CREATE TABLE [share_posts] (
   [content] nvarchar(max),
   [react_count] int NOT NULL DEFAULT (0)
 )
-;
+GO
 
 CREATE TABLE [attachments] (
   [id] uniqueidentifier PRIMARY KEY DEFAULT (newid()),
@@ -117,7 +115,7 @@ CREATE TABLE [attachments] (
   [media] nvarchar(255) NOT NULL,
   [description] nvarchar(100)
 )
-;
+GO
 
 CREATE TABLE [groups] (
   [id] uniqueidentifier PRIMARY KEY DEFAULT (newid()),
@@ -128,7 +126,7 @@ CREATE TABLE [groups] (
   [avatar] nvarchar(255),
   [wallpaper] nvarchar(255)
 )
-;
+GO
 
 CREATE TABLE [pages] (
   [id] uniqueidentifier PRIMARY KEY DEFAULT (newid()),
@@ -139,7 +137,7 @@ CREATE TABLE [pages] (
   [avatar] nvarchar(255),
   [wallpaper] nvarchar(255)
 )
-;
+GO
 
 CREATE TABLE [notifications] (
   [id] uniqueidentifier PRIMARY KEY DEFAULT (newid()),
@@ -149,13 +147,13 @@ CREATE TABLE [notifications] (
   [is_deleted] bit NOT NULL DEFAULT (0),
   [title] nvarchar(255) NOT NULL,
   [description] nvarchar(max) NOT NULL,
-  [noti_type] int NOT NULL,
+  [noti_type] nvarchar(255) NOT NULL CHECK ([noti_type] IN ('Normal', 'Warning', 'System', 'Calendar', 'HappyBirthday')),
   [destination_id] uniqueidentifier,
   [organization_name] nvarchar(255),
-  [startedat] datetime NOT NULL DEFAULT (getdate()),
-  [endedat] datetime DEFAULT (getdate())
+  [started_at] datetime NOT NULL DEFAULT (getdate()),
+  [ended_at] datetime DEFAULT (getdate())
 )
-;
+GO
 
 CREATE TABLE [chat_groups] (
   [id] uniqueidentifier PRIMARY KEY DEFAULT (newid()),
@@ -164,9 +162,9 @@ CREATE TABLE [chat_groups] (
   [is_deleted] bit NOT NULL DEFAULT (0),
   [name] nvarchar(50) NOT NULL,
   [theme] nvarchar(255) NOT NULL CHECK ([theme] IN ('NormalTheme', 'ColorTheme')),
-  [group_type] nvarchar(50) NOT NULL
+  [group_type] nvarchar(255) NOT NULL CHECK ([group_type] IN ('Private', 'Public'))
 )
-;
+GO
 
 CREATE TABLE [messages] (
   [id] uniqueidentifier PRIMARY KEY DEFAULT (newid()),
@@ -182,13 +180,13 @@ CREATE TABLE [messages] (
   [is_reponse] bit NOT NULL DEFAULT (0),
   [is_pinned] bit NOT NULL DEFAULT (0)
 )
-;
+GO
 
 CREATE TABLE [organizations] (
   [id] uniqueidentifier PRIMARY KEY,
   [name] nvarchar(255) NOT NULL,
   [description] nvarchar(500),
-  [department] nvarchar(255) NOT NULL CHECK ([department] IN ('Director', 'Accounting', 'HR', 'IT', 'Business', 'Ticket')),
+  [department] nvarchar(255) NOT NULL CHECK ([department] IN ('Director', 'Accounting', 'HR', 'IT', 'Business', 'Ticket')) NOT NULL,
   [email] nvarchar(100) NOT NULL,
   [phone_number] nvarchar(20) NOT NULL,
   [address] nvarchar(255) NOT NULL,
@@ -198,28 +196,28 @@ CREATE TABLE [organizations] (
   [parentid] uniqueidentifier,
   [employee_count] int NOT NULL DEFAULT (0)
 )
-;
+GO
 
 CREATE TABLE [comment_response] (
   [comment_id] uniqueidentifier NOT NULL,
   [response_id] uniqueidentifier NOT NULL,
   PRIMARY KEY ([comment_id], [response_id])
 )
-;
+GO
 
 CREATE TABLE [message_response] (
   [message_id] uniqueidentifier NOT NULL,
   [response_id] uniqueidentifier NOT NULL,
   PRIMARY KEY ([message_id], [response_id])
 )
-;
+GO
 
 CREATE TABLE [user_surveyitem_vote] (
   [user_id] uniqueidentifier NOT NULL,
   [surveyitem_id] uniqueidentifier NOT NULL,
   PRIMARY KEY ([user_id], [surveyitem_id])
 )
-;
+GO
 
 CREATE TABLE [user_group] (
   [user_id] uniqueidentifier NOT NULL,
@@ -231,7 +229,7 @@ CREATE TABLE [user_group] (
   [is_deleted] bit NOT NULL DEFAULT (0),
   PRIMARY KEY ([user_id], [group_id])
 )
-;
+GO
 
 CREATE TABLE [user_page] (
   [user_id] uniqueidentifier NOT NULL,
@@ -243,7 +241,7 @@ CREATE TABLE [user_page] (
   [is_deleted] bit NOT NULL DEFAULT (0),
   PRIMARY KEY ([user_id], [page_id])
 )
-;
+GO
 
 CREATE TABLE [user_chatgroup] (
   [user_id] uniqueidentifier NOT NULL,
@@ -253,42 +251,42 @@ CREATE TABLE [user_chatgroup] (
   [role] nvarchar(255) NOT NULL CHECK ([role] IN ('Owner', 'Admin', 'Mod', 'Member')),
   PRIMARY KEY ([user_id], [chatgroup_id])
 )
-;
+GO
 
 CREATE TABLE [post_tag] (
   [post_id] uniqueidentifier NOT NULL,
   [tag_id] int NOT NULL,
   PRIMARY KEY ([post_id], [tag_id])
 )
-;
+GO
 
 CREATE TABLE [notification_tag] (
   [notification_id] uniqueidentifier NOT NULL,
   [tag_id] int NOT NULL,
   PRIMARY KEY ([notification_id], [tag_id])
 )
-;
+GO
 
 CREATE TABLE [post_attachment] (
   [post_id] uniqueidentifier NOT NULL,
-  [attachmentid] uniqueidentifier NOT NULL,
-  PRIMARY KEY ([post_id], [attachmentid])
+  [attachment_id] uniqueidentifier NOT NULL,
+  PRIMARY KEY ([post_id], [attachment_id])
 )
-;
+GO
 
 CREATE TABLE [comment_attachment] (
   [comment_id] uniqueidentifier NOT NULL,
   [attachment_id] uniqueidentifier NOT NULL,
   PRIMARY KEY ([comment_id], [attachment_id])
 )
-;
+GO
 
 CREATE TABLE [message_attachment] (
   [message_id] uniqueidentifier NOT NULL,
   [attachment_id] uniqueidentifier NOT NULL,
   PRIMARY KEY ([message_id], [attachment_id])
 )
-;
+GO
 
 CREATE TABLE [user_react_post] (
   [user_id] uniqueidentifier NOT NULL,
@@ -300,7 +298,7 @@ CREATE TABLE [user_react_post] (
   [is_deleted] bit NOT NULL DEFAULT (0),
   PRIMARY KEY ([user_id], [post_id])
 )
-;
+GO
 
 CREATE TABLE [user_react_comment] (
   [user_id] uniqueidentifier NOT NULL,
@@ -311,7 +309,7 @@ CREATE TABLE [user_react_comment] (
   [is_deleted] bit NOT NULL DEFAULT (0),
   PRIMARY KEY ([user_id], [commentid])
 )
-;
+GO
 
 CREATE TABLE [user_react_message] (
   [user_id] uniqueidentifier NOT NULL,
@@ -322,7 +320,7 @@ CREATE TABLE [user_react_message] (
   [is_deleted] bit NOT NULL DEFAULT (0),
   PRIMARY KEY ([user_id], [message_id])
 )
-;
+GO
 
 CREATE TABLE [user_organization] (
   [user_id] uniqueidentifier NOT NULL,
@@ -332,8 +330,8 @@ CREATE TABLE [user_organization] (
   [is_deleted] bit NOT NULL DEFAULT (0),
   [organization_role] nvarchar(255) NOT NULL CHECK ([organization_role] IN ('CEO', 'COO', 'VP', 'Manager', 'Lead', 'Employee', 'Probation', 'Intern')),
   PRIMARY KEY ([user_id], [node_id])
-);
-
+)
+GO
 
 ALTER TABLE [user_details] ADD FOREIGN KEY ([user_id]) REFERENCES [users] ([id])
 GO
@@ -416,7 +414,7 @@ GO
 ALTER TABLE [post_attachment] ADD FOREIGN KEY ([post_id]) REFERENCES [posts] ([id])
 GO
 
-ALTER TABLE [post_attachment] ADD FOREIGN KEY ([attachmentid]) REFERENCES [attachments] ([id])
+ALTER TABLE [post_attachment] ADD FOREIGN KEY ([attachment_id]) REFERENCES [attachments] ([id])
 GO
 
 ALTER TABLE [comment_attachment] ADD FOREIGN KEY ([comment_id]) REFERENCES [comments] ([id])
@@ -451,4 +449,3 @@ GO
 
 ALTER TABLE [user_organization] ADD FOREIGN KEY ([node_id]) REFERENCES [organizations] ([id])
 GO
-

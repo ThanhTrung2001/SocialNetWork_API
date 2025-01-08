@@ -4,10 +4,10 @@
     {
         public string Title { get; set; }
         public string Description { get; set; }
-        public int NotiType { get; set; }
-        public Guid? DestinationId { get; set; }
-        public DateTime StartedAt { get; set; } = DateTime.Now;
-        public DateTime? EndedAt { get; set; }
-        public string OrganizationName { get; set; }
+        public string Noti_Type { get; set; }
+        public Guid? Destination_Id { get; set; }
+        public DateTime Started_At { get; set; } = DateTime.Now;
+        public DateTime? Ended_At { get; set; }
+        public string Organization_Name { get; set; }
     }
 }

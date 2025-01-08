@@ -3,9 +3,10 @@
     public class CreateCommentCommand
     {
         public string Content { get; set; }
-        public Guid UserId { get; set; }
-        public bool IsResponse { get; set; }
-        public Guid? CommentId { get; set; }
+        public Guid User_Id { get; set; }
+        public bool Is_Response { get; set; }
+        public bool Is_SharePost { get; set; }
+        public Guid? Comment_Id { get; set; }
         public List<CreateAttachmentCommand>? Attachments { get; set; } = new List<CreateAttachmentCommand>();
 
     }
@@ -13,6 +14,6 @@
     public class EditCommentCommand
     {
         public string Content { get; set; }
-        public Guid UserId { get; set; }
+        public Guid User_Id { get; set; }
     }
 }

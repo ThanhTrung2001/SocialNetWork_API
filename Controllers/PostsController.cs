@@ -28,82 +28,80 @@ namespace EnVietSocialNetWorkAPI.Controllers
         {
             var query = @"
             SELECT 
-                p.Id AS PostId,
+                p.Id,
                 p.Content,
-                p.PostTypeId,
-                p.CreatedAt,
-                p.InGroup,
-                p.DestinationId,
-                p.UserId,
+                p.Post_Type_Id,
+                p.Created_At,
+                p.In_Group,
+                p.Destination_Id,
+                p.User_Id,
                 u.Email,
                 ud.FirstName,
                 ud.LastName,
                 ud.Avatar,
 
-                a.Id AS AttachmentId,
+                a.Id AS Attachment_Id,
                 a.Media,
                 a.Description,
 
-                s.Id AS SurveyId,
-                s.ExpiredAt,
+                s.Id AS Survey_Id,
+                s.Expired_At,
                 s.Question,
-                s.Total,
+                s.Survey_Type,
+                s.Total_Vote,
 
-                si.Id AS SurveyItemId,
-                si.OptionName AS SurveyItemName,
-                si.Total AS ItemTotal,
+                si.Id AS SurveyItem_Id,
+                si.Option_Name AS SurveyItem_Name,
+                si.Total_Vote AS Item_Total,
 
-                udv.UserId AS UserVoteId,
-                udv.FirstName AS VoteFirstName,
-                udv.LastName AS VoteLastName,
-                udv.Avatar AS VoteAvatar,
+                udv.User_Id AS Vote_UserId,
+                udv.FirstName AS Vote_FirstName,
+                udv.LastName AS Vote_LastName,
+                udv.Avatar AS Vote_Avatar,
                  
-                c.Id AS CommentId,
-                c.Content AS CommentContent,
-                c.CreatedAt AS CommentCreatedAt,
-                c.UserId AS CommentUserId,
-                udc.FirstName AS CommentFirstName,
-                udc.LastName AS CommentLastName,
-                udc.Avatar AS CommentAvatar,
+                c.Id AS Comment_Id,
+                c.Content AS Comment_Content,
+                c.Created_At AS Comment_Created_At,
+                c.User_Id AS Comment_UserId,
+                udc.FirstName AS Comment_FirstName,
+                udc.LastName AS Comment_LastName,
+                udc.Avatar AS Comment_Avatar,
 
-                r.Id AS ReactId,
-                r.TypeName,
-                udr.UserId AS ReactUserId,
-                udr.FirstName AS ReactFirstName,
-                udr.LastName AS ReactLastName,
-                udr.Avatar AS ReactAvatar,
-                udr.CreatedAt
+                urp.React_Type,
+                udr.User_Id AS React_UserId,
+                udr.FirstName AS React_FirstName,
+                udr.LastName AS React_LastName,
+                udr.Avatar AS React_Avatar,
+                udr.Created_At
 
             FROM 
                 Posts p
             INNER JOIN 
-                Users u ON p.UserId = u.Id
+                Users u ON p.User_Id = u.Id
             INNER JOIN 
-                UserDetails ud ON u.Id = ud.UserId
+                User_Details ud ON u.Id = ud.User_Id
             LEFT JOIN
-                PostAttachment pa ON pa.PostId = p.Id
+                Post_Attachment pa ON pa.Post_Id = p.Id
             LEFT JOIN
-                Attachments a ON pa.AttachmentId = a.Id
+                Attachments a ON pa.Attachment_Id = a.Id
             LEFT JOIN 
-                Surveys s ON p.Id = s.PostId
+                Surveys s ON p.Id = s.Id
             LEFT JOIN 
-                SurveyItems si ON s.Id = si.SurveyId
+                Survey_Items si ON s.Id = si.Survey_Id
             LEFT JOIN
-                UserVote uv ON si.Id = uv.SurveyItemId
+                User_SurveyItem_Vote uv ON si.Id = uv.SurveyItem_Id
             LEFT JOIN 
-                UserDetails udv ON udv.UserId = uv.UserId 
+                User_Details udv ON udv.User_Id = uv.User_Id 
             LEFT JOIN
-                Comments c ON p.Id = c.PostId
+                Comments c ON p.Id = c.Post_Id
             LEFT JOIN
-                UserDetails udc ON c.UserId = udc.UserId
+                User_Details udc ON c.User_Id = udc.User_Id
             LEFT JOIN
-                UserReactPost urp ON p.Id = urp.PostId
-            LEFT JOIN 
-                ReactTypes r ON r.Id = urp.ReactTypeId
+                User_React_Post urp ON p.Id = urp.Post_Id
             LEFT JOIN
-                UserDetails udr ON urp.UserId = udr.UserId 
+                User_Details udr ON urp.User_Id = udr.User_Id 
             WHERE 
-                p.IsDeleted = 0;";
+                p.Is_Deleted = 0;";
 
             try
             {
@@ -115,43 +113,43 @@ namespace EnVietSocialNetWorkAPI.Controllers
                     query,
                     map: (post, attachment, survey, surveyItem, vote, comment, react) =>
                     {
-                        if (!postDict.TryGetValue(post.PostId, out var postEntry))
+                        if (!postDict.TryGetValue(post.Id, out var postEntry))
                         {
                             postEntry = post;
-                            postDict.Add(post.PostId, postEntry);
+                            postDict.Add(post.Id, postEntry);
                         }
 
-                        if (post.PostTypeId == 1 && attachment != null && !postEntry.Attachments.Any((item) => item.AttachmentId == attachment.AttachmentId))
+                        if (post.Post_Type_Id == 1 && attachment != null && !postEntry.Attachments.Any((item) => item.Attachment_Id == attachment.Attachment_Id))
                         {
                             postEntry.Attachments.Add(attachment);
                         }
 
-                        if (post.PostTypeId == 2 && survey != null)
+                        if (post.Post_Type_Id == 2 && survey != null)
                         {
                             postEntry.Survey = survey;
-                            if (surveyItem != null && !postEntry.Survey.SurveyItems.Any((item) => item.SurveyItemId == surveyItem.SurveyItemId))
+                            if (surveyItem != null && !postEntry.Survey.SurveyItems.Any((item) => item.SurveyItem_Id == surveyItem.SurveyItem_Id))
                             {
                                 postEntry.Survey.SurveyItems.Add(surveyItem);
-                                var result = postEntry.Survey.SurveyItems.FirstOrDefault((x) => x.SurveyItemId == surveyItem.SurveyItemId);
-                                if (vote != null && !result.Votes.Any((item) => item.UserVoteId == vote.UserVoteId))
+                                var result = postEntry.Survey.SurveyItems.FirstOrDefault((x) => x.SurveyItem_Id == surveyItem.SurveyItem_Id);
+                                if (vote != null && !result.Votes.Any((item) => item.Vote_UserId == vote.Vote_UserId))
                                 {
                                     result.Votes.Add(vote);
                                 }
                             }
                         }
 
-                        if (comment != null && !postEntry.Comments.Any((item) => item.CommentId == comment.CommentId))
+                        if (comment != null && !postEntry.Comments.Any((item) => item.Comment_Id == comment.Comment_Id))
                         {
                             postEntry.Comments.Add(comment);
                         }
-                        if (react != null && !postEntry.Reacts.Any((item) => item.ReactId == react.ReactId))
+                        if (react != null && !postEntry.Reacts.Any((item) => item.React_UserId == react.React_UserId))
                         {
                             postEntry.Reacts.Add(react);
                         }
                         return postEntry;
                     },
 
-                    splitOn: "AttachmentId, SurveyId, SurveyItemId, UserVoteId, CommentId, ReactId");
+                    splitOn: "Attachment_Id, Survey_Id, SurveyItem_Id, Vote_UserId, Comment_Id, React_Type");
                     return postDict.Values.ToList();
                 }
             }
@@ -166,82 +164,80 @@ namespace EnVietSocialNetWorkAPI.Controllers
         {
             var query = @"
             SELECT 
-                p.Id AS PostId,
+                p.Id,
                 p.Content,
-                p.PostTypeId,
-                p.CreatedAt,
-                p.InGroup,
-                p.DestinationId,
-                p.UserId,
+                p.Post_Type_Id,
+                p.Created_At,
+                p.In_Group,
+                p.Destination_Id,
+                p.User_Id,
                 u.Email,
                 ud.FirstName,
                 ud.LastName,
                 ud.Avatar,
 
-                a.Id AS AttachmentId,
+                a.Id AS Attachment_Id,
                 a.Media,
                 a.Description,
 
-                s.Id AS SurveyId,
-                s.ExpiredAt,
+                s.Id AS Survey_Id,
+                s.Expired_At,
                 s.Question,
-                s.Total,
+                s.Survey_Type,
+                s.Total_Vote,
 
-                si.Id AS SurveyItemId,
-                si.OptionName AS SurveyItemName,
-                si.Total AS ItemTotal,
+                si.Id AS SurveyItem_Id,
+                si.Option_Name AS SurveyItem_Name,
+                si.Total_Vote AS Item_Total,
 
-                udv.UserId AS UserVoteId,
-                udv.FirstName AS VoteFirstName,
-                udv.LastName AS VoteLastName,
-                udv.Avatar AS VoteAvatar,
+                udv.User_Id AS Vote_UserId,
+                udv.FirstName AS Vote_FirstName,
+                udv.LastName AS Vote_LastName,
+                udv.Avatar AS Vote_Avatar,
                  
-                c.Id AS CommentId,
-                c.Content AS CommentContent,
-                c.CreatedAt AS CommentCreatedAt,
-                c.UserId AS CommentUserId,
-                udc.FirstName AS CommentFirstName,
-                udc.LastName AS CommentLastName,
-                udc.Avatar AS CommentAvatar,
+                c.Id AS Comment_Id,
+                c.Content AS Comment_Content,
+                c.Created_At AS Comment_Created_At,
+                c.User_Id AS Comment_UserId,
+                udc.FirstName AS Comment_FirstName,
+                udc.LastName AS Comment_LastName,
+                udc.Avatar AS Comment_Avatar,
 
-                r.Id AS ReactId,
-                r.TypeName,
-                udr.UserId AS ReactUserId,
-                udr.FirstName AS ReactFirstName,
-                udr.LastName AS ReactLastName,
-                udr.Avatar AS ReactAvatar,
-                udr.CreatedAt
+                urp.React_Type,
+                udr.User_Id AS React_UserId,
+                udr.FirstName AS React_FirstName,
+                udr.LastName AS React_LastName,
+                udr.Avatar AS React_Avatar,
+                udr.Created_At
 
             FROM 
                 Posts p
             INNER JOIN 
-                Users u ON p.UserId = u.Id
+                Users u ON p.User_Id = u.Id
             INNER JOIN 
-                UserDetails ud ON u.Id = ud.UserId
+                User_Details ud ON u.Id = ud.User_Id
             LEFT JOIN
-                PostAttachment pa ON pa.PostId = p.Id
+                Post_Attachment pa ON pa.Post_Id = p.Id
             LEFT JOIN
-                Attachments a ON pa.AttachmentId = a.Id
+                Attachments a ON pa.Attachment_Id = a.Id
             LEFT JOIN 
-                Surveys s ON p.Id = s.PostId
+                Surveys s ON p.Id = s.Id
             LEFT JOIN 
-                SurveyItems si ON s.Id = si.SurveyId
+                Survey_Items si ON s.Id = si.Survey_Id
             LEFT JOIN
-                UserVote uv ON si.Id = uv.SurveyItemId
+                User_SurveyItem_Vote uv ON si.Id = uv.SurveyItem_Id
             LEFT JOIN 
-                UserDetails udv ON udv.UserId = uv.UserId 
+                User_Details udv ON udv.User_Id = uv.User_Id 
             LEFT JOIN
-                Comments c ON p.Id = c.PostId
+                Comments c ON p.Id = c.Post_Id
             LEFT JOIN
-                UserDetails udc ON c.UserId = udc.UserId
+                User_Details udc ON c.User_Id = udc.User_Id
             LEFT JOIN
-                UserReactPost urp ON p.Id = urp.PostId
-            LEFT JOIN 
-                ReactTypes r ON r.Id = urp.ReactTypeId
+                User_React_Post urp ON p.Id = urp.Post_Id
             LEFT JOIN
-                UserDetails udr ON urp.UserId = udr.UserId 
+                User_Details udr ON urp.User_Id = udr.User_Id 
             WHERE 
-                p.IsDeleted = 0 AND p.UserId = @Id AND p.InGroup = 0;";
+                p.Is_Deleted = 0 AND p.User_Id = @Id AND p.In_Group = 0;";
 
             try
             {
@@ -255,43 +251,43 @@ namespace EnVietSocialNetWorkAPI.Controllers
                     query,
                     map: (post, attachment, survey, surveyItem, vote, comment, react) =>
                     {
-                        if (!postDict.TryGetValue(post.PostId, out var postEntry))
+                        if (!postDict.TryGetValue(post.Id, out var postEntry))
                         {
                             postEntry = post;
-                            postDict.Add(post.PostId, postEntry);
+                            postDict.Add(post.Id, postEntry);
                         }
 
-                        if (post.PostTypeId == 1 && attachment != null && !postEntry.Attachments.Any((item) => item.AttachmentId == attachment.AttachmentId))
+                        if (post.Post_Type_Id == 1 && attachment != null && !postEntry.Attachments.Any((item) => item.Attachment_Id == attachment.Attachment_Id))
                         {
                             postEntry.Attachments.Add(attachment);
                         }
 
-                        if (post.PostTypeId == 2 && survey != null)
+                        if (post.Post_Type_Id == 2 && survey != null)
                         {
                             postEntry.Survey = survey;
-                            if (surveyItem != null && !postEntry.Survey.SurveyItems.Any((item) => item.SurveyItemId == surveyItem.SurveyItemId))
+                            if (surveyItem != null && !postEntry.Survey.SurveyItems.Any((item) => item.SurveyItem_Id == surveyItem.SurveyItem_Id))
                             {
                                 postEntry.Survey.SurveyItems.Add(surveyItem);
-                                var result = postEntry.Survey.SurveyItems.FirstOrDefault((x) => x.SurveyItemId == surveyItem.SurveyItemId);
-                                if (vote != null && !result.Votes.Any((item) => item.UserVoteId == vote.UserVoteId))
+                                var result = postEntry.Survey.SurveyItems.FirstOrDefault((x) => x.SurveyItem_Id == surveyItem.SurveyItem_Id);
+                                if (vote != null && !result.Votes.Any((item) => item.Vote_UserId == vote.Vote_UserId))
                                 {
                                     result.Votes.Add(vote);
                                 }
                             }
                         }
 
-                        if (comment != null && !postEntry.Comments.Any((item) => item.CommentId == comment.CommentId))
+                        if (comment != null && !postEntry.Comments.Any((item) => item.Comment_Id == comment.Comment_Id))
                         {
                             postEntry.Comments.Add(comment);
                         }
-                        if (react != null && !postEntry.Reacts.Any((item) => item.ReactId == react.ReactId))
+                        if (react != null && !postEntry.Reacts.Any((item) => item.React_UserId == react.React_UserId))
                         {
                             postEntry.Reacts.Add(react);
                         }
                         return postEntry;
                     },
                     parameter,
-                    splitOn: "AttachmentId, SurveyId, SurveyItemId, UserVoteId, CommentId, ReactId");
+                    splitOn: "Attachment_Id, Survey_Id, SurveyItem_Id, Vote_UserId, Comment_Id, React_Type");
                     return postDict.Values.ToList();
                 }
             }
@@ -307,82 +303,80 @@ namespace EnVietSocialNetWorkAPI.Controllers
         {
             var query = @"
             SELECT 
-                p.Id AS PostId,
+                p.Id,
                 p.Content,
-                p.PostTypeId,
-                p.CreatedAt,
-                p.InGroup,
-                p.DestinationId,
-                p.UserId,
+                p.Post_Type_Id,
+                p.Created_At,
+                p.In_Group,
+                p.Destination_Id,
+                p.User_Id,
                 u.Email,
                 ud.FirstName,
                 ud.LastName,
                 ud.Avatar,
 
-                a.Id AS AttachmentId,
+                a.Id AS Attachment_Id,
                 a.Media,
                 a.Description,
 
-                s.Id AS SurveyId,
-                s.ExpiredAt,
+                s.Id AS Survey_Id,
+                s.Expired_At,
                 s.Question,
-                s.Total,
+                s.Survey_Type,
+                s.Total_Vote,
 
-                si.Id AS SurveyItemId,
-                si.OptionName AS SurveyItemName,
-                si.Total AS ItemTotal,
+                si.Id AS SurveyItem_Id,
+                si.Option_Name AS SurveyItem_Name,
+                si.Total_Vote AS Item_Total,
 
-                udv.UserId AS UserVoteId,
-                udv.FirstName AS VoteFirstName,
-                udv.LastName AS VoteLastName,
-                udv.Avatar AS VoteAvatar,
-     
-                c.Id AS CommentId,
-                c.Content AS CommentContent,
-                c.CreatedAt AS CommentCreatedAt,
-                c.UserId AS CommentUserId,
-                udc.FirstName AS CommentFirstName,
-                udc.LastName AS CommentLastName,
-                udc.Avatar AS CommentAvatar,
+                udv.User_Id AS Vote_UserId,
+                udv.FirstName AS Vote_FirstName,
+                udv.LastName AS Vote_LastName,
+                udv.Avatar AS Vote_Avatar,
+                 
+                c.Id AS Comment_Id,
+                c.Content AS Comment_Content,
+                c.Created_At AS Comment_Created_At,
+                c.User_Id AS Comment_UserId,
+                udc.FirstName AS Comment_FirstName,
+                udc.LastName AS Comment_LastName,
+                udc.Avatar AS Comment_Avatar,
 
-                r.Id AS ReactId,
-                r.TypeName,
-                udr.UserId AS ReactUserId,
-                udr.FirstName AS ReactFirstName,
-                udr.LastName AS ReactLastName,
-                udr.Avatar AS ReactAvatar,
-                udr.CreatedAt
+                urp.React_Type,
+                udr.User_Id AS React_UserId,
+                udr.FirstName AS React_FirstName,
+                udr.LastName AS React_LastName,
+                udr.Avatar AS React_Avatar,
+                udr.Created_At
 
             FROM 
                 Posts p
             INNER JOIN 
-                Users u ON p.UserId = u.Id
+                Users u ON p.User_Id = u.Id
             INNER JOIN 
-                UserDetails ud ON u.Id = ud.UserId
+                User_Details ud ON u.Id = ud.User_Id
             LEFT JOIN
-                PostAttachment pa ON pa.PostId = p.Id
+                Post_Attachment pa ON pa.Post_Id = p.Id
             LEFT JOIN
-                Attachments a ON pa.AttachmentId = a.Id
+                Attachments a ON pa.Attachment_Id = a.Id
             LEFT JOIN 
-                Surveys s ON p.Id = s.PostId
+                Surveys s ON p.Id = s.Id
             LEFT JOIN 
-                SurveyItems si ON s.Id = si.SurveyId
+                Survey_Items si ON s.Id = si.Survey_Id
             LEFT JOIN
-                UserVote uv ON si.Id = uv.SurveyItemId
+                User_SurveyItem_Vote uv ON si.Id = uv.SurveyItem_Id
             LEFT JOIN 
-                UserDetails udv ON udv.UserId = uv.UserId 
+                User_Details udv ON udv.User_Id = uv.User_Id 
             LEFT JOIN
-                Comments c ON p.Id = c.PostId
+                Comments c ON p.Id = c.Post_Id
             LEFT JOIN
-                UserDetails udc ON c.UserId = udc.UserId
+                User_Details udc ON c.User_Id = udc.User_Id
             LEFT JOIN
-                UserReactPost urp ON p.Id = urp.PostId
-            LEFT JOIN 
-                ReactTypes r ON r.Id = urp.ReactTypeId
+                User_React_Post urp ON p.Id = urp.Post_Id
             LEFT JOIN
-                UserDetails udr ON urp.UserId = udr.UserId 
+                User_Details udr ON urp.User_Id = udr.User_Id 
             WHERE 
-                p.IsDeleted = 0 AND p.Id = @Id;";
+                p.Is_Deleted = 0 AND p.Id = @Id;";
 
             try
             {
@@ -402,37 +396,37 @@ namespace EnVietSocialNetWorkAPI.Controllers
                             postBasic = post;
                         }
 
-                        if (post.PostTypeId == 1 && attachment != null && !postBasic.Attachments.Any((item) => item.AttachmentId == attachment.AttachmentId))
+                        if (post.Post_Type_Id == 1 && attachment != null && !postBasic.Attachments.Any((item) => item.Attachment_Id == attachment.Attachment_Id))
                         {
                             postBasic.Attachments.Add(attachment);
                         }
 
-                        if (post.PostTypeId == 2 && survey != null)
+                        if (post.Post_Type_Id == 2 && survey != null)
                         {
                             postBasic.Survey = survey;
-                            if (surveyItem != null && !postBasic.Survey.SurveyItems.Any((item) => item.SurveyItemId == surveyItem.SurveyItemId))
+                            if (surveyItem != null && !postBasic.Survey.SurveyItems.Any((item) => item.SurveyItem_Id == surveyItem.SurveyItem_Id))
                             {
                                 postBasic.Survey.SurveyItems.Add(surveyItem);
-                                var result = postBasic.Survey.SurveyItems.FirstOrDefault((x) => x.SurveyItemId == surveyItem.SurveyItemId);
-                                if (vote != null && !result.Votes.Any((item) => item.UserVoteId == vote.UserVoteId))
+                                var result = postBasic.Survey.SurveyItems.FirstOrDefault((x) => x.SurveyItem_Id == surveyItem.SurveyItem_Id);
+                                if (vote != null && !result.Votes.Any((item) => item.Vote_UserId == vote.Vote_UserId))
                                 {
                                     result.Votes.Add(vote);
                                 }
                             }
                         }
 
-                        if (comment != null && !postBasic.Comments.Any((item) => item.CommentId == comment.CommentId))
+                        if (comment != null && !postBasic.Comments.Any((item) => item.Comment_Id == comment.Comment_Id))
                         {
                             postBasic.Comments.Add(comment);
                         }
-                        if (react != null && !postBasic.Reacts.Any((item) => item.ReactId == react.ReactId))
+                        if (react != null && !postBasic.Reacts.Any((item) => item.React_UserId == react.React_UserId))
                         {
                             postBasic.Reacts.Add(react);
                         }
                         return postBasic;
                     },
                     parameter,
-                    splitOn: "AttachmentId, SurveyId, SurveyItemId, UserVoteId, CommentId, ReactId");
+                    splitOn: "Attachment_Id, Survey_Id, SurveyItem_Id, Vote_UserId, Comment_Id, React_Type");
                     return postBasic;
                 }
             }
@@ -447,25 +441,25 @@ namespace EnVietSocialNetWorkAPI.Controllers
         public async Task<IActionResult> Post(CreatePostRequest request)
         {
             var newPost = request.NewPost;
-            var queryPost = @"INSERT INTO Posts (Id, CreatedAt, UpdatedAt, IsDeleted, DestinationId, InGroup, PostTypeId, Content, UserId, ReactCount)
+            var queryPost = @"INSERT INTO Posts (Id, Created_At, Updated_At, Is_Deleted, Destination_Id, In_Group, Post_Type_Id, Content, User_Id, React_Count)
                               OUTPUT Inserted.Id
                               VALUES 
-                              (NEWID(), GETDATE(), GETDATE(), 0, @DestinationId, @InGroup, @PostTypeId, @Content, @UserId, 0);";
-            var queryAttachment = @"INSERT INTO Attachments (Id, CreatedAt, UpdatedAt, IsDeleted, Media, Description)
+                              (NEWID(), GETDATE(), GETDATE(), 0, @Destination_Id, @In_Group, @Post_Type_Id, @Content, @User_Id, 0);";
+            var queryAttachment = @"INSERT INTO Attachments (Id, Created_At, Updated_At, Is_Deleted, Media, Description)
                                OUTPUT Inserted.Id
                                VALUES 
                                (NEWID(), GETDATE(), GETDATE(), 0, @Media, @Description)";
-            var queryPostAttachment = @"INSERT INTO PostAttachment (PostId, AttachmentId)
+            var queryPost_Attachment = @"INSERT INTO Post_Attachment (Id, Attachment_Id)
                                VALUES 
-                               (@PostId, @AttachmentId)";
-            var querySurvey = @"INSERT INTO Surveys (ID, CreatedAt, UpdatedAt, IsDeleted, ExpiredAt, Total, SurveyTypeId, PostId, Question)
+                               (@Id, @Attachment_Id)";
+            var querySurvey = @"INSERT INTO Surveys (ID, Created_At, Updated_At, Is_Deleted, Expired_At, Total, Survey_Type, Id, Question)
                                 OUTPUT Inserted.Id
                                 VALUES
-                                (NEWID(), GETDATE(), GETDATE(), 0, @ExpiredAt, 0, @SurveyTypeId, @PostId, @Question)";
-            var querySurveyItem = @"INSERT INTO SurveyItems (ID, CreatedAt, UpdatedAt, IsDeleted, OptionName, Total, SurveyId)
+                                (NEWID(), GETDATE(), GETDATE(), 0, @Expired_At, 0, @Survey_Type, @Id, @Question)";
+            var querySurveyItem = @"INSERT INTO Survey_Items (ID, Created_At, Updated_At, Is_Deleted, Option_Name, Total, Survey_Id)
                                     OUTPUT Inserted.Id
                                     VALUES
-                                    (NEWID(), GETDATE(), GETDATE(), 0, @OptionName, 0, @SurveyId)";
+                                    (NEWID(), GETDATE(), GETDATE(), 0, @Option_Name, 0, @Survey_Id)";
 
             using (var connection = _context.CreateConnection())
             {
@@ -475,39 +469,39 @@ namespace EnVietSocialNetWorkAPI.Controllers
                     try
                     {
                         var parameters = new DynamicParameters();
-                        parameters.Add("InGroup", newPost.InGroup);
-                        parameters.Add("DestinationId", newPost.DestinationId);
-                        parameters.Add("PostTypeId", newPost.PostTypeId);
+                        parameters.Add("In_Group", newPost.In_Group);
+                        parameters.Add("Destination_Id", newPost.Destination_Id);
+                        parameters.Add("Post_Type_Id", newPost.Post_Type_Id);
                         parameters.Add("Content", newPost.Content);
                         parameters.Add("UserId", request.UserId);
                         //insert post first
                         var resultPost = await connection.QuerySingleAsync<Guid>(queryPost, parameters, transaction);
-                        if (request.NewPost.PostTypeId == 1)
+                        if (request.NewPost.Post_Type_Id == 1)
                         {
                             foreach (var item in request.NewPost.Attachments)
                             {
                                 parameters = new DynamicParameters();
-                                parameters.Add("PostId", resultPost);
+                                parameters.Add("Id", resultPost);
                                 parameters.Add("Media", item.Media);
                                 parameters.Add("Description", item.Description);
                                 var resultAttachment = await connection.QuerySingleAsync<Guid>(queryAttachment, parameters, transaction);
-                                parameters.Add("AttachmentId", resultAttachment);
-                                await connection.ExecuteAsync(queryPostAttachment, parameters, transaction);
+                                parameters.Add("Attachment_Id", resultAttachment);
+                                await connection.ExecuteAsync(queryPost_Attachment, parameters, transaction);
                             }
                         }
-                        else if (request.NewPost.PostTypeId == 2)
+                        else if (request.NewPost.Post_Type_Id == 2)
                         {
                             parameters = new DynamicParameters();
-                            parameters.Add("PostId", resultPost);
-                            parameters.Add("ExpiredAt", request.NewPost.Survey.ExpiredAt);
+                            parameters.Add("Id", resultPost);
+                            parameters.Add("Expired_At", request.NewPost.Survey.Expired_At);
                             parameters.Add("Question", request.NewPost.Survey.Question);
-                            parameters.Add("SurveyTypeId", request.NewPost.Survey.SurveyTypeId);
+                            parameters.Add("Survey_Type", request.NewPost.Survey.Survey_Type);
                             var resultSurvey = await connection.QuerySingleAsync<Guid>(querySurvey, parameters, transaction);
                             foreach (var item in request.NewPost.Survey.SurveyItems)
                             {
                                 parameters = new DynamicParameters();
-                                parameters.Add("SurveyId", resultSurvey);
-                                parameters.Add("OptionName", item.OptionName);
+                                parameters.Add("Survey_Id", resultSurvey);
+                                parameters.Add("Option_Name", item.Option_Name);
                                 await connection.ExecuteAsync(querySurveyItem, parameters, transaction);
                             }
                         }
@@ -530,12 +524,12 @@ namespace EnVietSocialNetWorkAPI.Controllers
         {
             var newPost = request.NewPost;
             var query = @"UPDATE Posts
-                          SET InGroup = @InGroup, PostTypIde = @PostTypeId, Content = @Content, DestinationId = @DestinationId 
+                          SET In_Group = @In_Group, Post_Type_Id = @Post_Type_Id, Content = @Content, Destination_Id = @Destination_Id 
                           WHERE Id = @Id AND UserId = @UserId";
             var parameters = new DynamicParameters();
-            parameters.Add("InGroup", newPost.InGroup);
-            parameters.Add("DestinationId", newPost.DestinationId);
-            parameters.Add("PostTypeId", newPost.PostTypeId);
+            parameters.Add("In_Group", newPost.In_Group);
+            parameters.Add("Destination_Id", newPost.Destination_Id);
+            parameters.Add("Post_Type_Id", newPost.Post_Type_Id);
             parameters.Add("Content", newPost.Content);
             parameters.Add("UserId", request.UserId);
             parameters.Add("Id", id);
@@ -550,7 +544,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(Guid id)
         {
-            var query = "Update Posts SET isDeleted = 1, UpdatedAt = GETDATE() WHERE Id = @Id";
+            var query = "Update Posts SET Is_Deleted = 1, Updated_At = GETDATE() WHERE Id = @Id";
             var parameters = new DynamicParameters();
             parameters.Add("Id", id);
             using (var connection = _context.CreateConnection())

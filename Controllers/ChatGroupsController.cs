@@ -2,7 +2,6 @@
 using EnVietSocialNetWorkAPI.DataConnection;
 using EnVietSocialNetWorkAPI.Model.Commands;
 using EnVietSocialNetWorkAPI.Model.Queries;
-using EnVietSocialNetWorkAPI.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Data;
@@ -13,11 +12,11 @@ namespace EnVietSocialNetWorkAPI.Controllers
     [AllowAnonymous]
     [Route("api/[controller]")]
     [ApiController]
-    public class ChatGroupsController : ControllerBase
+    public class Chat_GroupsController : ControllerBase
     {
         private readonly DapperContext _context;
 
-        public ChatGroupsController(DapperContext context)
+        public Chat_GroupsController(DapperContext context)
         {
             _context = context;
         }
@@ -25,9 +24,9 @@ namespace EnVietSocialNetWorkAPI.Controllers
         [HttpGet]
         public async Task<IEnumerable<ChatGroupQuery>> Get()
         {
-            var query = @"SELECT Id, ChatName, ThemeId, GroupType
-                          FROM ChatGroups
-                          WHERE IsDeleted = 0;";
+            var query = @"SELECT Id, Name, Theme, Group_Type
+                          FROM Chat_Groups
+                          WHERE Is_Deleted = 0;";
             using (var connection = _context.CreateConnection())
             {
                 var result = await connection.QueryAsync<ChatGroupQuery>(query);
@@ -39,13 +38,13 @@ namespace EnVietSocialNetWorkAPI.Controllers
         public async Task<ChatGroupQuery> GetChatGroupDetail(Guid id)
         {
             var query = @"SELECT 
-                          c.Id, c.ChatName, c.ThemeId, c.GroupType
-                          FROM ChatGroups c
+                          c.Id, c.Name, c.Theme, c.Group_Type
+                          FROM Chat_Groups c
                           WHERE Id = @Id;"
-                      + @"SELECT ud.UserId, ud.FirstName, ud.LastName, ud.Avatar 
-                          FROM UserDetails ud
-                          INNER JOIN UserChatGroup ucg ON ucg.UserId = ud.UserId
-                          WHERE ucg.ChatGroupId = @Id;";
+                      + @"SELECT ud.User_Id, ud.FirstName, ud.LastName, ud.Avatar , ucg.Role
+                          FROM User_Details ud
+                          INNER JOIN User_ChatGroup ucg ON ucg.User_Id = ud.User_Id
+                          WHERE ucg.ChatGroup_Id = @Id;";
             var parameter = new DynamicParameters();
             parameter.Add("Id", id);
             using (var connection = _context.CreateConnection())
@@ -57,7 +56,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
                     {
                         foreach (UserChatGroupQuery user in (await multi.ReadAsync<UserChatGroupQuery>()).ToList())
                         {
-                            if (user != null && !ChatGroup.Users.Any((item) => item.UserId == user.UserId))
+                            if (user != null && !ChatGroup.Users.Any((item) => item.User_Id == user.User_Id))
                             {
                                 ChatGroup.Users.Add(user);
                             }
@@ -71,42 +70,48 @@ namespace EnVietSocialNetWorkAPI.Controllers
         [HttpPost]
         public async Task<dynamic> CreateChatGroup(CreateChatGroupCommand ChatGroup)
         {
-            if (ChatGroup.GroupType == "private")
+            if (ChatGroup.Group_Type == "private" && ChatGroup.Users.Count == 2)
             {
-                var existResult = await GetPrivateChatGroup(ChatGroup.Users[0], ChatGroup.Users[1]);
+                var existResult = await GetPrivateChatGroup(ChatGroup.Users[0].User_Id, ChatGroup.Users[1].User_Id);
                 if (existResult != Guid.Empty)
                 {
                     return BadRequest("Existed already: " + existResult);
                 }
             }
-            var execChatGroup = @"INSERT INTO ChatGroups (Id, CreatedAt, UpdatedAt, IsDeleted, ChatName, ThemeId, GroupType)
-                        OUTPUT Inserted.Id
-                        VALUES 
-                        (NEWID(), GETDATE(), GETDATE(), 0, @ChatName, @ThemeId, @GroupType);";
-            var execUserChatGroup = @"INSERT INTO UserChatGroup (UserId, ChatGroupId) VALUES (@UserId, @ChatGroupId)";
+            var execChatGroup = @"INSERT INTO Chat_Groups (Id, Created_At, Updated_At, Is_Deleted, Name, Theme, Group_Type)
+                                OUTPUT Inserted.Id
+                                VALUES 
+                                (NEWID(), GETDATE(), GETDATE(), 0, @Name, @Theme, @Group_Type);";
+            var execUserChatGroup = @"INSERT INTO User_ChatGroup (User_Id, ChatGroup_Id, Role, Is_Not_Notification, Delay_Until) VALUES (@User_Id, @ChatGroup_Id, @Role, 0, GETDATE())";
             //
             var parameters = new DynamicParameters();
-            parameters.Add("ChatName", ChatGroup.ChatName, DbType.String);
-            parameters.Add("ThemeId", ChatGroup.Theme, DbType.String);
-            parameters.Add("GroupType", ChatGroup.GroupType, DbType.String);
+            parameters.Add("Name", ChatGroup.Name, DbType.String);
+            parameters.Add("Theme", ChatGroup.Theme, DbType.String);
+            parameters.Add("Group_Type", ChatGroup.Group_Type, DbType.String);
 
             using (var connection = _context.CreateConnection())
             {
-                try
+                connection.Open();
+                using (var transaction = connection.BeginTransaction())
                 {
-                    var resultChatGroup = await connection.QueryAsync<Guid>(execChatGroup, parameters);
-                    foreach (var userId in ChatGroup.Users)
+                    try
                     {
-                        parameters = new DynamicParameters();
-                        parameters.Add("UserId", userId);
-                        parameters.Add("ChatGroupId", resultChatGroup);
-                        var resultUserChatGroup = await connection.ExecuteAsync(execUserChatGroup, parameters);
+                        var resultChatGroup = await connection.QueryAsync<Guid>(execChatGroup, parameters, transaction);
+                        foreach (var item in ChatGroup.Users)
+                        {
+                            parameters = new DynamicParameters();
+                            parameters.Add("User_Id", item.User_Id);
+                            parameters.Add("ChatGroup_Id", resultChatGroup);
+                            parameters.Add("Role", item.Role);
+                            var resultUser_ChatGroup = await connection.ExecuteAsync(execUserChatGroup, parameters, transaction);
+                        }
+                        transaction.Commit();
+                        return resultChatGroup;
                     }
-                    return resultChatGroup;
-                }
-                catch (Exception e)
-                {
-                    return e;
+                    catch (Exception e)
+                    {
+                        return e;
+                    }
                 }
             }
         }
@@ -115,7 +120,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(Guid id)
         {
-            var query = "Update ChatGroups SET isDeleted = 1 WHERE Id = @Id";
+            var query = "Update Chat_Groups SET Is_Deleted = 1, Updated_At = GETDATE() WHERE Id = @Id";
             var parameter = new DynamicParameters();
             parameter.Add("Id", id);
             using (var connection = _context.CreateConnection())
@@ -125,35 +130,56 @@ namespace EnVietSocialNetWorkAPI.Controllers
             }
         }
 
-        [HttpGet("user/{userId}")]
-        public async Task<IEnumerable<ChatGroup>> GetChatGroupsByUserID(Guid userId)
+        [HttpPost("{id}/users")]
+        public async Task<IActionResult> AddUsersToChatGroup(Guid id, ModifyGroupUsersCommand group)
         {
-            var query = @"SELECT *
-                FROM ChatGroups c
-                JOIN UserChatGroup ucb ON c.Id = ucb.ChatGroupId
-                WHERE ucb.UserId = @UserId AND c.IsDeleted = 0;";
-            //
-            var parameter = new DynamicParameters();
-            parameter.Add("UserId", userId);
+            var query = @"INSERT INTO User_ChatGroup (User_Id, ChatGroup_Id, Role, Is_Not_Notification, Delay_Until)
+                              VALUES      
+                              (@User_Id, @group_Id, @Role, 0, GETDATE());";
             using (var connection = _context.CreateConnection())
             {
-                var result = await connection.QueryAsync<ChatGroup>(query, parameter);
+                foreach (var item in group.Users)
+                {
+                    var parameter = new DynamicParameters();
+                    parameter.Add("User_Id", item.User_Id);
+                    parameter.Add("Group_Id", id);
+                    parameter.Add("Role", item.Role);
+                    await connection.ExecuteAsync(query, parameter);
+                }
+                return Ok();
+            }
+        }
+
+
+        [HttpGet("user/{user_Id}")]
+        public async Task<IEnumerable<ChatGroupQuery>> GetChatGroupsByUser_Id(Guid user_Id)
+        {
+            var query = @"SELECT c.Id, c.Name, c.Theme, c.Group_Type,
+                FROM User_ChatGroup ucb
+                INNER JOIN Chat_Groups c ON c.Id = ucb.ChatGroup_Id
+                WHERE ucb.User_Id = @User_Id AND c.Is_Deleted = 0;";
+            //
+            var parameter = new DynamicParameters();
+            parameter.Add("User_Id", user_Id);
+            using (var connection = _context.CreateConnection())
+            {
+                var result = await connection.QueryAsync<ChatGroupQuery>(query, parameter);
                 return result;
             }
         }
 
-        [HttpGet("private/{userId1}/{userId2}")]
-        public async Task<Guid> GetPrivateChatGroup(Guid userId1, Guid userId2)
+        [HttpGet("private/{User_Id1}/{User_Id2}")]
+        public async Task<Guid> GetPrivateChatGroup(Guid User_Id1, Guid User_Id2)
         {
 
-            var query = @"SELECT cb.Id AS ChatGroupId
-                          FROM ChatGroups cb
-                          INNER JOIN UserChatGroup ucb1 ON cb.Id = ucb1.ChatGroupId
-                          INNER JOIN UserChatGroup ucb2 ON cb.Id = ucb2.ChatGroupId                         
-                          WHERE ucb1.UserId = @User1Id AND ucb2.UserId = @User2Id AND cb.IsDeleted = 0;";
+            var query = @"SELECT cb.Id AS ChatGroup_Id
+                          FROM Chat_Groups cb
+                          INNER JOIN User_ChatGroup ucb1 ON cb.Id = ucb1.ChatGroup_Id
+                          INNER JOIN User_ChatGroup ucb2 ON cb.Id = ucb2.ChatGroup_Id                         
+                          WHERE ucb1.User_Id = @User1Id AND ucb2.User_Id = @User2Id AND cb.Is_Deleted = 0;";
             var parameter = new DynamicParameters();
-            parameter.Add("User1Id", userId1);
-            parameter.Add("User2Id", userId2);
+            parameter.Add("User1Id", User_Id1);
+            parameter.Add("User2Id", User_Id2);
             using (var connection = _context.CreateConnection())
             {
                 var result = await connection.QueryFirstOrDefaultAsync<Guid>(query, parameter);

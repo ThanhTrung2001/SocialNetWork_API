@@ -20,29 +20,22 @@ namespace EnVietSocialNetWorkAPI.Controllers
             _context = context;
         }
 
-        [HttpGet("post/{postId}")]
-        public async Task<IEnumerable<CommentQuery>> GetCommentsByPostID(Guid postId)
+        [HttpGet("post/{post_Id}")]
+        public async Task<IEnumerable<CommentQuery>> GetCommentsByPost_Id(Guid post_Id)
         {
             var query = @"SELECT 
-                            c.Id, c.Content, c.IsResponse, c.ReactCount, c.UpdatedAt, c.UserId,
-                            ud.FirstName AS UserFirstName, ud.LastName AS UserLastName, ud.Avatar,
-                            a.Id AS AttachmentId, a.Media, a.Description
+                            c.Id, c.Content, c.Is_Response, c.Is_SharePost,c.React_Count, c.Updated_At, c.User_Id,
+                            ud.FirstName, ud.LastName, ud.Avatar,
+                            a.Id AS Attachment_Id, a.Media, a.Description
                           FROM Comments c
-                          INNER JOIN UserDetails ud ON c.UserId = ud.UserId 
+                          INNER JOIN User_Details ud ON c.User_Id = ud.User_Id 
                           LEFT JOIN
-                            CommentAttachment ca ON ca.CommentId = c.Id
+                            Comment_Attachment ca ON ca.Comment_Id = c.Id
                           LEFT JOIN
-                            Attachments a ON ca.AttachmentId = a.Id
-                          Where c.PostId = @Id AND c.IsDeleted = 0";
+                            Attachments a ON ca.Attachment_Id = a.Id
+                          Where c.Post_Id = @Id AND c.Is_Deleted = 0";
             var parameter = new DynamicParameters();
-            parameter.Add("Id", postId);
-
-            //using (var connection = _context.CreateConnection())
-            //{
-            //    var result = await connection.QueryAsync<CommentQuery>(query, parameter);
-
-            //    return result;
-            //}
+            parameter.Add("Id", post_Id);
             try
             {
                 var commentDict = new Dictionary<Guid, CommentQuery>();
@@ -59,14 +52,14 @@ namespace EnVietSocialNetWorkAPI.Controllers
                             commentDict.Add(comment.Id, commentEntry);
                         }
 
-                        if (attachment != null && !commentEntry.Attachments.Any((item) => item.AttachmentId == attachment.AttachmentId))
+                        if (attachment != null && !commentEntry.Attachments.Any((item) => item.Attachment_Id == attachment.Attachment_Id))
                         {
                             commentEntry.Attachments.Add(attachment);
                         }
                         return commentEntry;
                     },
                         parameter,
-                        splitOn: "AttachmentId");
+                        splitOn: "Attachment_Id");
                     return commentDict.Values.ToList();
                 }
 
@@ -77,28 +70,26 @@ namespace EnVietSocialNetWorkAPI.Controllers
             }
         }
 
-        [HttpGet("detail/post/{postId}")]
-        public async Task<IEnumerable<CommentDetailQuery>> GetCommentDetailsByPostID(Guid postId)
+        [HttpGet("detail/post/{Post_Id}")]
+        public async Task<IEnumerable<CommentDetailQuery>> GetCommentDetailsByPost_Id(Guid Post_Id)
         {
             var query = @"SELECT 
-                          c.Id, c.Content, c.IsResponse, c.ReactCount, c.UpdatedAt, c.UserId, 
-                          ud.FirstName AS UserFirstName, ud.LastName AS UserLastName ,ud.Avatar,
-                          urc.ReactTypeId AS ReactId, urc.UserId as ReactUserId, urc.CreatedAt, 
-                          r.TypeName,
-                          ur.FirstName AS ReactFirstName, ur.LastName AS ReactLastName, ur.Avatar AS ReactAvatar,
-                          a.Id AS AttachmentId, a.Media, a.Description
+                          c.Id, c.Content, c.Is_Response, c.Is_SharePost, c.React_Count, c.Updated_At, c.User_Id, 
+                          ud.FirstName, ud.LastName, ud.Avatar,
+                          urc.React_Type, urc.User_Id as React_User_Id, urc.CreatedAt, 
+                          ur.FirstName AS React_FirstName, ur.LastName AS React_LastName, ur.Avatar AS React_Avatar,
+                          a.Id AS Attachment_Id, a.Media, a.Description
                           FROM Comments c
-                          INNER JOIN UserDetails ud ON c.UserId = ud.UserId 
-                          LEFT JOIN UserReactComment urc ON c.Id = urc.CommentId
-                          LEFT JOIN ReactTypes r ON r.Id = urc.ReactTypeId
-                          LEFT JOIN UserDetails ur ON urc.UserId = ur.UserId
+                          INNER JOIN User_Details ud ON c.User_Id = ud.User_Id 
+                          LEFT JOIN User_React_Comment urc ON c.Id = urc.Comment_Id
+                          LEFT JOIN User_Details ur ON urc.User_Id = ur.User_Id
                           LEFT JOIN
-                            CommentAttachment ca ON ca.CommentId = c.Id
+                            Comment_Attachment ca ON ca.Comment_Id = c.Id
                           LEFT JOIN
-                            Attachments a ON ca.AttachmentId = a.Id
-                          Where c.PostId = @Id AND c.IsDeleted = 0";
+                            Attachments a ON ca.Attachment_Id = a.Id
+                          Where c.Post_Id = @Id AND c.Is_Deleted = 0";
             var parameter = new DynamicParameters();
-            parameter.Add("Id", postId);
+            parameter.Add("Id", Post_Id);
             try
             {
                 var commentDict = new Dictionary<Guid, CommentDetailQuery>();
@@ -112,18 +103,18 @@ namespace EnVietSocialNetWorkAPI.Controllers
                                 commentEntry = comment;
                                 commentDict.Add(comment.Id, commentEntry);
                             }
-                            if (react != null && !commentEntry.Reacts.Any((item) => item.ReactUserId == react.ReactUserId))
+                            if (react != null && !commentEntry.Reacts.Any((item) => item.React_UserId == react.React_UserId))
                             {
                                 commentEntry.Reacts.Add(react);
                             }
-                            if (attachment != null && !commentEntry.Attachments.Any((item) => item.AttachmentId == attachment.AttachmentId))
+                            if (attachment != null && !commentEntry.Attachments.Any((item) => item.Attachment_Id == attachment.Attachment_Id))
                             {
                                 commentEntry.Attachments.Add(attachment);
                             }
                             return commentEntry;
                         },
                         parameter,
-                        splitOn: "ReactUserId, AttachmentId");
+                        splitOn: "React_Type, Attachment_Id");
                     return commentDict.Values.ToList();
                 }
             }
@@ -137,22 +128,20 @@ namespace EnVietSocialNetWorkAPI.Controllers
         public async Task<CommentDetailQuery> GetCommentByID(Guid id)
         {
             var query = @"SELECT 
-                          c.Id, c.Content, c.IsResponse, c.ReactCount, c.UpdatedAt, c.UserId, 
+                          c.Id, c.Content, c.Is_Response, c.React_Count, c.Updated_At, c.User_Id, 
                           ud.FirstName, ud.LastName, ud.Avatar,
-                          urc.ReactTypeId AS ReactId, urc.UserId as ReactUserId, urc.CreatedAt, 
-                          r.TypeName,
-                          ur.FirstName AS ReactFirstName, ur.LastName AS ReactLastName, ur.Avatar AS ReactAvatar,
-                          a.Id AS AttachmentId, a.Media, a.Description
+                          urc.React_Type, urc.User_Id as React_UserId, urc.CreatedAt,
+                          ur.FirstName AS React_FirstName, ur.LastName AS React_LastName, ur.Avatar AS React_Avatar,
+                          a.Id AS Attachment_Id, a.Media, a.Description
                           FROM Comments c
-                          INNER JOIN UserDetails ud ON c.UserId = ud.UserId 
-                          LEFT JOIN UserReactComment urc ON c.Id = urc.CommentId
-                          LEFT JOIN ReactTypes r ON r.Id = urc.ReactTypeId
-                          LEFT JOIN UserDetails ur ON urc.UserId = ur.UserId
+                          INNER JOIN User_Details ud ON c.User_Id = ud.User_Id 
+                          LEFT JOIN User_React_Comment urc ON c.Id = urc.Comment_Id
+                          LEFT JOIN User_Details ur ON urc.User_Id = ur.User_Id
                           LEFT JOIN
-                            CommentAttachment ca ON ca.CommentId = c.Id
+                            Comment_Attachment ca ON ca.Comment_Id = c.Id
                           LEFT JOIN
-                            Attachments a ON ca.AttachmentId = a.Id
-                          Where c.Id = @Id AND c.IsDeleted = 0";
+                            Attachments a ON ca.Attachment_Id = a.Id
+                          Where c.Id = @Id AND c.Is_Deleted = 0";
             var parameter = new DynamicParameters();
             parameter.Add("Id", id);
             try
@@ -171,18 +160,18 @@ namespace EnVietSocialNetWorkAPI.Controllers
                             commentDict.Add(comment.Id, commentEntry);
                         }
 
-                        if (react != null && !commentEntry.Reacts.Any((item) => item.ReactUserId == react.ReactUserId))
+                        if (react != null && !commentEntry.Reacts.Any((item) => item.React_UserId == react.React_UserId))
                         {
                             commentEntry.Reacts.Add(react);
                         }
-                        if (attachment != null && !commentEntry.Attachments.Any((item) => item.AttachmentId == attachment.AttachmentId))
+                        if (attachment != null && !commentEntry.Attachments.Any((item) => item.Attachment_Id == attachment.Attachment_Id))
                         {
                             commentEntry.Attachments.Add(attachment);
                         }
                         return commentEntry;
                     },
                     parameter,
-                    splitOn: "ReactId, AttachmentId");
+                    splitOn: "React_Type, Attachment_Id");
                 }
                 return commentDict.Values.ToList()[0];
             }
@@ -196,23 +185,21 @@ namespace EnVietSocialNetWorkAPI.Controllers
         public async Task<IEnumerable<CommentDetailQuery>> GetCommentResponseByID(Guid id)
         {
             var query = @"SELECT 
-                          c.Id, c.Content, c.IsResponse, c.ReactCount, c.UpdatedAt, c.UserId, 
+                          c.Id, c.Content, c.Is_Response, c.React_Count, c.Updated_At, c.User_Id, 
                           ud.FirstName, ud.LastName , ud.Avatar,
-                          urc.ReactTypeId AS ReactId, urc.UserId as ReactUserId, urc.CreatedAt, 
-                          r.TypeName,
-                          ur.FirstName AS ReactFirstName, ur.LastName AS ReactLastName, ur.Avatar AS ReactAvatar,
-                          a.Id AS AttachmentId, a.Media, a.Description
+                          urc.React_Type, urc.User_Id as React_UserId, urc.CreatedAt, 
+                          ur.FirstName AS React_FirstName, ur.LastName AS React_LastName, ur.Avatar AS React_Avatar,
+                          a.Id AS Attachment_Id, a.Media, a.Description
                           FROM Comments c
-                          INNER JOIN UserDetails ud ON c.UserId = ud.UserId 
-                          LEFT JOIN UserReactComment urc ON c.Id = urc.CommentId
-                          LEFT JOIN ReactTypes r ON r.Id = urc.ReactTypeId
-                          LEFT JOIN UserDetails ur ON urc.UserId = ur.UserId
-                          LEFT JOIN CommentResponse cmr ON c.Id = cmr.ResponseId
+                          INNER JOIN User_Details ud ON c.User_Id = ud.User_Id 
+                          LEFT JOIN User_React_Comment urc ON c.Id = urc.Comment_Id
+                          LEFT JOIN User_Details ur ON urc.User_Id = ur.User_Id
+                          LEFT JOIN CommentResponse cmr ON c.Id = cmr.Response_Id
                           LEFT JOIN
-                            CommentAttachment ca ON ca.CommentId = c.Id
+                            Comment_Attachment ca ON ca.Comment_Id = c.Id
                           LEFT JOIN
-                            Attachments a ON ca.AttachmentId = a.Id
-                          Where c.IsDeleted = 0 AND c.IsResponse = 1 AND cmr.CommentId = @Id";
+                            Attachments a ON ca.Attachment_Id = a.Id
+                          Where c.Is_Deleted = 0 AND c.Is_Response = 1 AND cmr.Comment_Id = @Id";
             var parameter = new DynamicParameters();
             parameter.Add("Id", id);
             try
@@ -228,18 +215,18 @@ namespace EnVietSocialNetWorkAPI.Controllers
                                 commentEntry = comment;
                                 commentDict.Add(comment.Id, commentEntry);
                             }
-                            if (react != null && !commentEntry.Reacts.Any((item) => item.ReactUserId == react.ReactUserId))
+                            if (react != null && !commentEntry.Reacts.Any((item) => item.React_UserId == react.React_UserId))
                             {
                                 commentEntry.Reacts.Add(react);
                             }
-                            if (attachment != null && !commentEntry.Attachments.Any((item) => item.AttachmentId == attachment.AttachmentId))
+                            if (attachment != null && !commentEntry.Attachments.Any((item) => item.Attachment_Id == attachment.Attachment_Id))
                             {
                                 commentEntry.Attachments.Add(attachment);
                             }
                             return commentEntry;
                         },
                         parameter,
-                        splitOn: "ReactId, AttachmentId");
+                        splitOn: "React_Type, Attachment_Id");
                     return commentDict.Values.ToList();
                 }
             }
@@ -249,29 +236,28 @@ namespace EnVietSocialNetWorkAPI.Controllers
             }
         }
 
-        [HttpPost("post/{postId}")]
-        public async Task<IActionResult> CreateComment(Guid postId, CreateCommentCommand comment)
+        [HttpPost("post/{post_Id}")]
+        public async Task<IActionResult> CreateComment(Guid post_Id, CreateCommentCommand comment)
         {
-            var query = @"INSERT INTO Comments (Id, CreatedAt, UpdatedAt, IsDeleted, Content, IsResponse, ReactCount ,UserId, PostId)
+            var query = @"INSERT INTO Comments (Id, CreatedAt, Updated_At, Is_Deleted, Content, Is_Response, React_Count ,User_Id, Post_Id)
                           OUTPUT Inserted.Id
                           VALUES
-                          (NEWID(), GETDATE(), GETDATE(), 0, @Content, @IsResponse, 0, @UserId, @PostId)";
+                          (NEWID(), GETDATE(), GETDATE(), 0, @Content, @Is_Response, 0, @User_Id, @Post_Id)";
             var queryAttachment = @"INSERT INTO Attachments (Id, Media, Description)
                                     OUTPUT Inserted.Id
                                     VALUES
                                     (NEWID(), @Media, @Description)";
-            var queryCommentAttachment = @"INSERT INTO CommentAttachment (CommentId, AttachmentId)
+            var queryComment_Attachment = @"INSERT INTO Comment_Attachment (Comment_Id, Attachment_Id)
                                         VALUES
-                                        (@CommentId, @AttachmentId)";
-            var queryResponse = @"INSERT INTO CommentResponse (CommentId, ResponseId)
+                                        (@Comment_Id, @Attachment_Id)";
+            var queryResponse = @"INSERT INTO CommentResponse (Comment_Id, Response_Id)
                                   VALUES
-                                  (@CommentId, @ResponseId)";
+                                  (@Comment_Id, @Response_Id)";
             var parameters = new DynamicParameters();
             parameters.Add("Content", comment.Content, DbType.String);
-            parameters.Add("UserId", comment.UserId, DbType.Guid);
-            parameters.Add("PostId", postId);
-            parameters.Add("PostId", postId, DbType.Guid);
-            parameters.Add("IsResponse", comment.IsResponse);
+            parameters.Add("User_Id", comment.User_Id, DbType.Guid);
+            parameters.Add("Post_Id", post_Id);
+            parameters.Add("Is_Response", comment.Is_Response);
             using (var connection = _context.CreateConnection())
             {
                 connection.Open();
@@ -288,16 +274,16 @@ namespace EnVietSocialNetWorkAPI.Controllers
                                 parameters.Add("Media", item.Media);
                                 parameters.Add("Description", item.Description);
                                 var attachmentResult = await connection.QuerySingleAsync<Guid>(queryAttachment, parameters, transaction);
-                                parameters.Add("CommentId", result);
-                                parameters.Add("AttachmentId", attachmentResult);
-                                await connection.ExecuteAsync(queryCommentAttachment, parameters, transaction);
+                                parameters.Add("Comment_Id", result);
+                                parameters.Add("Attachment_Id", attachmentResult);
+                                await connection.ExecuteAsync(queryComment_Attachment, parameters, transaction);
                             }
                         }
-                        if (comment.IsResponse == true)
+                        if (comment.Is_Response == true)
                         {
                             parameters = new DynamicParameters();
-                            parameters.Add("CommentId", comment.CommentId);
-                            parameters.Add("ResponseId", result);
+                            parameters.Add("Comment_Id", comment.Comment_Id);
+                            parameters.Add("Response_Id", result);
                             await connection.ExecuteAsync(queryResponse, parameters, transaction);
                         }
 
@@ -316,10 +302,10 @@ namespace EnVietSocialNetWorkAPI.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> EditComment(Guid id, EditCommentCommand comment)
         {
-            var query = "UPDATE Comments SET Content = @Content, UpdatedAt = GETDATE() WHERE Id = @Id AND UserId = @UserId";
+            var query = "UPDATE Comments SET Content = @Content, Updated_At = GETDATE() WHERE Id = @Id AND User_Id = @User_Id";
             var parameters = new DynamicParameters();
             parameters.Add("Content", comment.Content, DbType.String);
-            parameters.Add("UserId", comment.UserId, DbType.Guid);
+            parameters.Add("User_Id", comment.User_Id, DbType.Guid);
             parameters.Add("Id", id, DbType.Guid);
             using (var connection = _context.CreateConnection())
             {
@@ -331,7 +317,9 @@ namespace EnVietSocialNetWorkAPI.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(Guid id)
         {
-            var query = "Update Comments SET isDeleted = 1, UpdatedAt = GETDATE() WHERE Id = @Id";
+            var query = "Update Comments SET Is_Deleted = 1, Updated_At = GETDATE() WHERE Id = @Id";
+            var parameters = new DynamicParameters();
+            parameters.Add("Id", id);
             using (var connection = _context.CreateConnection())
             {
                 await connection.ExecuteAsync(query, new { Id = id });

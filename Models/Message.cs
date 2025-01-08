@@ -22,7 +22,7 @@ public partial class Message
 
     public int ReactCount { get; set; }
 
-    public bool IsReponse { get; set; }
+    public bool IsResponse { get; set; }
 
     public bool IsPinned { get; set; }
 

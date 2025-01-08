@@ -2,28 +2,36 @@
 {
     public class CreatePostReactCommand
     {
-        public Guid PostId { get; set; }
-        public int ReactType { get; set; }
-        public Guid UserId { get; set; }
+        public Guid Post_Id { get; set; }
+        public string React_Type { get; set; }
+        public bool Is_SharePost { get; set; }
+        public Guid User_Id { get; set; }
     }
 
     public class CreateCommentReactCommand
     {
-        public Guid CommentId { get; set; }
-        public int ReactType { get; set; }
-        public Guid UserId { get; set; }
+        public Guid Comment_Id { get; set; }
+        public string React_Type { get; set; }
+        public bool Is_SharePost { get; set; }
+        public Guid User_Id { get; set; }
     }
 
     public class CreateMessageReactCommand
     {
-        public Guid MessageId { get; set; }
-        public int ReactType { get; set; }
-        public Guid UserId { get; set; }
+        public Guid Message_Id { get; set; }
+        public string React_Type { get; set; }
+        public Guid User_Id { get; set; }
     }
 
     public class EditReactCommand
     {
-        public int ReactType { get; set; }
-        public Guid UserId { get; set; }
+        public string React_Type { get; set; }
+        public Guid User_Id { get; set; }
+    }
+
+    public class DeleteReactCommand
+    {
+        public Guid User_Id { get; set; }
+        public Guid Destination_Id { get; set; }
     }
 }

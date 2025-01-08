@@ -21,27 +21,27 @@ namespace EnVietSocialNetWorkAPI.Controllers
             _context = context;
         }
 
-        [HttpGet("chatgroup/{chatGroupId}")]
-        public async Task<IEnumerable<MessageQuery>> GetByChatGroupID(Guid chatGroupId)
+        [HttpGet("chatgroup/{ChatGroup_Id}")]
+        public async Task<IEnumerable<MessageQuery>> GetByChatGroup_Id(Guid ChatGroup_Id)
         {
             var query = @"SELECT 
-                          m.Id, m.CreatedAt, m.Content, m.IsPinned, m.SenderId, m.ChatGroupId, m.IsPinned, m.IsResponse, m.TypeId AS MessageType, m.StatusId,
+                          m.Id, m.Created_At, m.Content, m.Sender_Id, m.ChatGroup_Id, m.Is_Pinned, m.Is_Response, m.Type, m.Status,
                           ud.FirstName, ud.LastName, ud.Avatar,
                           
-                          a.Id AS AttachmentId,
+                          a.Id AS Attachment_Id,
                           a.Media,
                           a.Description
                           
                           FROM Messages m 
                           INNER JOIN 
-                            UserDetails ud ON m.SenderId = ud.UserId
+                            User_Details ud ON m.Sender_Id = ud.User_Id
                           LEFT JOIN
-                            MessageAttachment ma ON ma.MessageId = m.Id
+                            Message_Attachment ma ON ma.Message_Id = m.Id
                           LEFT JOIN
-                            Attachments a ON ma.AttachmentId = a.Id
-                          WHERE m.ChatGroupId = @Id AND m.IsDeleted = 0";
+                            Attachments a ON ma.Attachment_Id = a.Id
+                          WHERE m.ChatGroup_Id = @Id AND m.Is_Deleted = 0";
             var parameter = new DynamicParameters();
-            parameter.Add("Id", chatGroupId);
+            parameter.Add("Id", ChatGroup_Id);
             try
             {
                 var messageDict = new Dictionary<Guid, MessageQuery>();
@@ -58,14 +58,14 @@ namespace EnVietSocialNetWorkAPI.Controllers
                             messageDict.Add(message.Id, messageEntry);
                         }
 
-                        if (attachment != null && !message.Attachments.Any((item) => item.AttachmentId == attachment.AttachmentId))
+                        if (attachment != null && !message.Attachments.Any((item) => item.Attachment_Id == attachment.Attachment_Id))
                         {
                             messageEntry.Attachments.Add(attachment);
                         }
                         return messageEntry;
                     },
                         parameter,
-                        splitOn: "AttachmentId");
+                        splitOn: "Attachment_Id");
                     return messageDict.Values.ToList();
                 }
 
@@ -81,26 +81,25 @@ namespace EnVietSocialNetWorkAPI.Controllers
         public async Task<MessageDetailQuery> GetByID(Guid id)
         {
             var query = @"SELECT 
-                          m.Id, m.CreatedAt, m.Content, m.IsPinned, m.SenderId, m.ChatGroupId, m.IsPinned, m.IsResponse, m.TypeId AS MessageType, m.StatusId,
+                          m.Id, m.Created_At, m.Content, m.Is_Pinned, m.Sender_Id, m.ChatGroup_Id, m.Is_Pinned, m.Is_Response, m.Type, m.Status,
                           ud.FirstName, ud.LastName, ud.Avatar,
-                          urm.ReactTypeId AS ReactId, urm.UserId as ReactUserId, urm.CreatedAt, 
-                          r.TypeName,
-                          ur.FirstName AS ReactFirstName, ur.LastName AS ReactLastName, ur.Avatar AS ReactAvatar,
 
-                          a.Id AS AttachmentId,
+                          urm.React_Type, urm.User_Id as React_UserId, urm.Created_At, 
+                          ur.FirstName AS React_FirstName, ur.LastName AS React_LastName, ur.Avatar AS React_Avatar,
+
+                          a.Id AS Attachment_Id,
                           a.Media,
                           a.Description
 
                           FROM Messages m 
-                          INNER JOIN UserDetails ud ON m.SenderId = ud.UserId
-                          LEFT JOIN UserReactMessage urm ON m.Id = urm.MessageId
-                          LEFT JOIN ReactTypes r ON r.Id = urm.ReactTypeId
-                          LEFT JOIN UserDetails ur ON urm.UserId = ur.UserId
+                          INNER JOIN User_Details ud ON m.Sender_Id = ud.User_Id
+                          LEFT JOIN User_React_Message urm ON m.Id = urm.Message_Id
+                          LEFT JOIN User_Details ur ON urm.User_Id = ur.User_Id
                           LEFT JOIN
-                            MessageAttachment ma ON ma.MessageId = m.Id
+                            Message_Attachment ma ON ma.Message_Id = m.Id
                           LEFT JOIN
-                            Attachments a ON ma.AttachmentId = a.Id
-                          WHERE m.Id = @Id AND m.IsDeleted = 0";
+                            Attachments a ON ma.Attachment_Id = a.Id
+                          WHERE m.Id = @Id AND m.Is_Deleted = 0";
             var parameter = new DynamicParameters();
             parameter.Add("Id", id);
             try
@@ -120,18 +119,18 @@ namespace EnVietSocialNetWorkAPI.Controllers
                             messageDict.Add(message.Id, messageEntry);
                         }
 
-                        if (react != null && !messageEntry.Reacts.Any((item) => item.ReactUserId == react.ReactUserId))
+                        if (react != null && !messageEntry.Reacts.Any((item) => item.React_UserId == react.React_UserId))
                         {
                             messageEntry.Reacts.Add(react);
                         }
-                        if (attachment != null && !messageEntry.Attachments.Any((item) => item.AttachmentId == attachment.AttachmentId))
+                        if (attachment != null && !messageEntry.Attachments.Any((item) => item.Attachment_Id == attachment.Attachment_Id))
                         {
                             messageEntry.Attachments.Add(attachment);
                         }
                         return messageEntry;
                     },
                     parameter,
-                    splitOn: "ReactId, AttachmentId");
+                    splitOn: "React_Type, Attachment_Id");
                     return messageDict.Values.ToList()[0];
                 }
             }
@@ -141,26 +140,26 @@ namespace EnVietSocialNetWorkAPI.Controllers
             }
         }
 
-        [HttpPost("chatGroup/{chatGroupId}")]
-        public async Task<IActionResult> AddNewMessage(Guid chatGroupId, CreateMessageCommand message)
+        [HttpPost("chatGroup/{ChatGroup_Id}")]
+        public async Task<IActionResult> AddNewMessage(Guid ChatGroup_Id, CreateMessageCommand message)
         {
-            var query = @"INSERT INTO Messages (Id, CreatedAt, UpdatedAt, IsDeleted, Content, SenderId, ChatGroupId, IsPinned, IsResponse, ReactCount, TypeId, StatusId)
+            var query = @"INSERT INTO Messages (Id, Created_At, Updated_At, Is_Deleted, Content, Sender_Id, ChatGroup_Id, Is_Pinned, Is_Response, React_Count, Type, Status)
                         OUTPUT Inserted.Id
                         VALUES 
-                        (NEWID(), GETDATE(), GETDATE(), 0, @Content, @SenderId, @ChatGroupId, 0, @IsResponse, 0, @TypeId, 1);";
+                        (NEWID(), GETDATE(), GETDATE(), 0, @Content, @Sender_Id, @ChatGroup_Id, 0, @Is_Response, 0, @Type, 'Send');";
             var queryAttachment = @"INSERT INTO Attachments (Id, Media, Description)
                                     OUTPUT Inserted.Id
                                     VALUES
-                                    (NEWID(), @Media, @Description)";
-            var queryMessAttachment = @"INSERT INTO MessageAttachment (MessageId, AttachmentId)
+                                    (NEWID(), @Media, @Description);";
+            var queryMessAttachment = @"INSERT INTO Message_Attachment (Message_Id, Attachment_Id)
                                         VALUES
-                                        (@MessageId, @AttachmentId)";
+                                        (@Message_Id, @Attachment_Id)";
             var parameters = new DynamicParameters();
             parameters.Add("Content", message.Content, DbType.String);
-            parameters.Add("SenderId", message.SenderId, DbType.Guid);
-            parameters.Add("ChatGroupId", chatGroupId, DbType.Guid);
-            parameters.Add("IsResponse", message.IsResponse);
-            parameters.Add("TypeId", message.MessageTypeId);
+            parameters.Add("Sender_Id", message.Sender_Id, DbType.Guid);
+            parameters.Add("ChatGroup_Id", ChatGroup_Id, DbType.Guid);
+            parameters.Add("Is_Response", message.Is_Response);
+            parameters.Add("Type", message.Type);
             using (var connection = _context.CreateConnection())
             {
                 connection.Open();
@@ -169,22 +168,19 @@ namespace EnVietSocialNetWorkAPI.Controllers
                     try
                     {
                         var result = await connection.QuerySingleAsync<Guid>(query, parameters, transaction);
-                        if (message.Attachments != null)
+
+                        foreach (var item in message.Attachments!)
                         {
-                            foreach (var item in message.Attachments!)
-                            {
-                                parameters = new DynamicParameters();
-                                parameters.Add("Media", item.Media);
-                                parameters.Add("Description", item.Description);
-                                var attachmentResult = await connection.QuerySingleAsync<Guid>(queryAttachment, parameters, transaction);
-                                parameters.Add("MessageId", result);
-                                parameters.Add("AttachmentId", attachmentResult);
-                                await connection.ExecuteAsync(queryMessAttachment, parameters, transaction);
-                            }
-
+                            parameters = new DynamicParameters();
+                            parameters.Add("Media", item.Media);
+                            parameters.Add("Description", item.Description);
+                            var attachmentResult = await connection.QuerySingleAsync<Guid>(queryAttachment, parameters, transaction);
+                            parameters.Add("Message_Id", result);
+                            parameters.Add("Attachment_Id", attachmentResult);
+                            await connection.ExecuteAsync(queryMessAttachment, parameters, transaction);
                         }
-
                         transaction.Commit();
+                        return Ok();
                     }
                     catch (Exception ex)
                     {
@@ -192,17 +188,16 @@ namespace EnVietSocialNetWorkAPI.Controllers
                         throw ex;
                     }
                 }
-                return Ok();
             }
         }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> EditMessage(Guid id, CreateMessageCommand message)
         {
-            var query = "UPDATE Messages SET Content = @Content, UpdatedAt = GETDATE() WHERE Id = @Id AND SenderId = @SenderId";
+            var query = "UPDATE Messages SET Content = @Content, Updated_At = GETDATE() WHERE Id = @Id AND Sender_Id = @Sender_Id";
             var parameters = new DynamicParameters();
             parameters.Add("Content", message.Content, DbType.String);
-            parameters.Add("SenderId", message.SenderId, DbType.Guid);
+            parameters.Add("Sender_Id", message.Sender_Id, DbType.Guid);
             parameters.Add("Id", id, DbType.Guid);
             using (var connection = _context.CreateConnection())
             {
@@ -214,9 +209,9 @@ namespace EnVietSocialNetWorkAPI.Controllers
         [HttpPut("pin/{id}")]
         public async Task<IActionResult> PinMessage(Guid id, CreateMessageCommand message)
         {
-            var query = "UPDATE Messages SET IsPinned = 1, UpdatedAt = GETDATE() WHERE Id = @Id AND SenderId = @SenderId";
+            var query = "UPDATE Messages SET Is_Pinned = 1, Updated_At = GETDATE() WHERE Id = @Id AND Sender_Id = @Sender_Id";
             var parameters = new DynamicParameters();
-            parameters.Add("SenderId", message.SenderId, DbType.Guid);
+            parameters.Add("Sender_Id", message.Sender_Id, DbType.Guid);
             parameters.Add("Id", id, DbType.Guid);
             using (var connection = _context.CreateConnection())
             {
@@ -228,7 +223,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(Guid id)
         {
-            var query = "Update Messages SET isDeleted = 1, UpdatedAt = GETDATE() WHERE Id = @Id";
+            var query = "Update Messages SET Is_Deleted = 1, Updated_At = GETDATE() WHERE Id = @Id";
             using (var connection = _context.CreateConnection())
             {
                 await connection.ExecuteAsync(query, new { Id = id });

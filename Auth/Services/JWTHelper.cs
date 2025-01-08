@@ -61,7 +61,7 @@ namespace EnVietSocialNetWorkAPI.Auth.Services
         public List<OrganizeNodeQuery> BuildHierarchy(List<OrganizeNodeQuery> nodes)
         {
             // Find root nodes
-            var rootNodes = nodes.Where(n => n.ParentId == null || n.ParentId == Guid.Empty).ToList();
+            var rootNodes = nodes.Where(n => n.Parent_Id == null || n.Parent_Id == Guid.Empty).ToList();
 
             foreach (var rootNode in rootNodes)
             {
@@ -73,8 +73,8 @@ namespace EnVietSocialNetWorkAPI.Auth.Services
 
         public void AttachChildren(OrganizeNodeQuery parentNode, List<OrganizeNodeQuery> allNodes)
         {
-            var children = allNodes.Where(n => n.ParentId == parentNode.Id).ToList();
-            parentNode.ChildrenNodes = children;
+            var children = allNodes.Where(n => n.Parent_Id == parentNode.Id).ToList();
+            parentNode.Children_Nodes = children;
 
             foreach (var child in children)
             {

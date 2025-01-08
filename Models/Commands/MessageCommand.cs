@@ -3,9 +3,9 @@
     public class CreateMessageCommand
     {
         public string? Content { get; set; }
-        public Guid SenderId { get; set; }
-        public bool IsResponse { get; set; }
-        public int MessageTypeId { get; set; }
+        public Guid Sender_Id { get; set; }
+        public bool Is_Response { get; set; }
+        public string Type { get; set; }
         public List<CreateAttachmentCommand>? Attachments { get; set; } = new List<CreateAttachmentCommand>();
 
         //public bool IsPinned { get; set; }

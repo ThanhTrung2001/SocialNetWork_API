@@ -23,7 +23,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
         [HttpGet]
         public async Task<IEnumerable<NotificationQuery>> GetNotifications()
         {
-            var query = "SELECT Id, Title, Description, NotiType, DestinationId, OrganizationName, StartedAt, EndedAt FROM Notifications WHERE IsDeleted = 0;";
+            var query = "SELECT Id, Title, Description, Noti_Type, Destination_Id, Organization_Name, Started_At, Ended_At FROM Notifications WHERE Is_Deleted = 0;";
             using (var connection = _context.CreateConnection())
             {
                 var result = await connection.QueryAsync<NotificationQuery>(query);
@@ -32,12 +32,14 @@ namespace EnVietSocialNetWorkAPI.Controllers
         }
 
         [HttpGet("/type")]
-        public async Task<IEnumerable<NotificationQuery>> GetNotificationsBySearch([FromQuery] int notiType)
+        public async Task<IEnumerable<NotificationQuery>> GetNotificationsBySearch([FromQuery] string noti_Type)
         {
-            var query = "SELECT Id, Title, Description, NotiType, DestinationId, OrganizationName, StartedAt, EndedAt FROM Notifications WHERE IsDeleted = 0 AND NotiType = @notiType;";
+            var query = "SELECT Id, Title, Description, Noti_Type, Destination_Id, Organization_Name, Started_At, Ended_At FROM Notifications WHERE Is_Deleted = 0 AND Noti_Type = @Noti_Type;";
+            var parameter = new DynamicParameters();
+            parameter.Add("Noti_Type", noti_Type);
             using (var connection = _context.CreateConnection())
             {
-                var result = await connection.QueryAsync<NotificationQuery>(query, new { notiType });
+                var result = await connection.QueryAsync<NotificationQuery>(query, parameter);
                 return result;
             }
         }
@@ -45,10 +47,12 @@ namespace EnVietSocialNetWorkAPI.Controllers
         [HttpGet("{id}")]
         public async Task<NotificationQuery> GetNotification(Guid id)
         {
-            var query = "SELECT Id, Title, Description, NotiType, DestinationId, OrganizationName, StartedAt, EndedAt FROM Notifications WHERE IsDeleted = 0 AND Id = @Id;";
+            var query = "SELECT Id, Title, Description, Noti_Type, Destination_Id, Organization_Name, Started_At, Ended_At FROM Notifications WHERE Is_Deleted = 0 AND Id = @Id;";
+            var parameter = new DynamicParameters();
+            parameter.Add("Id", id);
             using (var connection = _context.CreateConnection())
             {
-                var result = await connection.QueryFirstOrDefaultAsync<NotificationQuery>(query, new { Id = id });
+                var result = await connection.QueryFirstOrDefaultAsync<NotificationQuery>(query, parameter);
                 return result;
             }
         }
@@ -56,21 +60,21 @@ namespace EnVietSocialNetWorkAPI.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(CreateNotificationCommand notification)
         {
-            var query = @"INSERT INTO Notifications (Id, CreatedAt, UpdatedAt, IsDeleted, Title, Description, NotiType, DestinationId, StartedAt, EndedAt, OrganizationName)
+            var query = @"INSERT INTO Notifications (Id, CreatedAt, UpdatedAt, Is_Deleted, Title, Description, Noti_Type, Destination_Id, Started_At, Ended_At, Organization_Name)
                         VALUES 
-                        (NEWID(), GETDATE(), GETDATE(), 0, @Title, @Description, @NotiType, @DestinationId, @StartedAt, @EndedAt, @OrganizationName);";
-            var parameter = new DynamicParameters();
-            parameter.Add("Title", notification.Title, DbType.String);
-            parameter.Add("Description", notification.Description, DbType.String);
-            parameter.Add("NotiType", notification.NotiType, DbType.Int32);
-            parameter.Add("DestinationId", notification.DestinationId, DbType.Guid);
-            parameter.Add("StartedAt", notification.StartedAt, DbType.DateTime);
-            parameter.Add("EndedAt", notification.EndedAt, DbType.DateTime);
-            parameter.Add("OrganizationName", notification.OrganizationName, DbType.String);
+                        (NEWID(), GETDATE(), GETDATE(), 0, @Title, @Description, @Noti_Type, @Destination_Id, @Started_At, @Ended_At, @Organization_Name);";
+            var parameters = new DynamicParameters();
+            parameters.Add("Title", notification.Title, DbType.String);
+            parameters.Add("Description", notification.Description, DbType.String);
+            parameters.Add("Noti_Type", notification.Noti_Type, DbType.Int32);
+            parameters.Add("Destination_Id", notification.Destination_Id, DbType.Guid);
+            parameters.Add("Started_At", notification.Started_At, DbType.DateTime);
+            parameters.Add("Ended_At", notification.Ended_At, DbType.DateTime);
+            parameters.Add("Organization_Name", notification.Organization_Name, DbType.String);
 
             using (var connection = _context.CreateConnection())
             {
-                await connection.ExecuteAsync(query, parameter);
+                await connection.ExecuteAsync(query, parameters);
                 return Ok(notification);
             }
         }
@@ -80,20 +84,20 @@ namespace EnVietSocialNetWorkAPI.Controllers
         {
             var query = @"UPDATE Notifications
                         SET 
-                        Title = @Title, Description = @Description, DestinationId = @DestinationId, @StartedAt = @StartedAt, @EndedAt = @EndedAt, OrganizationName = @OrganizationName
+                        Title = @Title, Description = @Description, Destination_Id = @Destination_Id, @Started_At = @Started_At, @Ended_At = @Ended_At, Organization_Name = @Organization_Name
                         WHERE Id = @Id;";
-            var parameter = new DynamicParameters();
-            parameter.Add("Id", id, DbType.Guid);
-            parameter.Add("Title", notification.Title, DbType.String);
-            parameter.Add("Description", notification.Description, DbType.String);
-            parameter.Add("NotiType", notification.NotiType, DbType.Int32);
-            parameter.Add("DestinationId", notification.DestinationId, DbType.Guid);
-            parameter.Add("StartedAt", notification.StartedAt, DbType.DateTime);
-            parameter.Add("EndedAt", notification.EndedAt, DbType.DateTime);
-            parameter.Add("OrganizationName", notification.OrganizationName, DbType.String);
+            var parameters = new DynamicParameters();
+            parameters.Add("Id", id, DbType.Guid);
+            parameters.Add("Title", notification.Title, DbType.String);
+            parameters.Add("Description", notification.Description, DbType.String);
+            parameters.Add("Noti_Type", notification.Noti_Type, DbType.Int32);
+            parameters.Add("Destination_Id", notification.Destination_Id, DbType.Guid);
+            parameters.Add("Started_At", notification.Started_At, DbType.DateTime);
+            parameters.Add("Ended_At", notification.Ended_At, DbType.DateTime);
+            parameters.Add("Organization_Name", notification.Organization_Name, DbType.String);
             using (var connection = _context.CreateConnection())
             {
-                await connection.ExecuteAsync(query, parameter);
+                await connection.ExecuteAsync(query, parameters);
                 return Ok(notification);
             }
         }
@@ -101,9 +105,9 @@ namespace EnVietSocialNetWorkAPI.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(Guid id)
         {
-            var query = "Update Notifications SET isDeleted = 1 WHERE Id = @Id";
+            var query = "Update Notifications SET Is_Deleted = 1 WHERE Id = @Id";
             var parameter = new DynamicParameters();
-            parameter.Add("Id", id, DbType.Guid);
+            parameter.Add("Id", id);
             using (var connection = _context.CreateConnection())
             {
                 await connection.ExecuteAsync(query, parameter);

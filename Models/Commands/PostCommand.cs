@@ -2,9 +2,9 @@
 {
     public class CreatePostCommand
     {
-        public bool InGroup { get; set; }
-        public Guid? DestinationId { get; set; }
-        public int PostTypeId { get; set; }
+        public bool In_Group { get; set; }
+        public Guid? Destination_Id { get; set; }
+        public int Post_Type_Id { get; set; }
         public string Content { get; set; }
         public List<CreateAttachmentCommand>? Attachments { get; set; } = new List<CreateAttachmentCommand>();
         public CreateSurveyCommand? Survey { get; set; }

@@ -2,23 +2,22 @@
 {
     public class ReactQuery
     {
-        public int ReactId { get; set; }
-        public string TypeName { get; set; }
-        public Guid ReactUserId { get; set; }
-        public string ReactFirstName { get; set; }
-        public string ReactLastName { get; set; }
-        public string ReactAvatar { get; set; }
+        public string React_Type { get; set; }
+        public Guid React_UserId { get; set; }
+        public string React_FirstName { get; set; }
+        public string React_LastName { get; set; }
+        public string React_Avatar { get; set; }
         public DateTime CreatedAt { get; set; }
     }
 
     public class PostReactQuery : ReactQuery
     {
-
+        public bool Is_SharePost { get; set; }
     }
 
     public class CommentReactQuery : ReactQuery
     {
-
+        public bool Is_SharePost { get; set; }
     }
 
     public class MessageReactQuery : ReactQuery

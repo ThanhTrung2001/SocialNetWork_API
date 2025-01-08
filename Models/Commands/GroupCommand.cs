@@ -2,15 +2,26 @@
 {
     public class CreateGroupCommand
     {
-        public string GroupName { get; set; }
+        public string Name { get; set; }
         public string? Avatar { get; set; }
         public string? Wallapper { get; set; }
-        public List<Guid>? Users { get; set; } = new List<Guid>();
+        public List<ModifyGroupUserCommand>? Users { get; set; } = new List<ModifyGroupUserCommand>();
     }
 
-    public class AddUsersToGroupCommand
+    public class ModifyGroupUsersCommand
     {
-        public List<Guid> Users { get; set; } = new List<Guid>();
+        public List<ModifyGroupUserCommand> Users { get; set; } = new List<ModifyGroupUserCommand>();
     }
 
+    public class ModifyGroupUserCommand
+    {
+        public Guid User_Id { get; set; }
+        public string Role { get; set; }
+        //public bool? Is_Follow { get; set; }
+    }
+
+    public class DeleteGroupUserCommand
+    {
+        public Guid User_Id { get; set; }
+    }
 }

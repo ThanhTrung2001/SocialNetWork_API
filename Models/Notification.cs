@@ -16,7 +16,7 @@ public partial class Notification
 
     public string Description { get; set; } = null!;
 
-    public int NotiType { get; set; }
+    public string NotiType { get; set; }
 
     public Guid? DestinationId { get; set; }
 
