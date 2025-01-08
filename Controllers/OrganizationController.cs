@@ -39,9 +39,9 @@ namespace EnVietSocialNetWorkAPI.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(CreateOrganizeNodeCommand node)
         {
-            var query = @"INSERT INTO Organizations (Id, Name, Description, Department, Email, Phone_Number, Address, City, Country, Level, ParentId, Employee_Count)
+            var query = @"INSERT INTO Organizations (Id, Name, Description, Department, Email, Phone_Number, Address, City, Country, Level, Parent_Id, Employee_Count)
                           VALUES
-                          (NEWID(), @Name, @Description,  @Department, @Email, @Phone_Number, @Address, @City, @Country, @Level, @ParentId, 0)";
+                          (NEWID(), @Name, @Description,  @Department, @Email, @Phone_Number, @Address, @City, @Country, @Level, @Parent_Id, 0)";
             var parameter = new DynamicParameters();
             parameter.Add("Name", node.Name);
             parameter.Add("Description", node.Description);
@@ -52,7 +52,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
             parameter.Add("City", node.City);
             parameter.Add("Country", node.Country);
             parameter.Add("Level", node.Level);
-            parameter.Add("ParentId", node.Parent_Id);
+            parameter.Add("Parent_Id", node.Parent_Id);
             using (var connection = _context.CreateConnection())
             {
                 var result = await connection.ExecuteAsync(query, parameter);
@@ -102,6 +102,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
             var query = @"SELECT 
                             o.Department,
                             uo.Organization_Role,
+                            uo.User_Id,
                             ud.FirstName,
                             ud.LastName,
                             ud.Avatar
@@ -124,7 +125,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
         [HttpPost("{id}/users")]
         public async Task<IActionResult> CreateUserInOrganization(Guid id, CreateOrganizationUserCommand command)
         {
-            var query = @"INSERT INTO User_Organization (User_Id, Node_Id, Created_At, Updated_At, Is_Deleted, Orgaznition_Role)
+            var query = @"INSERT INTO User_Organization (User_Id, Node_Id, Created_At, Updated_At, Is_Deleted, Organization_Role)
                           VALUES 
                           (@User_Id, @Organization_Id, GETDATE(), GETDATE(), 0, @Organization_Role)";
             var parameters = new DynamicParameters();
@@ -141,7 +142,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
         [HttpPut("{id}/users")]
         public async Task<IActionResult> EditUserInOrganization(Guid id, EditOrganizationUserCommand command)
         {
-            var query = "UPDATE User_Organization SET Organiaztion_Role = @Organiaztion_Role WHERE User_Id = @User_Id AND Node_Id = @Organization_Id;";
+            var query = "UPDATE User_Organization SET Organization_Role = @Organization_Role WHERE User_Id = @User_Id AND Node_Id = @Organization_Id;";
             var parameters = new DynamicParameters();
             parameters.Add("User_Id", command.User_Id);
             parameters.Add("Organization_Id", id);

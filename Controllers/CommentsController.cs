@@ -76,7 +76,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
             var query = @"SELECT 
                           c.Id, c.Content, c.Is_Response, c.Is_SharePost, c.React_Count, c.Updated_At, c.User_Id, 
                           ud.FirstName, ud.LastName, ud.Avatar,
-                          urc.React_Type, urc.User_Id as React_User_Id, urc.CreatedAt, 
+                          urc.React_Type, urc.User_Id as React_UserId, urc.Created_At, 
                           ur.FirstName AS React_FirstName, ur.LastName AS React_LastName, ur.Avatar AS React_Avatar,
                           a.Id AS Attachment_Id, a.Media, a.Description
                           FROM Comments c
@@ -130,7 +130,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
             var query = @"SELECT 
                           c.Id, c.Content, c.Is_Response, c.React_Count, c.Updated_At, c.User_Id, 
                           ud.FirstName, ud.LastName, ud.Avatar,
-                          urc.React_Type, urc.User_Id as React_UserId, urc.CreatedAt,
+                          urc.React_Type, urc.User_Id as React_UserId, urc.Created_At,
                           ur.FirstName AS React_FirstName, ur.LastName AS React_LastName, ur.Avatar AS React_Avatar,
                           a.Id AS Attachment_Id, a.Media, a.Description
                           FROM Comments c
@@ -182,19 +182,19 @@ namespace EnVietSocialNetWorkAPI.Controllers
         }
 
         [HttpGet("{id}/reponse")]
-        public async Task<IEnumerable<CommentDetailQuery>> GetCommentResponseByID(Guid id)
+        public async Task<IEnumerable<CommentDetailQuery>> GetComment_ResponseByID(Guid id)
         {
             var query = @"SELECT 
                           c.Id, c.Content, c.Is_Response, c.React_Count, c.Updated_At, c.User_Id, 
                           ud.FirstName, ud.LastName , ud.Avatar,
-                          urc.React_Type, urc.User_Id as React_UserId, urc.CreatedAt, 
+                          urc.React_Type, urc.User_Id as React_UserId, urc.Created_At, 
                           ur.FirstName AS React_FirstName, ur.LastName AS React_LastName, ur.Avatar AS React_Avatar,
                           a.Id AS Attachment_Id, a.Media, a.Description
                           FROM Comments c
                           INNER JOIN User_Details ud ON c.User_Id = ud.User_Id 
                           LEFT JOIN User_React_Comment urc ON c.Id = urc.Comment_Id
                           LEFT JOIN User_Details ur ON urc.User_Id = ur.User_Id
-                          LEFT JOIN CommentResponse cmr ON c.Id = cmr.Response_Id
+                          LEFT JOIN Comment_Response cmr ON c.Id = cmr.Response_Id
                           LEFT JOIN
                             Comment_Attachment ca ON ca.Comment_Id = c.Id
                           LEFT JOIN
@@ -239,7 +239,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
         [HttpPost("post/{post_Id}")]
         public async Task<IActionResult> CreateComment(Guid post_Id, CreateCommentCommand comment)
         {
-            var query = @"INSERT INTO Comments (Id, CreatedAt, Updated_At, Is_Deleted, Content, Is_Response, React_Count ,User_Id, Post_Id)
+            var query = @"INSERT INTO Comments (Id, Created_At, Updated_At, Is_Deleted, Content, Is_Response, React_Count ,User_Id, Post_Id)
                           OUTPUT Inserted.Id
                           VALUES
                           (NEWID(), GETDATE(), GETDATE(), 0, @Content, @Is_Response, 0, @User_Id, @Post_Id)";
@@ -250,7 +250,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
             var queryComment_Attachment = @"INSERT INTO Comment_Attachment (Comment_Id, Attachment_Id)
                                         VALUES
                                         (@Comment_Id, @Attachment_Id)";
-            var queryResponse = @"INSERT INTO CommentResponse (Comment_Id, Response_Id)
+            var queryResponse = @"INSERT INTO Comment_Response (Comment_Id, Response_Id)
                                   VALUES
                                   (@Comment_Id, @Response_Id)";
             var parameters = new DynamicParameters();

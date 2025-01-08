@@ -193,7 +193,7 @@ CREATE TABLE [organizations] (
   [city] nvarchar(100) NOT NULL,
   [country] nvarchar(100) NOT NULL,
   [level] int NOT NULL,
-  [parentid] uniqueidentifier,
+  [parent_id] uniqueidentifier,
   [employee_count] int NOT NULL DEFAULT (0)
 )
 GO
@@ -302,12 +302,12 @@ GO
 
 CREATE TABLE [user_react_comment] (
   [user_id] uniqueidentifier NOT NULL,
-  [commentid] uniqueidentifier NOT NULL,
+  [comment_id] uniqueidentifier NOT NULL,
   [react_type] nvarchar(255) NOT NULL CHECK ([react_type] IN ('Like', 'Heart', 'Smile', 'Angry', 'Sad')),
   [created_at] datetime NOT NULL DEFAULT (getdate()),
   [updated_at] datetime NOT NULL DEFAULT (getdate()),
   [is_deleted] bit NOT NULL DEFAULT (0),
-  PRIMARY KEY ([user_id], [commentid])
+  PRIMARY KEY ([user_id], [comment_id])
 )
 GO
 
@@ -435,7 +435,7 @@ GO
 ALTER TABLE [user_react_comment] ADD FOREIGN KEY ([user_id]) REFERENCES [users] ([id])
 GO
 
-ALTER TABLE [user_react_comment] ADD FOREIGN KEY ([commentid]) REFERENCES [comments] ([id])
+ALTER TABLE [user_react_comment] ADD FOREIGN KEY ([comment_id]) REFERENCES [comments] ([id])
 GO
 
 ALTER TABLE [user_react_message] ADD FOREIGN KEY ([user_id]) REFERENCES [users] ([id])
