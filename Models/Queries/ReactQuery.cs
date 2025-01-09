@@ -17,7 +17,6 @@
 
     public class CommentReactQuery : ReactQuery
     {
-        public bool Is_SharePost { get; set; }
     }
 
     public class MessageReactQuery : ReactQuery

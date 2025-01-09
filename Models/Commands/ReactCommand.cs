@@ -12,7 +12,6 @@
     {
         public Guid Comment_Id { get; set; }
         public string React_Type { get; set; }
-        public bool Is_SharePost { get; set; }
         public Guid User_Id { get; set; }
     }
 

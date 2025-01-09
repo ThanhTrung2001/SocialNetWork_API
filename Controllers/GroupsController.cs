@@ -338,6 +338,10 @@ namespace EnVietSocialNetWorkAPI.Controllers
         [HttpPost("{id}/users")]
         public async Task<IActionResult> AddUsersToGroup(Guid id, ModifyGroupUsersCommand group)
         {
+            //check if exist
+            var existQuery = @"SELECT COUNT(1) FROM User_Group
+                               WHERE User_Id = @User_Id AND Group_Id = @Group_Id;";
+
             var query = @"INSERT INTO User_Group (User_Id, Group_Id, Role, Is_Follow, Joined_At, Updated_At ,Is_Deleted)
                               VALUES      
                               (@User_Id, @group_Id, @Role, 1 ,GETDATE(), GETDATE() ,0);";
@@ -345,11 +349,19 @@ namespace EnVietSocialNetWorkAPI.Controllers
             {
                 foreach (var item in group.Users)
                 {
-                    var parameter = new DynamicParameters();
-                    parameter.Add("User_Id", item.User_Id);
-                    parameter.Add("Group_Id", id);
-                    parameter.Add("Role", item.Role);
-                    await connection.ExecuteAsync(query, parameter);
+                    var parameters = new DynamicParameters();
+                    parameters.Add("User_Id", item.User_Id);
+                    parameters.Add("Group_Id", id);
+                    parameters.Add("Role", item.Role);
+                    bool existed = await connection.ExecuteScalarAsync<bool>(existQuery, parameters);
+                    if (existed)
+                    {
+                        return BadRequest("Existed Connection between User and Page");
+                    }
+                    else
+                    {
+                        await connection.ExecuteAsync(query, parameters);
+                    }
                 }
                 return Ok();
             }
@@ -359,7 +371,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(Guid id)
         {
-            var query = "UPDATE Groups SET Is_Deleted = 1, UpdatedAt = GETDATE() WHERE Id = @Id;";
+            var query = "UPDATE Groups SET Is_Deleted = 1, Updated_At = GETDATE() WHERE Id = @Id;";
             var parameter = new DynamicParameters();
             parameter.Add("Id", id, DbType.Guid);
             using (var connection = _context.CreateConnection())
@@ -372,7 +384,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
         [HttpDelete("{id}/user")]
         public async Task<IActionResult> DeleteUserIn_Group(Guid id)
         {
-            var query = "UPDATE User_Group SET Is_Deleted = 1, UpdatedAt = GETDATE() WHERE Id = @Id;";
+            var query = "UPDATE User_Group SET Is_Deleted = 1, Updated_At = GETDATE() WHERE Id = @Id;";
             var parameter = new DynamicParameters();
             parameter.Add("Id", id, DbType.Guid);
             using (var connection = _context.CreateConnection())

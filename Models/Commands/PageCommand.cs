@@ -5,6 +5,7 @@
         public string Name { get; set; }
         public string Avatar { get; set; }
         public string Wallpaper { get; set; }
+        public Guid User_Id { get; set; }
     }
 
     public class ModifyPageUserCommand

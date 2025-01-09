@@ -1,7 +1,7 @@
 ﻿
 using EnVietSocialNetWorkAPI.Model.Commands;
 
-namespace EnVietSocialNetWorkAPI.RealTime.Repositories
+namespace EnVietSocialNetWorkAPI.Services.Repositories
 {
     public interface IChatRepository
     {

@@ -12,11 +12,11 @@ namespace EnVietSocialNetWorkAPI.Controllers
     //[Authorize]
     [Route("api/[controller]")]
     [ApiController]
-    public class OrganizationController : ControllerBase
+    public class OrganizationsController : ControllerBase
     {
         private readonly DapperContext _context;
         private readonly JWTHelper _helper;
-        public OrganizationController(DapperContext context, JWTHelper helper)
+        public OrganizationsController(DapperContext context, JWTHelper helper)
         {
             _context = context;
             _helper = helper;
@@ -125,6 +125,10 @@ namespace EnVietSocialNetWorkAPI.Controllers
         [HttpPost("{id}/users")]
         public async Task<IActionResult> CreateUserInOrganization(Guid id, CreateOrganizationUserCommand command)
         {
+            //Check if existed
+            var existQuery = @"SELECT COUNT(1) FROM User_Organization
+                   WHERE User_Id = @User_Id AND Node_Id = @Organization_Id;";
+
             var query = @"INSERT INTO User_Organization (User_Id, Node_Id, Created_At, Updated_At, Is_Deleted, Organization_Role)
                           VALUES 
                           (@User_Id, @Organization_Id, GETDATE(), GETDATE(), 0, @Organization_Role)";
@@ -134,8 +138,16 @@ namespace EnVietSocialNetWorkAPI.Controllers
             parameters.Add("Organization_Role", command.Organization_Role);
             using (var connection = _context.CreateConnection())
             {
-                await connection.ExecuteAsync(query, parameters);
-                return Ok();
+                bool existed = await connection.ExecuteScalarAsync<bool>(existQuery, parameters);
+                if (existed)
+                {
+                    return BadRequest("Existed Connection between User and Organization");
+                }
+                else
+                {
+                    await connection.ExecuteAsync(query, parameters);
+                    return Ok();
+                }
             }
         }
 

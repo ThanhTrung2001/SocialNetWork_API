@@ -1,7 +1,7 @@
-﻿using EnVietSocialNetWorkAPI.RealTime.Repositories;
+﻿using EnVietSocialNetWorkAPI.Services.Repositories;
 using Microsoft.AspNetCore.SignalR;
 
-namespace EnVietSocialNetWorkAPI.RealTime
+namespace EnVietSocialNetWorkAPI.Services
 {
     public class ChatHub : Hub
     {

@@ -449,7 +449,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
                                OUTPUT Inserted.Id
                                VALUES 
                                (NEWID(), GETDATE(), GETDATE(), 0, @Media, @Description)";
-            var queryPost_Attachment = @"INSERT INTO Post_Attachment (Id, Attachment_Id)
+            var queryPost_Attachment = @"INSERT INTO Post_Attachment (Post_Id, Attachment_Id)
                                VALUES 
                                (@Id, @Attachment_Id)";
             var querySurvey = @"INSERT INTO Surveys (ID, Created_At, Updated_At, Is_Deleted, Expired_At, Total, Survey_Type, Id, Question)

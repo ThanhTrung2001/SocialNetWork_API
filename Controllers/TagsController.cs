@@ -11,10 +11,10 @@ namespace EnVietSocialNetWorkAPI.Controllers
     [AllowAnonymous]
     [Route("api/[controller]")]
     [ApiController]
-    public class TagController : ControllerBase
+    public class TagsController : ControllerBase
     {
         private readonly DapperContext _context;
-        public TagController(DapperContext context)
+        public TagsController(DapperContext context)
         {
             _context = context;
         }
