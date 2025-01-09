@@ -336,6 +336,9 @@ GO
 ALTER TABLE [user_details] ADD FOREIGN KEY ([user_id]) REFERENCES [users] ([id])
 GO
 
+ALTER TABLE [posts] ADD FOREIGN KEY ([user_id]) REFERENCES [users] ([id])
+GO
+
 ALTER TABLE [posts] ADD FOREIGN KEY ([post_type_id]) REFERENCES [post_types] ([id])
 GO
 
