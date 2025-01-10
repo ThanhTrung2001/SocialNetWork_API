@@ -4,6 +4,7 @@ using EnVietSocialNetWorkAPI.Model.Commands;
 using EnVietSocialNetWorkAPI.Model.Queries;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Data;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -26,83 +27,6 @@ namespace EnVietSocialNetWorkAPI.Controllers
         [HttpGet]
         public async Task<IEnumerable<PostQuery>> Get()
         {
-            var query = @"
-            SELECT 
-                p.Id,
-                p.Content,
-                p.Post_Type_Id,
-                p.Created_At,
-                p.In_Group,
-                p.Destination_Id,
-                p.User_Id,
-                u.Email,
-                ud.FirstName,
-                ud.LastName,
-                ud.Avatar,
-
-                a.Id AS Attachment_Id,
-                a.Media,
-                a.Description,
-
-                s.Id AS Survey_Id,
-                s.Expired_At,
-                s.Question,
-                s.Survey_Type,
-                s.Total_Vote,
-
-                si.Id AS SurveyItem_Id,
-                si.Option_Name AS SurveyItem_Name,
-                si.Total_Vote AS Item_Total,
-
-                udv.User_Id AS Vote_UserId,
-                udv.FirstName AS Vote_FirstName,
-                udv.LastName AS Vote_LastName,
-                udv.Avatar AS Vote_Avatar,
-                 
-                c.Id AS Comment_Id,
-                c.Content AS Comment_Content,
-                c.Created_At AS Comment_Created_At,
-                c.User_Id AS Comment_UserId,
-                udc.FirstName AS Comment_FirstName,
-                udc.LastName AS Comment_LastName,
-                udc.Avatar AS Comment_Avatar,
-
-                urp.React_Type,
-                udr.User_Id AS React_UserId,
-                udr.FirstName AS React_FirstName,
-                udr.LastName AS React_LastName,
-                udr.Avatar AS React_Avatar,
-                udr.Created_At
-
-            FROM 
-                Posts p
-            INNER JOIN 
-                Users u ON p.User_Id = u.Id
-            INNER JOIN 
-                User_Details ud ON u.Id = ud.User_Id
-            LEFT JOIN
-                Post_Attachment pa ON pa.Post_Id = p.Id
-            LEFT JOIN
-                Attachments a ON pa.Attachment_Id = a.Id
-            LEFT JOIN 
-                Surveys s ON p.Id = s.Id
-            LEFT JOIN 
-                Survey_Items si ON s.Id = si.Survey_Id
-            LEFT JOIN
-                User_SurveyItem_Vote uv ON si.Id = uv.SurveyItem_Id
-            LEFT JOIN 
-                User_Details udv ON udv.User_Id = uv.User_Id 
-            LEFT JOIN
-                Comments c ON p.Id = c.Post_Id
-            LEFT JOIN
-                User_Details udc ON c.User_Id = udc.User_Id
-            LEFT JOIN
-                User_React_Post urp ON p.Id = urp.Post_Id
-            LEFT JOIN
-                User_Details udr ON urp.User_Id = udr.User_Id 
-            WHERE 
-                p.Is_Deleted = 0;";
-
             try
             {
                 var postDict = new Dictionary<Guid, PostQuery>();
@@ -110,7 +34,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
                 using (var connection = _context.CreateConnection())
                 {
                     var result = await connection.QueryAsync<PostQuery, AttachmentQuery, PostSurveyQuery, PostSurveyItemQuery, PostVoteQuery, PostCommentQuery, PostReactQuery, PostQuery>(
-                    query,
+                    "GetPosts",
                     map: (post, attachment, survey, surveyItem, vote, comment, react) =>
                     {
                         if (!postDict.TryGetValue(post.Id, out var postEntry))
@@ -148,7 +72,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
                         }
                         return postEntry;
                     },
-
+                    commandType: CommandType.StoredProcedure,
                     splitOn: "Attachment_Id, Survey_Id, SurveyItem_Id, Vote_UserId, Comment_Id, React_Type");
                     return postDict.Values.ToList();
                 }
@@ -162,83 +86,6 @@ namespace EnVietSocialNetWorkAPI.Controllers
         [HttpGet("user/{id}")]
         public async Task<IEnumerable<PostQuery>> GetUserPostByUserID(Guid id)
         {
-            var query = @"
-            SELECT 
-                p.Id,
-                p.Content,
-                p.Post_Type_Id,
-                p.Created_At,
-                p.In_Group,
-                p.Destination_Id,
-                p.User_Id,
-                u.Email,
-                ud.FirstName,
-                ud.LastName,
-                ud.Avatar,
-
-                a.Id AS Attachment_Id,
-                a.Media,
-                a.Description,
-
-                s.Id AS Survey_Id,
-                s.Expired_At,
-                s.Question,
-                s.Survey_Type,
-                s.Total_Vote,
-
-                si.Id AS SurveyItem_Id,
-                si.Option_Name AS SurveyItem_Name,
-                si.Total_Vote AS Item_Total,
-
-                udv.User_Id AS Vote_UserId,
-                udv.FirstName AS Vote_FirstName,
-                udv.LastName AS Vote_LastName,
-                udv.Avatar AS Vote_Avatar,
-                 
-                c.Id AS Comment_Id,
-                c.Content AS Comment_Content,
-                c.Created_At AS Comment_Created_At,
-                c.User_Id AS Comment_UserId,
-                udc.FirstName AS Comment_FirstName,
-                udc.LastName AS Comment_LastName,
-                udc.Avatar AS Comment_Avatar,
-
-                urp.React_Type,
-                udr.User_Id AS React_UserId,
-                udr.FirstName AS React_FirstName,
-                udr.LastName AS React_LastName,
-                udr.Avatar AS React_Avatar,
-                udr.Created_At
-
-            FROM 
-                Posts p
-            INNER JOIN 
-                Users u ON p.User_Id = u.Id
-            INNER JOIN 
-                User_Details ud ON u.Id = ud.User_Id
-            LEFT JOIN
-                Post_Attachment pa ON pa.Post_Id = p.Id
-            LEFT JOIN
-                Attachments a ON pa.Attachment_Id = a.Id
-            LEFT JOIN 
-                Surveys s ON p.Id = s.Id
-            LEFT JOIN 
-                Survey_Items si ON s.Id = si.Survey_Id
-            LEFT JOIN
-                User_SurveyItem_Vote uv ON si.Id = uv.SurveyItem_Id
-            LEFT JOIN 
-                User_Details udv ON udv.User_Id = uv.User_Id 
-            LEFT JOIN
-                Comments c ON p.Id = c.Post_Id
-            LEFT JOIN
-                User_Details udc ON c.User_Id = udc.User_Id
-            LEFT JOIN
-                User_React_Post urp ON p.Id = urp.Post_Id
-            LEFT JOIN
-                User_Details udr ON urp.User_Id = udr.User_Id 
-            WHERE 
-                p.Is_Deleted = 0 AND p.User_Id = @Id AND p.In_Group = 0;";
-
             try
             {
                 var parameter = new DynamicParameters();
@@ -248,7 +95,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
                 using (var connection = _context.CreateConnection())
                 {
                     var result = await connection.QueryAsync<PostQuery, AttachmentQuery, PostSurveyQuery, PostSurveyItemQuery, PostVoteQuery, PostCommentQuery, PostReactQuery, PostQuery>(
-                    query,
+                    "GetPostsByUserId",
                     map: (post, attachment, survey, surveyItem, vote, comment, react) =>
                     {
                         if (!postDict.TryGetValue(post.Id, out var postEntry))
@@ -287,6 +134,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
                         return postEntry;
                     },
                     parameter,
+                    commandType: CommandType.StoredProcedure,
                     splitOn: "Attachment_Id, Survey_Id, SurveyItem_Id, Vote_UserId, Comment_Id, React_Type");
                     return postDict.Values.ToList();
                 }
@@ -301,83 +149,6 @@ namespace EnVietSocialNetWorkAPI.Controllers
         [HttpGet("{id}")]
         public async Task<PostQuery> GetByID(Guid id)
         {
-            var query = @"
-            SELECT 
-                p.Id,
-                p.Content,
-                p.Post_Type_Id,
-                p.Created_At,
-                p.In_Group,
-                p.Destination_Id,
-                p.User_Id,
-                u.Email,
-                ud.FirstName,
-                ud.LastName,
-                ud.Avatar,
-
-                a.Id AS Attachment_Id,
-                a.Media,
-                a.Description,
-
-                s.Id AS Survey_Id,
-                s.Expired_At,
-                s.Question,
-                s.Survey_Type,
-                s.Total_Vote,
-
-                si.Id AS SurveyItem_Id,
-                si.Option_Name AS SurveyItem_Name,
-                si.Total_Vote AS Item_Total,
-
-                udv.User_Id AS Vote_UserId,
-                udv.FirstName AS Vote_FirstName,
-                udv.LastName AS Vote_LastName,
-                udv.Avatar AS Vote_Avatar,
-                 
-                c.Id AS Comment_Id,
-                c.Content AS Comment_Content,
-                c.Created_At AS Comment_Created_At,
-                c.User_Id AS Comment_UserId,
-                udc.FirstName AS Comment_FirstName,
-                udc.LastName AS Comment_LastName,
-                udc.Avatar AS Comment_Avatar,
-
-                urp.React_Type,
-                udr.User_Id AS React_UserId,
-                udr.FirstName AS React_FirstName,
-                udr.LastName AS React_LastName,
-                udr.Avatar AS React_Avatar,
-                udr.Created_At
-
-            FROM 
-                Posts p
-            INNER JOIN 
-                Users u ON p.User_Id = u.Id
-            INNER JOIN 
-                User_Details ud ON u.Id = ud.User_Id
-            LEFT JOIN
-                Post_Attachment pa ON pa.Post_Id = p.Id
-            LEFT JOIN
-                Attachments a ON pa.Attachment_Id = a.Id
-            LEFT JOIN 
-                Surveys s ON p.Id = s.Id
-            LEFT JOIN 
-                Survey_Items si ON s.Id = si.Survey_Id
-            LEFT JOIN
-                User_SurveyItem_Vote uv ON si.Id = uv.SurveyItem_Id
-            LEFT JOIN 
-                User_Details udv ON udv.User_Id = uv.User_Id 
-            LEFT JOIN
-                Comments c ON p.Id = c.Post_Id
-            LEFT JOIN
-                User_Details udc ON c.User_Id = udc.User_Id
-            LEFT JOIN
-                User_React_Post urp ON p.Id = urp.Post_Id
-            LEFT JOIN
-                User_Details udr ON urp.User_Id = udr.User_Id 
-            WHERE 
-                p.Is_Deleted = 0 AND p.Id = @Id;";
-
             try
             {
                 PostQuery postBasic = null;
@@ -388,7 +159,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
                 using (var connection = _context.CreateConnection())
                 {
                     var result = await connection.QueryAsync<PostQuery, AttachmentQuery, PostSurveyQuery, PostSurveyItemQuery, PostVoteQuery, PostCommentQuery, PostReactQuery, PostQuery>(
-                    query,
+                    "GetPostById",
                     map: (post, attachment, survey, surveyItem, vote, comment, react) =>
                     {
                         if (postBasic == null)
@@ -426,6 +197,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
                         return postBasic;
                     },
                     parameter,
+                    commandType: CommandType.StoredProcedure,
                     splitOn: "Attachment_Id, Survey_Id, SurveyItem_Id, Vote_UserId, Comment_Id, React_Type");
                     return postBasic;
                 }
