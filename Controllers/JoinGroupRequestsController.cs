@@ -89,20 +89,34 @@ namespace EnVietSocialNetWorkAPI.Controllers
             var query = @"UPDATE User_Request_Group
                           SET Status = @Status, Updated_At = GETDATE()
                           WHERE User_Id = @User_Id AND Group_Id = @Group_Id AND (Status NOT LIKE 'Cancel' OR Status NOT LIKE 'Reject' )";
+            var acceptQuery = @"INSERT INTO User_Group (User_Id, Group_Id, Role, Is_Follow, Joined_At, Updated_At ,Is_Deleted)
+                              VALUES      
+                              (@User_Id, @Group_Id, 'Member', 1 ,GETDATE(), GETDATE() ,0);";
             var parameters = new DynamicParameters();
             parameters.Add("User_Id", command.User_Id);
             parameters.Add("Group_Id", command.Group_Id);
             using (var connection = _context.CreateConnection())
             {
-                try
+                connection.Open();
+                using (var transaction = connection.BeginTransaction())
                 {
-                    await connection.ExecuteAsync(query, parameters);
-                    return Ok();
+                    try
+                    {
+                        await connection.ExecuteAsync(query, parameters, transaction);
+                        if (command.Status == "Accept")
+                        {
+                            await connection.ExecuteAsync(acceptQuery, parameters, transaction);
+                        }
+                        transaction.Commit();
+                        return Ok();
+                    }
+                    catch (Exception ex)
+                    {
+                        transaction.Rollback();
+                        return BadRequest(ex.Message);
+                    }
                 }
-                catch (Exception ex)
-                {
-                    return BadRequest(ex.Message);
-                }
+
             }
         }
 
