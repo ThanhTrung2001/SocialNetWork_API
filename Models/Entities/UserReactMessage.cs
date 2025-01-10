@@ -1,10 +1,13 @@
-﻿namespace EnVietSocialNetWorkAPI.Models;
+﻿using System;
+using System.Collections.Generic;
 
-public partial class UserReactComment
+namespace EnVietSocialNetWorkAPI.Models.Entities;
+
+public partial class UserReactMessage
 {
     public Guid UserId { get; set; }
 
-    public Guid Commentid { get; set; }
+    public Guid MessageId { get; set; }
 
     public string ReactType { get; set; } = null!;
 
@@ -14,7 +17,7 @@ public partial class UserReactComment
 
     public bool IsDeleted { get; set; }
 
-    public virtual Comment Comment { get; set; } = null!;
+    public virtual Message Message { get; set; } = null!;
 
     public virtual User User { get; set; } = null!;
 }

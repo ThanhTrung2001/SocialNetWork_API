@@ -1,4 +1,7 @@
-﻿namespace EnVietSocialNetWorkAPI.Models;
+﻿using System;
+using System.Collections.Generic;
+
+namespace EnVietSocialNetWorkAPI.Models.Entities;
 
 public partial class Notification
 {
@@ -16,15 +19,15 @@ public partial class Notification
 
     public string Description { get; set; } = null!;
 
-    public string NotiType { get; set; }
-
     public Guid? DestinationId { get; set; }
 
     public string? OrganizationName { get; set; }
 
-    public DateTime Startedat { get; set; }
+    public DateTime StartedAt { get; set; }
 
-    public DateTime? Endedat { get; set; }
+    public DateTime? EndedAt { get; set; }
+
+    public string? NotiType { get; set; }
 
     public virtual User User { get; set; } = null!;
 

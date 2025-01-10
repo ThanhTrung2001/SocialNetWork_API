@@ -1,4 +1,7 @@
-﻿namespace EnVietSocialNetWorkAPI.Models;
+﻿using System;
+using System.Collections.Generic;
+
+namespace EnVietSocialNetWorkAPI.Models.Entities;
 
 public partial class Organization
 {
@@ -22,7 +25,7 @@ public partial class Organization
 
     public int Level { get; set; }
 
-    public Guid? Parentid { get; set; }
+    public Guid? ParentId { get; set; }
 
     public int EmployeeCount { get; set; }
 

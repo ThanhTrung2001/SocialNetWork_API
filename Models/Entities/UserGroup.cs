@@ -1,10 +1,13 @@
-﻿namespace EnVietSocialNetWorkAPI.Models;
+﻿using System;
+using System.Collections.Generic;
 
-public partial class UserPage
+namespace EnVietSocialNetWorkAPI.Models.Entities;
+
+public partial class UserGroup
 {
     public Guid UserId { get; set; }
 
-    public Guid PageId { get; set; }
+    public Guid GroupId { get; set; }
 
     public string Role { get; set; } = null!;
 
@@ -16,7 +19,7 @@ public partial class UserPage
 
     public bool IsDeleted { get; set; }
 
-    public virtual Page Page { get; set; } = null!;
+    public virtual Group Group { get; set; } = null!;
 
     public virtual User User { get; set; } = null!;
 }

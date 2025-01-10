@@ -1,4 +1,7 @@
-﻿namespace EnVietSocialNetWorkAPI.Models;
+﻿using System;
+using System.Collections.Generic;
+
+namespace EnVietSocialNetWorkAPI.Models.Entities;
 
 public partial class Group
 {
@@ -17,4 +20,6 @@ public partial class Group
     public string? Wallpaper { get; set; }
 
     public virtual ICollection<UserGroup> UserGroups { get; set; } = new List<UserGroup>();
+
+    public virtual ICollection<UserRequestGroup> UserRequestGroups { get; set; } = new List<UserRequestGroup>();
 }

@@ -152,9 +152,9 @@ namespace EnVietSocialNetWorkAPI.Controllers
 
 
         [HttpGet("user/{user_Id}")]
-        public async Task<IEnumerable<ChatGroupQuery>> GetChatGroupsByUser_Id(Guid user_Id)
+        public async Task<IEnumerable<ChatGroupQuery>> GetChatGroupsByUserId(Guid user_Id)
         {
-            var query = @"SELECT c.Id, c.Name, c.Theme, c.Group_Type,
+            var query = @"SELECT c.Id, c.Name, c.Theme, c.Group_Type
                 FROM User_ChatGroup ucb
                 INNER JOIN Chat_Groups c ON c.Id = ucb.ChatGroup_Id
                 WHERE ucb.User_Id = @User_Id AND c.Is_Deleted = 0;";

@@ -1,4 +1,7 @@
-﻿namespace EnVietSocialNetWorkAPI.Models;
+﻿using System;
+using System.Collections.Generic;
+
+namespace EnVietSocialNetWorkAPI.Models.Entities;
 
 public partial class Post
 {
@@ -27,6 +30,8 @@ public partial class Post
     public virtual ICollection<SharePost> SharePosts { get; set; } = new List<SharePost>();
 
     public virtual ICollection<Survey> Surveys { get; set; } = new List<Survey>();
+
+    public virtual User User { get; set; } = null!;
 
     public virtual ICollection<Attachment> Attachments { get; set; } = new List<Attachment>();
 

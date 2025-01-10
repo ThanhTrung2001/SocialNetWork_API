@@ -182,7 +182,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
         }
 
         [HttpGet("{id}/reponse")]
-        public async Task<IEnumerable<CommentDetailQuery>> GetComment_ResponseByID(Guid id)
+        public async Task<IEnumerable<CommentDetailQuery>> GetCommentResponseByID(Guid id)
         {
             var query = @"SELECT 
                           c.Id, c.Content, c.Is_Response, c.React_Count, c.Updated_At, c.User_Id, 

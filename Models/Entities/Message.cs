@@ -1,4 +1,7 @@
-﻿namespace EnVietSocialNetWorkAPI.Models;
+﻿using System;
+using System.Collections.Generic;
+
+namespace EnVietSocialNetWorkAPI.Models.Entities;
 
 public partial class Message
 {

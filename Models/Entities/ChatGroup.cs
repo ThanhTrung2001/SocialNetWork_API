@@ -1,4 +1,7 @@
-﻿namespace EnVietSocialNetWorkAPI.Models;
+﻿using System;
+using System.Collections.Generic;
+
+namespace EnVietSocialNetWorkAPI.Models.Entities;
 
 public partial class ChatGroup
 {
@@ -14,7 +17,7 @@ public partial class ChatGroup
 
     public string Theme { get; set; } = null!;
 
-    public string GroupType { get; set; } = null!;
+    public string? GroupType { get; set; }
 
     public virtual ICollection<Message> Messages { get; set; } = new List<Message>();
 

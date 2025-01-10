@@ -1,4 +1,4 @@
-﻿namespace EnVietSocialNetWorkAPI.Models;
+﻿namespace EnVietSocialNetWorkAPI.Models.Entities;
 
 public partial class Attachment
 {

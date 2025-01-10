@@ -333,6 +333,17 @@ CREATE TABLE [user_organization] (
 )
 GO
 
+CREATE TABLE [user_request_group] (
+  [user_id] uniqueidentifier NOT NULL,
+  [group_id] uniqueidentifier NOT NULL,
+  [status] nvarchar(255) NOT NULL CHECK ([status] IN ('Pending', 'Accept', 'Reject', 'Cancel')),
+  [created_at] datetime NOT NULL DEFAULT (getdate()),
+  [updated_at] datetime NOT NULL DEFAULT (getdate()),
+  [is_deleted] bit NOT NULL DEFAULT (0),
+  PRIMARY KEY ([user_id], [group_id])
+)
+GO
+
 ALTER TABLE [user_details] ADD FOREIGN KEY ([user_id]) REFERENCES [users] ([id])
 GO
 
@@ -451,4 +462,10 @@ ALTER TABLE [user_organization] ADD FOREIGN KEY ([user_id]) REFERENCES [users] (
 GO
 
 ALTER TABLE [user_organization] ADD FOREIGN KEY ([node_id]) REFERENCES [organizations] ([id])
+GO
+
+ALTER TABLE [user_request_group] ADD FOREIGN KEY ([user_id]) REFERENCES [users] ([id])
+GO
+
+ALTER TABLE [user_request_group] ADD FOREIGN KEY ([group_id]) REFERENCES [groups] ([id])
 GO

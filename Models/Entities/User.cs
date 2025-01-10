@@ -1,4 +1,7 @@
-﻿namespace EnVietSocialNetWorkAPI.Models;
+﻿using System;
+using System.Collections.Generic;
+
+namespace EnVietSocialNetWorkAPI.Models.Entities;
 
 public partial class User
 {
@@ -24,6 +27,8 @@ public partial class User
 
     public virtual ICollection<Notification> Notifications { get; set; } = new List<Notification>();
 
+    public virtual ICollection<Post> Posts { get; set; } = new List<Post>();
+
     public virtual ICollection<SharePost> SharePosts { get; set; } = new List<SharePost>();
 
     public virtual ICollection<UserChatgroup> UserChatgroups { get; set; } = new List<UserChatgroup>();
@@ -41,6 +46,8 @@ public partial class User
     public virtual ICollection<UserReactMessage> UserReactMessages { get; set; } = new List<UserReactMessage>();
 
     public virtual ICollection<UserReactPost> UserReactPosts { get; set; } = new List<UserReactPost>();
+
+    public virtual ICollection<UserRequestGroup> UserRequestGroups { get; set; } = new List<UserRequestGroup>();
 
     public virtual ICollection<SurveyItem> Surveyitems { get; set; } = new List<SurveyItem>();
 }
