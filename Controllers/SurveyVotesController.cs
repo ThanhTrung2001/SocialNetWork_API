@@ -33,14 +33,14 @@ namespace EnVietSocialNetWorkAPI.Controllers
             }
         }
 
-        [HttpPost("option/{surveyItem_Id}")]
-        public async Task<IActionResult> CreateByOptionId(Guid surveyItem_Id, CreateSurveyVoteCommand vote)
+        [HttpPost]
+        public async Task<IActionResult> CreateByOptionId(CreateSurveyVoteCommand vote)
         {
             var query = @"INSERT INTO User_SurveyItem_Vote (SurveyItem_Id, User_Id)
                           VALUES
                           (@SurveyItem_Id, @User_Id)";
             var parameters = new DynamicParameters();
-            parameters.Add("SurveyItem_Id", surveyItem_Id, DbType.Guid);
+            parameters.Add("SurveyItem_Id", vote.SurveyItem_Id, DbType.Guid);
             parameters.Add("User_Id", vote.User_Id, DbType.Guid);
             using (var connection = _context.CreateConnection())
             {
@@ -50,12 +50,12 @@ namespace EnVietSocialNetWorkAPI.Controllers
         }
 
         [HttpDelete("option/{surveyItem_Id}")]
-        public async Task<IActionResult> Delete(Guid surveyItem_Id, CreateSurveyVoteCommand command)
+        public async Task<IActionResult> Delete(CreateSurveyVoteCommand command)
         {
             var query = "DELETE FROM User_SurveyItem_Vote WHERE User_Id = @User_Id AND SurveyItem_Id = @SurveyItem_Id";
             var parameters = new DynamicParameters();
             parameters.Add("User_Id", command.User_Id);
-            parameters.Add("SurveyItem_Id", surveyItem_Id);
+            parameters.Add("SurveyItem_Id", command.SurveyItem_Id);
             using (var connection = _context.CreateConnection())
             {
                 await connection.ExecuteAsync(query, parameters);

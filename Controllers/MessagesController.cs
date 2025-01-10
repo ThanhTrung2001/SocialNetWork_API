@@ -140,8 +140,8 @@ namespace EnVietSocialNetWorkAPI.Controllers
             }
         }
 
-        [HttpPost("chatGroup/{ChatGroup_Id}")]
-        public async Task<IActionResult> AddNewMessage(Guid ChatGroup_Id, CreateMessageCommand message)
+        [HttpPost]
+        public async Task<IActionResult> AddNewMessage(CreateMessageCommand message)
         {
             var query = @"INSERT INTO Messages (Id, Created_At, Updated_At, Is_Deleted, Content, Sender_Id, ChatGroup_Id, Is_Pinned, Is_Response, React_Count, Type, Status)
                         OUTPUT Inserted.Id
@@ -157,7 +157,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
             var parameters = new DynamicParameters();
             parameters.Add("Content", message.Content, DbType.String);
             parameters.Add("Sender_Id", message.Sender_Id, DbType.Guid);
-            parameters.Add("ChatGroup_Id", ChatGroup_Id, DbType.Guid);
+            parameters.Add("ChatGroup_Id", message.ChatGroup_Id, DbType.Guid);
             parameters.Add("Is_Response", message.Is_Response);
             parameters.Add("Type", message.Type);
             using (var connection = _context.CreateConnection())
@@ -206,7 +206,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
             }
         }
 
-        [HttpPut("pin/{id}")]
+        [HttpPut("{id}/pin")]
         public async Task<IActionResult> PinMessage(Guid id, CreateMessageCommand message)
         {
             var query = "UPDATE Messages SET Is_Pinned = 1, Updated_At = GETDATE() WHERE Id = @Id AND Sender_Id = @Sender_Id";

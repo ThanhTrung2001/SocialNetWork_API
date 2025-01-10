@@ -187,6 +187,4 @@ namespace EnVietSocialNetWorkAPI.Controllers
             }
         }
     }
-
-
 }

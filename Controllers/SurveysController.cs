@@ -82,21 +82,20 @@ namespace EnVietSocialNetWorkAPI.Controllers
             }
         }
 
-        [HttpPost("survey/{survey_Id}")]
-        public async Task<IActionResult> CreateBysurvey_Id(Guid survey_Id, CreateSurveyCommand survey)
+        [HttpPost]
+        public async Task<IActionResult> CreateBySurveyId(CreateSurveyCommand survey)
         {
-            var query = @"INSERT INTO Surveys (ID, Created_At, Updated_At, Is_Deleted, Expired_At, Total_Vote, Survey_Type, survey_Id, Question)
+            var query = @"INSERT INTO Surveys (ID, Created_At, Updated_At, Is_Deleted, Expired_At, Total_Vote, Survey_Type, Question)
                           OUTPUT Inserted.Id
                           VALUES
-                          (NEWID(), GETDATE(), GETDATE(), 0, @Expired_At, 0, @Survey_Type , @survey_Id, @Question)";
-            var querySurveyItem = @"INSERT INTO SurveyItems (ID, Created_At, Updated_At, Is_Deleted, Option_Name, Survey_Id, Total_Vote)
+                          (NEWID(), GETDATE(), GETDATE(), 0, @Expired_At, 0, @Survey_Type ,@Question)";
+            var querySurveyItem = @"INSERT INTO SurveyItems (ID, Created_At, Updated_At, Is_Deleted, Option_Name, Total_Vote)
                           VALUES
-                          (NEWID(), GETDATE(), GETDATE(), 0, @Content, @Survey_Id, 0)";
+                          (NEWID(), GETDATE(), GETDATE(), 0, @Content, 0)";
 
             var parameters = new DynamicParameters();
 
             parameters.Add("Expired_At", survey.Expired_At, DbType.DateTime);
-            parameters.Add("Survey_Id", survey_Id, DbType.Guid);
             parameters.Add("Question", survey.Question, DbType.String);
             parameters.Add("Survey_Type", survey.Survey_Type);
 

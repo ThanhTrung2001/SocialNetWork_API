@@ -236,8 +236,8 @@ namespace EnVietSocialNetWorkAPI.Controllers
             }
         }
 
-        [HttpPost("post/{post_Id}")]
-        public async Task<IActionResult> CreateComment(Guid post_Id, CreateCommentCommand comment)
+        [HttpPost]
+        public async Task<IActionResult> CreateComment(CreateCommentCommand comment)
         {
             var query = @"INSERT INTO Comments (Id, Created_At, Updated_At, Is_Deleted, Content, Is_Response, React_Count ,User_Id, Post_Id)
                           OUTPUT Inserted.Id
@@ -256,7 +256,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
             var parameters = new DynamicParameters();
             parameters.Add("Content", comment.Content, DbType.String);
             parameters.Add("User_Id", comment.User_Id, DbType.Guid);
-            parameters.Add("Post_Id", post_Id);
+            parameters.Add("Post_Id", comment.Post_Id);
             parameters.Add("Is_Response", comment.Is_Response);
             using (var connection = _context.CreateConnection())
             {

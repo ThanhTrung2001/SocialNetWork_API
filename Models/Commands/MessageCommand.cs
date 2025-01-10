@@ -2,6 +2,7 @@
 {
     public class CreateMessageCommand
     {
+        public Guid ChatGroup_Id { get; set; }
         public string? Content { get; set; }
         public Guid Sender_Id { get; set; }
         public bool Is_Response { get; set; }

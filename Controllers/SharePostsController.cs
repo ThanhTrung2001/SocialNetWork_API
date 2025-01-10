@@ -33,7 +33,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
                             uds.LastName AS Share_LastName,
                             uds.Avatar AS Share_Avatar,
                             
-                            p.Id AS PostId,
+                            p.Id AS Post_Id,
                             p.Content,
                             p.Post_Type_Id,
                             p.Created_At,
@@ -302,15 +302,15 @@ namespace EnVietSocialNetWorkAPI.Controllers
             }
         }
 
-        [HttpGet("post/{postId}/users")]
-        public async Task<IEnumerable<ShareUserQuery>> GetShareUsersByPostId(Guid postId)
+        [HttpGet("post/{Post_Id}/users")]
+        public async Task<IEnumerable<ShareUserQuery>> GetShareUsersByPost_Id(Guid Post_Id)
         {
             var query = @" SELECT s.Id, s.Shared_By_User_Id AS Share_UserId, ud.FirstName AS Share_FirstName, ud.LastName AS Share_LastName, u.Avatar as Share_Avatar
                            FROM Share_Posts s
                            LEFT JOIN User_Details ud ON s.Shared_By_User_Id = ud.User_Id
-                           WHERE s.Shared_Post_Id = @PostId AND s.Is_Deleted = 0";
+                           WHERE s.Shared_Post_Id = @Post_Id AND s.Is_Deleted = 0";
             var parameter = new DynamicParameters();
-            parameter.Add("PostId", postId);
+            parameter.Add("Post_Id", Post_Id);
             using (var connection = _context.CreateConnection())
             {
                 var result = await connection.QueryAsync<ShareUserQuery>(query, parameter);
@@ -318,14 +318,14 @@ namespace EnVietSocialNetWorkAPI.Controllers
             }
         }
 
-        [HttpPost("post/{postId}")]
-        public async Task<IActionResult> CreateSharePost(Guid postId, CreateSharePostCommand share)
+        [HttpPost]
+        public async Task<IActionResult> CreateSharePost(CreateSharePostCommand share)
         {
             var query = @"INSERT INTO Share_Posts (Id, Created_At, Updated_At, Is_Deleted, Shared_Post_Id ,Shared_By_User_Id, Content, In_Group, Destination_Id)
                           VALUES
-                          (NEWID(), GETDATE(), GETDATE(), 0, @PostId, @Shared_By_User_Id, @Content, @In_Group, @Destination_Id)";
+                          (NEWID(), GETDATE(), GETDATE(), 0, @Post_Id, @Shared_By_User_Id, @Content, @In_Group, @Destination_Id)";
             var parameters = new DynamicParameters();
-            parameters.Add("PostId", postId);
+            parameters.Add("Post_Id", share.Post_Id);
             parameters.Add("Shared_By_User_Id", share.Shared_By_User_Id);
             parameters.Add("Content", share.Content);
             parameters.Add("In_Group", share.In_Group);
@@ -338,7 +338,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
             }
         }
 
-        [HttpPost("{id}")]
+        [HttpPut("{id}")]
         public async Task<IActionResult> EditSharePost(Guid id, EditSharePostCommand command)
         {
             var query = @"UPDATE Share_Posts SET Content = @Content WHERE Id = @Id AND Shared_By_User_Id = @User_Id";

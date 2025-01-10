@@ -2,6 +2,7 @@
 {
     public class CreateCommentCommand
     {
+        public Guid Post_Id { get; set; }
         public string Content { get; set; }
         public Guid User_Id { get; set; }
         public bool Is_Response { get; set; }
