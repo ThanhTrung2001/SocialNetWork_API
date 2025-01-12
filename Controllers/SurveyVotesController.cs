@@ -2,6 +2,7 @@
 using EnVietSocialNetWorkAPI.DataConnection;
 using EnVietSocialNetWorkAPI.Model.Commands;
 using EnVietSocialNetWorkAPI.Model.Queries;
+using EnVietSocialNetWorkAPI.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Data;
@@ -21,15 +22,23 @@ namespace EnVietSocialNetWorkAPI.Controllers
         }
 
         [HttpGet("option/{surveyItem_Id}")]
-        public async Task<IEnumerable<SurveyVoteQuery>> GetByOptionId(Guid surveyItem_Id)
+        public async Task<IActionResult> GetByOptionId(Guid surveyItem_Id)
         {
             var query = "SELECT * FROM User_SurveyItem_Vote WHERE SurveyItem_Id = @Id";
             var parameters = new DynamicParameters();
             parameters.Add("Id", surveyItem_Id, DbType.Guid);
             using (var connection = _context.CreateConnection())
             {
-                var result = await connection.QueryAsync<SurveyVoteQuery>(query, parameters);
-                return result;
+                try
+                {
+                    var result = await connection.QueryAsync<SurveyVoteQuery>(query, parameters);
+                    return Ok(ResponseModel<IEnumerable<SurveyVoteQuery>>.Success(result));
+
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest(ResponseModel<IEnumerable<SurveyVoteQuery>>.Failure(ex.Message));
+                }
             }
         }
 
@@ -44,8 +53,16 @@ namespace EnVietSocialNetWorkAPI.Controllers
             parameters.Add("User_Id", vote.User_Id, DbType.Guid);
             using (var connection = _context.CreateConnection())
             {
-                var result = await connection.ExecuteAsync(query, parameters);
-                return Ok(result);
+                try
+                {
+                    await connection.ExecuteAsync(query, parameters);
+                    return Ok(ResponseModel<string>.Success("Success."));
+
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest(ResponseModel<Guid>.Failure(ex.Message));
+                }
             }
         }
 
@@ -58,8 +75,16 @@ namespace EnVietSocialNetWorkAPI.Controllers
             parameters.Add("SurveyItem_Id", command.SurveyItem_Id);
             using (var connection = _context.CreateConnection())
             {
-                await connection.ExecuteAsync(query, parameters);
-                return Ok();
+                try
+                {
+                    await connection.ExecuteAsync(query, parameters);
+                    return Ok(ResponseModel<string>.Success("Success."));
+
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest(ResponseModel<string>.Failure(ex.Message));
+                }
             }
         }
 

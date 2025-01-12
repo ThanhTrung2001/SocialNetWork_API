@@ -1,5 +1,6 @@
 ﻿using Dapper;
 using EnVietSocialNetWorkAPI.DataConnection;
+using EnVietSocialNetWorkAPI.Models;
 using EnVietSocialNetWorkAPI.Models.Commands;
 using EnVietSocialNetWorkAPI.Models.Queries;
 using Microsoft.AspNetCore.Authorization;
@@ -20,7 +21,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
         }
 
         [HttpGet("group/{group_Id}")]
-        public async Task<IEnumerable<RequestJoinGroupQuery>> GetByGroupId(Guid group_Id)
+        public async Task<IActionResult> GetByGroupId(Guid group_Id)
         {
             var query = @"SELECT 
                             User_Id, Group_Id, Status, Is_Admin_Request, Admin_Id ,Created_At, Updated_At, Is_Deleted
@@ -30,8 +31,16 @@ namespace EnVietSocialNetWorkAPI.Controllers
             parameter.Add("Group_Id", group_Id);
             using (var connection = _context.CreateConnection())
             {
-                var result = await connection.QueryAsync<RequestJoinGroupQuery>(query, parameter);
-                return result;
+                try
+                {
+                    var result = await connection.QueryAsync<RequestJoinGroupQuery>(query, parameter);
+                    return Ok(ResponseModel<IEnumerable<RequestJoinGroupQuery>>.Success(result));
+
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest(ResponseModel<IEnumerable<RequestJoinGroupQuery>>.Failure(ex.Message));
+                }
             }
         }
 
@@ -41,19 +50,19 @@ namespace EnVietSocialNetWorkAPI.Controllers
             var query = @"INSERT INTO User_Request_Group (User_Id, Group_Id, Status, Is_Admin_Request, Admin_Id ,Created_At, Updated_At, Is_Deleted) 
                           VALUES
                           (@User_Id, @Group_Id, 'Pending', 0, null ,GETDATE(), GETDATE(), 0)";
-            var parameter = new DynamicParameters();
-            parameter.Add("User_Id", command.User_Id);
-            parameter.Add("Group_Id", command.Group_Id);
+            var parameters = new DynamicParameters();
+            parameters.Add("User_Id", command.User_Id);
+            parameters.Add("Group_Id", command.Group_Id);
             using (var connection = _context.CreateConnection())
             {
                 try
                 {
-                    await connection.ExecuteAsync(query, parameter);
-                    return Ok();
+                    await connection.ExecuteAsync(query, parameters);
+                    return Ok(ResponseModel<string>.Success("Success"));
                 }
                 catch (Exception ex)
                 {
-                    return BadRequest(ex.Message);
+                    return BadRequest(ResponseModel<string>.Failure(ex.Message));
                 }
             }
 
@@ -74,11 +83,12 @@ namespace EnVietSocialNetWorkAPI.Controllers
                 try
                 {
                     await connection.ExecuteAsync(query, parameters);
-                    return Ok();
+                    return Ok(ResponseModel<string>.Success("Success."));
+
                 }
                 catch (Exception ex)
                 {
-                    return BadRequest(ex.Message);
+                    return BadRequest(ResponseModel<string>.Failure(ex.Message));
                 }
             }
         }
@@ -108,12 +118,12 @@ namespace EnVietSocialNetWorkAPI.Controllers
                             await connection.ExecuteAsync(acceptQuery, parameters, transaction);
                         }
                         transaction.Commit();
-                        return Ok();
+                        return Ok(ResponseModel<string>.Success("Success."));
                     }
                     catch (Exception ex)
                     {
                         transaction.Rollback();
-                        return BadRequest(ex.Message);
+                        return BadRequest(ResponseModel<string>.Failure(ex.Message));
                     }
                 }
 
@@ -132,11 +142,11 @@ namespace EnVietSocialNetWorkAPI.Controllers
                 try
                 {
                     await connection.ExecuteAsync(query, parameters);
-                    return Ok();
+                    return Ok(ResponseModel<string>.Success("Success."));
                 }
                 catch (Exception ex)
                 {
-                    return BadRequest(ex.Message);
+                    return BadRequest(ResponseModel<string>.Failure(ex.Message));
                 }
             }
         }

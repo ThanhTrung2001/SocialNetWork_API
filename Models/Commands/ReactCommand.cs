@@ -32,5 +32,6 @@
     {
         public Guid User_Id { get; set; }
         public Guid Destination_Id { get; set; }
+        public bool Is_SharePost { get; set; }
     }
 }

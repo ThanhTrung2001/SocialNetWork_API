@@ -3,6 +3,7 @@ using EnVietSocialNetWorkAPI.Auth.Model;
 using EnVietSocialNetWorkAPI.Auth.Services;
 using EnVietSocialNetWorkAPI.DataConnection;
 using EnVietSocialNetWorkAPI.Model.Queries;
+using EnVietSocialNetWorkAPI.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -36,13 +37,22 @@ namespace EnVietSocialNetWorkAPI.Controllers
             var token = new JWTReturn();
             using (var connection = _context.CreateConnection())
             {
-                var result = await connection.QueryFirstOrDefaultAsync<UserAuthQuery>(query, parameter);
-                if (result != null)
+                try
                 {
-                    token = _helper.GenerateJWTToken(result);
+                    var result = await connection.QueryFirstOrDefaultAsync<UserAuthQuery>(query, parameter);
+                    if (result != null)
+                    {
+                        token = _helper.GenerateJWTToken(result);
+                    }
+                    return Ok(ResponseModel<JWTReturn>.Success(token));
                 }
+
+                catch (Exception ex)
+                {
+                    return BadRequest(ResponseModel<JWTReturn>.Failure(ex.Message));
+                }
+
             }
-            return Ok(token);
         }
     }
 }

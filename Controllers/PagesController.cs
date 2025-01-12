@@ -1,6 +1,7 @@
 ﻿using Dapper;
 using EnVietSocialNetWorkAPI.DataConnection;
 using EnVietSocialNetWorkAPI.Model.Queries;
+using EnVietSocialNetWorkAPI.Models;
 using EnVietSocialNetWorkAPI.Models.Commands;
 using EnVietSocialNetWorkAPI.Models.Queries;
 using Microsoft.AspNetCore.Authorization;
@@ -19,20 +20,28 @@ namespace EnVietSocialNetWorkAPI.Controllers
         public PagesController(DapperContext context) { _context = context; }
 
         [HttpGet]
-        public async Task<IEnumerable<PageQuery>> Get()
+        public async Task<IActionResult> Get()
         {
             var query = @"SELECT p.Id, p.Name, p.Avatar, p.Wallpaper, p.Created_At
                           FROM Pages p
                           WHERE p.Is_Deleted = 0;";
             using (var connection = _context.CreateConnection())
             {
-                var result = await connection.QueryAsync<PageQuery>(query);
-                return result;
+                try
+                {
+                    var result = await connection.QueryAsync<PageQuery>(query);
+                    return Ok(ResponseModel<IEnumerable<PageQuery>>.Success(result));
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest(ResponseModel<IEnumerable<PageQuery>>.Failure(ex.Message));
+                }
+
             }
         }
 
         [HttpGet("search")]
-        public async Task<IEnumerable<PageQuery>> Search([FromQuery] string name)
+        public async Task<IActionResult> Search([FromQuery] string name)
         {
             var query = @"SELECT p.Id, p.Name, p.Avatar, p.Wallpaper, p.Created_At
                           FROM Pages p
@@ -41,13 +50,21 @@ namespace EnVietSocialNetWorkAPI.Controllers
             parameter.Add("Name", $"%{name}%");
             using (var connection = _context.CreateConnection())
             {
-                var result = await connection.QueryAsync<PageQuery>(query, parameter);
-                return result;
+                try
+                {
+                    var result = await connection.QueryAsync<PageQuery>(query, parameter);
+                    return Ok(ResponseModel<IEnumerable<PageQuery>>.Success(result));
+                }
+                catch (Exception ex)
+                {
+
+                    return BadRequest(ResponseModel<IEnumerable<PageQuery>>.Failure(ex.Message));
+                }
             }
         }
 
         [HttpGet("{id}")]
-        public async Task<PageQueryDetail> GetByID(Guid id)
+        public async Task<IActionResult> GetByID(Guid id)
         {
             var query = @"SELECT p.Id, p.Name, p.Avatar, p.Wallpaper, p.Created_At,
                           up.User_Id,  up.Role, up.Is_Follow, ud.FirstName, ud.LastName, ud.Avatar as User_Avatar, up.Joined_At
@@ -82,17 +99,17 @@ namespace EnVietSocialNetWorkAPI.Controllers
                         splitOn: "User_Id"
                         );
                 }
-                return pageDict.Values.ToList()[0];
+                return Ok(ResponseModel<PageQueryDetail>.Success(pageDict.Values.ToList()[0]));
             }
             catch (Exception ex)
             {
-                throw ex;
+                return BadRequest(ResponseModel<PageQueryDetail>.Failure(ex.Message));
             }
 
         }
 
         [HttpGet("{id}/followers")]
-        public async Task<IEnumerable<UserPageQuery>> GetUserFollowPage(Guid id)
+        public async Task<IActionResult> GetUserFollowPage(Guid id)
         {
             var query = @"SELECT up.User_Id,  up.Role, up.Is_Follow, ud.FirstName, ud.LastName, ud.Avatar as User_Avatar, up.Joined_At
                           FROM User_Page up
@@ -102,13 +119,20 @@ namespace EnVietSocialNetWorkAPI.Controllers
             parameter.Add("Id", id);
             using (var connection = _context.CreateConnection())
             {
-                var result = await connection.QueryAsync<UserPageQuery>(query, parameter);
-                return result;
+                try
+                {
+                    var result = await connection.QueryAsync<UserPageQuery>(query, parameter);
+                    return Ok(ResponseModel<IEnumerable<UserPageQuery>>.Success(result));
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest(ResponseModel<IEnumerable<UserPageQuery>>.Failure(ex.Message));
+                }
             }
         }
 
         [HttpGet("{id}/admins")]
-        public async Task<IEnumerable<UserPageQuery>> GetUserManagePage(Guid id)
+        public async Task<IActionResult> GetUserManagePage(Guid id)
         {
             var query = @"SELECT up.User_Id, up.Role, up.Is_Follow, ud.FirstName, ud.LastName, ud.Avatar as User_Avatar, up.Joined_At
                           FROM User_Page up
@@ -118,13 +142,21 @@ namespace EnVietSocialNetWorkAPI.Controllers
             parameter.Add("Id", id);
             using (var connection = _context.CreateConnection())
             {
-                var result = await connection.QueryAsync<UserPageQuery>(query, parameter);
-                return result;
+
+                try
+                {
+                    var result = await connection.QueryAsync<UserPageQuery>(query, parameter);
+                    return Ok(ResponseModel<IEnumerable<UserPageQuery>>.Success(result));
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest(ResponseModel<IEnumerable<UserPageQuery>>.Failure(ex.Message));
+                }
             }
         }
 
         [HttpGet("{id}/posts")]
-        public async Task<IEnumerable<PostQuery>> GetPostsInPage(Guid id)
+        public async Task<IActionResult> GetPostsInPage(Guid id)
         {
             try
             {
@@ -176,12 +208,12 @@ namespace EnVietSocialNetWorkAPI.Controllers
                     parameter,
                     commandType: CommandType.StoredProcedure,
                     splitOn: "Attachment_Id, Survey_Id, SurveyItem_Id, Vote_UserId, Comment_Id, React_Type");
-                    return postDict.Values.ToList();
+                    return Ok(ResponseModel<IEnumerable<PostQuery>>.Success(result));
                 }
             }
             catch (Exception ex)
             {
-                throw ex;
+                return BadRequest(ResponseModel<IEnumerable<PostQuery>>.Failure(ex.Message));
             }
         }
 
@@ -212,12 +244,12 @@ namespace EnVietSocialNetWorkAPI.Controllers
                         parameters.Add("Page_Id", result);
                         await connection.ExecuteAsync(queryOwner, parameters, transaction);
                         transaction.Commit();
-                        return Ok();
+                        return Ok(ResponseModel<Guid>.Success(result));
                     }
                     catch (Exception ex)
                     {
                         transaction.Rollback();
-                        return BadRequest(ex.Message);
+                        return BadRequest(ResponseModel<Guid>.Failure(ex.Message));
                     }
                 }
             }
@@ -242,12 +274,12 @@ namespace EnVietSocialNetWorkAPI.Controllers
                 bool existed = await connection.ExecuteScalarAsync<bool>(existQuery, parameters);
                 if (existed)
                 {
-                    return BadRequest("Existed Connection between User and Page");
+                    return BadRequest(ResponseModel<string>.Failure("Existed Connection between User and Page"));
                 }
                 else
                 {
                     await connection.ExecuteAsync(query, parameters);
-                    return Ok();
+                    return Ok(ResponseModel<string>.Failure("Success."));
 
                 }
             }
@@ -265,8 +297,16 @@ namespace EnVietSocialNetWorkAPI.Controllers
             parameters.Add("Wallpaper", command.Wallpaper);
             using (var connection = _context.CreateConnection())
             {
-                await connection.ExecuteAsync(query, parameters);
-                return Ok();
+                try
+                {
+                    await connection.ExecuteAsync(query, parameters);
+                    return Ok(ResponseModel<string>.Success("Success."));
+
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest(ResponseModel<string>.Failure(ex.Message));
+                }
             }
         }
 
@@ -282,8 +322,16 @@ namespace EnVietSocialNetWorkAPI.Controllers
             parameters.Add("Page_Id", command.Page_Id);
             using (var connection = _context.CreateConnection())
             {
-                await connection.ExecuteAsync(query, parameters);
-                return Ok();
+                try
+                {
+                    await connection.ExecuteAsync(query, parameters);
+                    return Ok(ResponseModel<string>.Success("Success."));
+
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest(ResponseModel<string>.Failure(ex.Message));
+                }
             }
         }
 
@@ -295,8 +343,16 @@ namespace EnVietSocialNetWorkAPI.Controllers
             parameter.Add("Id", id);
             using (var connection = _context.CreateConnection())
             {
-                await connection.ExecuteAsync(query, parameter);
-                return Ok();
+                try
+                {
+                    await connection.ExecuteAsync(query, parameter);
+                    return Ok(ResponseModel<string>.Success("Success."));
+
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest(ResponseModel<string>.Failure(ex.Message));
+                }
             }
         }
 
@@ -308,8 +364,16 @@ namespace EnVietSocialNetWorkAPI.Controllers
             parameter.Add("Id", id);
             using (var connection = _context.CreateConnection())
             {
-                await connection.ExecuteAsync(query, parameter);
-                return Ok();
+                try
+                {
+                    await connection.ExecuteAsync(query, parameter);
+                    return Ok(ResponseModel<string>.Success("Success."));
+
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest(ResponseModel<string>.Failure(ex.Message));
+                }
             }
         }
 

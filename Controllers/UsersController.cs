@@ -2,6 +2,7 @@
 using EnVietSocialNetWorkAPI.DataConnection;
 using EnVietSocialNetWorkAPI.Model.Commands;
 using EnVietSocialNetWorkAPI.Model.Queries;
+using EnVietSocialNetWorkAPI.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Data;
@@ -21,7 +22,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
         }
 
         [HttpGet]
-        public async Task<IEnumerable<UserQuery>> Get()
+        public async Task<IActionResult> Get()
         {
             var query = @"SELECT 
                             u.Id,
@@ -34,13 +35,20 @@ namespace EnVietSocialNetWorkAPI.Controllers
                           WHERE u.Is_Deleted = 0;";
             using (var connection = _context.CreateConnection())
             {
-                var result = await connection.QueryAsync<UserQuery>(query);
-                return result;
+                try
+                {
+                    var result = await connection.QueryAsync<UserQuery>(query);
+                    return Ok(ResponseModel<IEnumerable<UserQuery>>.Success(result));
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest(ResponseModel<IEnumerable<UserQuery>>.Failure(ex.Message));
+                }
             }
         }
 
         [HttpGet("/search")]
-        public async Task<IEnumerable<UserQuery>> GetBySearch([FromQuery] string name)
+        public async Task<IActionResult> GetBySearch([FromQuery] string name)
         {
             var query = @"SELECT 
                             u.Id,
@@ -55,13 +63,20 @@ namespace EnVietSocialNetWorkAPI.Controllers
             parameter.Add("Name", $"%{name}%");
             using (var connection = _context.CreateConnection())
             {
-                var result = await connection.QueryAsync<UserQuery>(query, parameter);
-                return result;
+                try
+                {
+                    var result = await connection.QueryAsync<UserQuery>(query, parameter);
+                    return Ok(ResponseModel<IEnumerable<UserQuery>>.Success(result));
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest(ResponseModel<IEnumerable<UserQuery>>.Failure(ex.Message));
+                }
             }
         }
 
         [HttpGet("{id}")]
-        public async Task<UserQueryDetail> GetByID(Guid id)
+        public async Task<IActionResult> GetByID(Guid id)
         {
             var query = @"SELECT 
                             u.Id,
@@ -85,13 +100,22 @@ namespace EnVietSocialNetWorkAPI.Controllers
             parameter.Add("Id", id);
             using (var connection = _context.CreateConnection())
             {
-                var result = await connection.QueryFirstOrDefaultAsync<UserQueryDetail>(query, new { Id = id });
-                return result;
+                try
+                {
+
+                    var result = await connection.QuerySingleAsync<UserQueryDetail>(query, parameter);
+                    return Ok(ResponseModel<UserQueryDetail>.Success(result));
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest(ResponseModel<UserQueryDetail>.Failure(ex.Message));
+
+                }
             }
         }
 
         [HttpPost]
-        public async Task<Guid> Create(CreateUserCommand user)
+        public async Task<IActionResult> Create(CreateUserCommand user)
         {
             var queryUser = @"INSERT INTO Users (Id, Created_At, Updated_At, Is_Deleted, UserName, Password, Email, Role)
                         OUTPUT Inserted.Id
@@ -123,16 +147,15 @@ namespace EnVietSocialNetWorkAPI.Controllers
                     try
                     {
                         var result = await connection.QuerySingleAsync<Guid>(queryUser, parameters, transaction);
-
                         parameters.Add("User_Id", result);
                         await connection.ExecuteAsync(queryUserDetail, parameters, transaction);
                         transaction.Commit();
-                        return result;
+                        return Ok(ResponseModel<Guid>.Success(result));
                     }
                     catch (Exception ex)
                     {
                         transaction.Rollback();
-                        throw ex;
+                        return BadRequest(ResponseModel<Guid>.Failure(ex.Message));
                     }
                 }
 
@@ -150,8 +173,16 @@ namespace EnVietSocialNetWorkAPI.Controllers
             parameters.Add("Id", id);
             using (var connection = _context.CreateConnection())
             {
-                var result = await connection.ExecuteAsync(query, parameters);
-                return Ok(result);
+                try
+                {
+
+                    await connection.ExecuteAsync(query, parameters);
+                    return Ok(ResponseModel<string>.Success("Update Successful."));
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest(ResponseModel<string>.Failure(ex.Message));
+                }
             }
         }
 
@@ -173,8 +204,16 @@ namespace EnVietSocialNetWorkAPI.Controllers
             parameters.Add("User_Id", id);
             using (var connection = _context.CreateConnection())
             {
-                var result = await connection.ExecuteAsync(query, parameters);
-                return Ok(result);
+                try
+                {
+
+                    var result = await connection.ExecuteAsync(query, parameters);
+                    return Ok(ResponseModel<string>.Success("Update Successful."));
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest(ResponseModel<string>.Failure(ex.Message));
+                }
             }
         }
 
@@ -187,8 +226,16 @@ namespace EnVietSocialNetWorkAPI.Controllers
             parameter.Add("Password", password);
             using (var connection = _context.CreateConnection())
             {
-                await connection.ExecuteAsync(queryUser, parameter);
-                return Ok();
+                try
+                {
+
+                    await connection.ExecuteAsync(queryUser, parameter);
+                    return Ok(ResponseModel<string>.Success("Change Password Successful."));
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest(ResponseModel<string>.Failure(ex.Message));
+                }
             }
         }
 
@@ -203,7 +250,15 @@ namespace EnVietSocialNetWorkAPI.Controllers
             {
                 await connection.ExecuteAsync(queryUser, parameter);
                 await connection.ExecuteAsync(queryUserDetail, parameter);
-                return Ok();
+                try
+                {
+
+                    return Ok(ResponseModel<string>.Success("Delete Successful."));
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest(ResponseModel<string>.Failure(ex.Message));
+                }
             }
         }
 

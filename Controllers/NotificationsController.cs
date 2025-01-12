@@ -2,6 +2,7 @@
 using EnVietSocialNetWorkAPI.DataConnection;
 using EnVietSocialNetWorkAPI.Model.Commands;
 using EnVietSocialNetWorkAPI.Model.Queries;
+using EnVietSocialNetWorkAPI.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Data;
@@ -21,39 +22,63 @@ namespace EnVietSocialNetWorkAPI.Controllers
         }
 
         [HttpGet]
-        public async Task<IEnumerable<NotificationQuery>> GetNotifications()
+        public async Task<IActionResult> GetNotifications()
         {
             var query = "SELECT Id, Title, Description, Noti_Type, Destination_Id, Organization_Name, Started_At, Ended_At FROM Notifications WHERE Is_Deleted = 0;";
             using (var connection = _context.CreateConnection())
             {
-                var result = await connection.QueryAsync<NotificationQuery>(query);
-                return result;
+                try
+                {
+                    var result = await connection.QueryAsync<NotificationQuery>(query);
+                    return Ok(ResponseModel<IEnumerable<NotificationQuery>>.Success(result));
+
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest(ResponseModel<IEnumerable<NotificationQuery>>.Failure(ex.Message));
+                }
             }
         }
 
         [HttpGet("/type")]
-        public async Task<IEnumerable<NotificationQuery>> GetNotificationsBySearch([FromQuery] string noti_Type)
+        public async Task<IActionResult> GetNotificationsBySearch([FromQuery] string noti_Type)
         {
             var query = "SELECT Id, Title, Description, Noti_Type, Destination_Id, Organization_Name, Started_At, Ended_At FROM Notifications WHERE Is_Deleted = 0 AND Noti_Type = @Noti_Type;";
             var parameter = new DynamicParameters();
             parameter.Add("Noti_Type", noti_Type);
             using (var connection = _context.CreateConnection())
             {
-                var result = await connection.QueryAsync<NotificationQuery>(query, parameter);
-                return result;
+                try
+                {
+                    var result = await connection.QueryAsync<NotificationQuery>(query, parameter);
+                    return Ok(ResponseModel<IEnumerable<NotificationQuery>>.Success(result));
+
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest(ResponseModel<IEnumerable<NotificationQuery>>.Failure(ex.Message));
+                }
             }
         }
 
         [HttpGet("{id}")]
-        public async Task<NotificationQuery> GetNotification(Guid id)
+        public async Task<IActionResult> GetNotification(Guid id)
         {
             var query = "SELECT Id, Title, Description, Noti_Type, Destination_Id, Organization_Name, Started_At, Ended_At FROM Notifications WHERE Is_Deleted = 0 AND Id = @Id;";
             var parameter = new DynamicParameters();
             parameter.Add("Id", id);
             using (var connection = _context.CreateConnection())
             {
-                var result = await connection.QueryFirstOrDefaultAsync<NotificationQuery>(query, parameter);
-                return result;
+                try
+                {
+                    var result = await connection.QuerySingleAsync<NotificationQuery>(query);
+                    return Ok(ResponseModel<NotificationQuery>.Success(result));
+
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest(ResponseModel<NotificationQuery>.Failure(ex.Message));
+                }
             }
         }
 
@@ -61,7 +86,8 @@ namespace EnVietSocialNetWorkAPI.Controllers
         public async Task<IActionResult> Create(CreateNotificationCommand notification)
         {
             var query = @"INSERT INTO Notifications (Id, CreatedAt, UpdatedAt, Is_Deleted, Title, Description, Noti_Type, Destination_Id, Started_At, Ended_At, Organization_Name)
-                        VALUES 
+                        OUTPUT Inserted.Id        
+                        VALUES
                         (NEWID(), GETDATE(), GETDATE(), 0, @Title, @Description, @Noti_Type, @Destination_Id, @Started_At, @Ended_At, @Organization_Name);";
             var parameters = new DynamicParameters();
             parameters.Add("Title", notification.Title, DbType.String);
@@ -74,8 +100,16 @@ namespace EnVietSocialNetWorkAPI.Controllers
 
             using (var connection = _context.CreateConnection())
             {
-                await connection.ExecuteAsync(query, parameters);
-                return Ok(notification);
+                try
+                {
+                    var result = await connection.QuerySingleAsync<Guid>(query, parameters);
+                    return Ok(ResponseModel<Guid>.Success(result));
+
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest(ResponseModel<Guid>.Failure(ex.Message));
+                }
             }
         }
 
@@ -97,8 +131,16 @@ namespace EnVietSocialNetWorkAPI.Controllers
             parameters.Add("Organization_Name", notification.Organization_Name, DbType.String);
             using (var connection = _context.CreateConnection())
             {
-                await connection.ExecuteAsync(query, parameters);
-                return Ok(notification);
+                try
+                {
+                    await connection.ExecuteAsync(query, parameters);
+                    return Ok(ResponseModel<string>.Success("Success."));
+
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest(ResponseModel<string>.Failure(ex.Message));
+                }
             }
         }
 
@@ -110,8 +152,16 @@ namespace EnVietSocialNetWorkAPI.Controllers
             parameter.Add("Id", id);
             using (var connection = _context.CreateConnection())
             {
-                await connection.ExecuteAsync(query, parameter);
-                return Ok();
+                try
+                {
+                    await connection.ExecuteAsync(query, parameter);
+                    return Ok(ResponseModel<string>.Success("Success."));
+
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest(ResponseModel<string>.Failure(ex.Message));
+                }
             }
         }
     }

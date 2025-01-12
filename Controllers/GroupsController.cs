@@ -2,6 +2,7 @@
 using EnVietSocialNetWorkAPI.DataConnection;
 using EnVietSocialNetWorkAPI.Model.Commands;
 using EnVietSocialNetWorkAPI.Model.Queries;
+using EnVietSocialNetWorkAPI.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Data;
@@ -22,7 +23,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
         }
 
         [HttpGet]
-        public async Task<IEnumerable<GroupQuery>> Get()
+        public async Task<IActionResult> Get()
         {
             var query = @"SELECT g.Id, g.Name, g.Avatar, g.Wallpaper, ug.User_Id, ug.Role, ug.Joined_At,  ud.FirstName, ud.LastName, ud.Avatar as User_Avatar
                           FROM Groups g
@@ -31,7 +32,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
                           WHERE g.Is_Deleted = 0;";
             try
             {
-                var postDict = new Dictionary<Guid, GroupQuery>();
+                var groupDict = new Dictionary<Guid, GroupQuery>();
 
                 using (var connection = _context.CreateConnection())
                 {
@@ -39,10 +40,10 @@ namespace EnVietSocialNetWorkAPI.Controllers
                     query,
                     map: (group, user) =>
                     {
-                        if (!postDict.TryGetValue(group.Id, out var groupEntry))
+                        if (!groupDict.TryGetValue(group.Id, out var groupEntry))
                         {
                             groupEntry = group;
-                            postDict.Add(group.Id, groupEntry);
+                            groupDict.Add(group.Id, groupEntry);
                         }
 
                         if (user != null && !groupEntry.Users.Any((item) => item.User_Id == user.User_Id))
@@ -53,17 +54,18 @@ namespace EnVietSocialNetWorkAPI.Controllers
                     },
 
                     splitOn: "User_Id");
-                    return postDict.Values.ToList();
+                    return Ok(ResponseModel<IEnumerable<GroupQuery>>.Success(groupDict.Values.ToList()));
                 }
+
             }
-            catch
+            catch (Exception ex)
             {
-                throw;
+                return BadRequest(ResponseModel<IEnumerable<GroupQuery>>.Failure(ex.Message));
             }
         }
 
         [HttpGet("search")]
-        public async Task<IEnumerable<GroupQuery>> GetBySearch([FromQuery] string name)
+        public async Task<IActionResult> GetBySearch([FromQuery] string name)
         {
             var query = @"SELECT g.Id, g.Name, g.Avatar, g.Wallpaper, ug.User_Id, ud.FirstName, ud.LastName, ud.Avatar as User_Avatar, ug.Role, ug.Joined_At
                           FROM Groups g
@@ -74,7 +76,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
             parameter.Add("Name", $"%{name}%");
             try
             {
-                var postDict = new Dictionary<Guid, GroupQuery>();
+                var groupDict = new Dictionary<Guid, GroupQuery>();
 
                 using (var connection = _context.CreateConnection())
                 {
@@ -82,10 +84,10 @@ namespace EnVietSocialNetWorkAPI.Controllers
                     query,
                     map: (group, user) =>
                     {
-                        if (!postDict.TryGetValue(group.Id, out var groupEntry))
+                        if (!groupDict.TryGetValue(group.Id, out var groupEntry))
                         {
                             groupEntry = group;
-                            postDict.Add(group.Id, groupEntry);
+                            groupDict.Add(group.Id, groupEntry);
                         }
 
                         if (user != null && !groupEntry.Users.Any((item) => item.User_Id == user.User_Id))
@@ -96,17 +98,18 @@ namespace EnVietSocialNetWorkAPI.Controllers
                     },
                     parameter,
                     splitOn: "User_Id");
-                    return postDict.Values.ToList();
+                    return Ok(ResponseModel<IEnumerable<GroupQuery>>.Success(groupDict.Values.ToList()));
                 }
+
             }
-            catch
+            catch (Exception ex)
             {
-                throw;
+                return BadRequest(ResponseModel<IEnumerable<GroupQuery>>.Failure(ex.Message));
             }
         }
 
         [HttpGet("user/{user_Id}")]
-        public async Task<IEnumerable<GroupQuery>> GetGroupsUserJoined(Guid user_Id)
+        public async Task<IActionResult> GetGroupsUserJoined(Guid user_Id)
         {
             var query = @"SELECT g.Id, g.Name, g.Avatar, g.Wallpaper, ud.User_Id, ud.FirstName, ud.LastName, ud.Avatar as User_Avatar, 
                           ug.Role, ug.Joined_At
@@ -118,7 +121,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
             parameter.Add("User_Id", user_Id);
             try
             {
-                var postDict = new Dictionary<Guid, GroupQuery>();
+                var groupDict = new Dictionary<Guid, GroupQuery>();
 
                 using (var connection = _context.CreateConnection())
                 {
@@ -126,10 +129,10 @@ namespace EnVietSocialNetWorkAPI.Controllers
                     query,
                     map: (group, user) =>
                     {
-                        if (!postDict.TryGetValue(group.Id, out var groupEntry))
+                        if (!groupDict.TryGetValue(group.Id, out var groupEntry))
                         {
                             groupEntry = group;
-                            postDict.Add(group.Id, groupEntry);
+                            groupDict.Add(group.Id, groupEntry);
                         }
 
                         if (user != null && !groupEntry.Users.Any((item) => item.User_Id == user.User_Id))
@@ -140,12 +143,13 @@ namespace EnVietSocialNetWorkAPI.Controllers
                     },
                     parameter,
                     splitOn: "User_Id");
-                    return postDict.Values.ToList();
+                    return Ok(ResponseModel<IEnumerable<GroupQuery>>.Success(groupDict.Values.ToList()));
                 }
+
             }
-            catch
+            catch (Exception ex)
             {
-                throw;
+                return BadRequest(ResponseModel<IEnumerable<GroupQuery>>.Failure(ex.Message));
             }
         }
 
@@ -166,7 +170,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
         }
 
         [HttpGet("{id}/posts")]
-        public async Task<IEnumerable<PostQuery>> GetPostsInGroup(Guid id)
+        public async Task<IActionResult> GetPostsInGroup(Guid id)
         {
             try
             {
@@ -218,27 +222,27 @@ namespace EnVietSocialNetWorkAPI.Controllers
                     parameter,
                     commandType: CommandType.StoredProcedure,
                     splitOn: "Attachment_Id, Survey_Id, SurveyItem_Id, Vote_UserId, Comment_Id, React_Type");
-                    return postDict.Values.ToList();
+                    return Ok(ResponseModel<IEnumerable<PostQuery>>.Success(postDict.Values.ToList()));
                 }
+
             }
             catch (Exception ex)
             {
-                throw ex;
+                return BadRequest(ResponseModel<IEnumerable<PostQuery>>.Failure(ex.Message));
             }
         }
 
         [HttpPost]
         public async Task<IActionResult> Create(CreateGroupCommand group)
         {
-            var Group_Id = Guid.NewGuid();
             var query = @"INSERT INTO Groups (Id, Created_At, Updated_At, Is_Deleted, Name, Avatar, Wallpaper)
+                        OUTPUT Inserted.Id
                         VALUES
-                        (@Id, GETDATE(), GETDATE(), 0, @Name, @Avatar ,@Wallpaper);";
+                        (NEWID(), GETDATE(), GETDATE(), 0, @Name, @Avatar ,@Wallpaper);";
             var queryUser = @"INSERT INTO User_Group (User_Id, Group_Id, Role, Is_Follow ,Joined_At, Updated_At, Is_Deleted)
                               VALUES      
                               (@User_Id, @Id, @Role, 1, GETDATE(), GETDATE(),0);";
             var parameters = new DynamicParameters();
-            parameters.Add("Id", Group_Id, DbType.Guid);
             parameters.Add("Name", group.Name, DbType.String);
             parameters.Add("Avatar", group.Avatar, DbType.String);
             parameters.Add("Wallpaper", group.Wallapper, DbType.String);
@@ -248,13 +252,14 @@ namespace EnVietSocialNetWorkAPI.Controllers
             {
                 try
                 {
-                    await connection.ExecuteAsync(query, parameters);
+                    var result = await connection.QuerySingleAsync<Guid>(query, parameters);
+                    parameters.Add("Id", result, DbType.Guid);
                     await connection.ExecuteAsync(queryUser, parameters);
-                    return Ok();
+                    return Ok(ResponseModel<Guid>.Success(result));
                 }
                 catch (Exception ex)
                 {
-                    return BadRequest(ex.Message);
+                    return BadRequest(ResponseModel<Guid>.Failure(ex.Message));
                 }
             }
 
@@ -281,14 +286,14 @@ namespace EnVietSocialNetWorkAPI.Controllers
                     bool existed = await connection.ExecuteScalarAsync<bool>(existQuery, parameters);
                     if (existed)
                     {
-                        return BadRequest("Existed Connection between User and Page");
+                        return BadRequest(ResponseModel<string>.Failure("Existed Connection between User and Page"));
                     }
                     else
                     {
                         await connection.ExecuteAsync(query, parameters);
                     }
                 }
-                return Ok();
+                return Ok(ResponseModel<string>.Success("Success"));
             }
         }
 
@@ -301,8 +306,16 @@ namespace EnVietSocialNetWorkAPI.Controllers
             parameter.Add("Id", id, DbType.Guid);
             using (var connection = _context.CreateConnection())
             {
-                await connection.ExecuteAsync(query, parameter);
-                return Ok();
+                try
+                {
+                    await connection.ExecuteAsync(query, parameter);
+                    return Ok(ResponseModel<string>.Success("Success."));
+
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest(ResponseModel<string>.Failure(ex.Message));
+                }
             }
         }
 
@@ -314,8 +327,16 @@ namespace EnVietSocialNetWorkAPI.Controllers
             parameter.Add("Id", id, DbType.Guid);
             using (var connection = _context.CreateConnection())
             {
-                await connection.ExecuteAsync(query, parameter);
-                return Ok();
+                try
+                {
+                    await connection.ExecuteAsync(query, parameter);
+                    return Ok(ResponseModel<string>.Success("Success."));
+
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest(ResponseModel<string>.Failure(ex.Message));
+                }
             }
         }
 

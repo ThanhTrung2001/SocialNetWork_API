@@ -1,5 +1,6 @@
 ﻿using Dapper;
 using EnVietSocialNetWorkAPI.DataConnection;
+using EnVietSocialNetWorkAPI.Models;
 using EnVietSocialNetWorkAPI.Models.Commands;
 using EnVietSocialNetWorkAPI.Models.Queries;
 using Microsoft.AspNetCore.Authorization;
@@ -20,13 +21,20 @@ namespace EnVietSocialNetWorkAPI.Controllers
         }
 
         [HttpGet]
-        public async Task<IEnumerable<TagQuery>> Get()
+        public async Task<IActionResult> Get()
         {
             var query = "SElECT Id, Tag_Name FROM Tags";
             using (var connection = _context.CreateConnection())
             {
-                var result = await connection.QueryAsync<TagQuery>(query);
-                return result;
+                try
+                {
+                    var result = await connection.QueryAsync<TagQuery>(query);
+                    return Ok(ResponseModel<IEnumerable<TagQuery>>.Success(result));
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest(ResponseModel<IEnumerable<TagQuery>>.Failure(ex.Message));
+                }
             }
         }
 
@@ -38,17 +46,19 @@ namespace EnVietSocialNetWorkAPI.Controllers
                           (@Tag_Name);";
             var parameter = new DynamicParameters();
             parameter.Add("Tag_Name", command.Tag_Name);
-            try
+            using (var connection = _context.CreateConnection())
             {
-                using (var connection = _context.CreateConnection())
+
+                try
                 {
                     await connection.ExecuteAsync(query, parameter);
+                    return Ok(ResponseModel<string>.Success("Success."));
+
                 }
-                return Ok();
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex);
+                catch (Exception ex)
+                {
+                    return BadRequest(ResponseModel<string>.Failure(ex.Message));
+                }
             }
         }
 
@@ -56,13 +66,21 @@ namespace EnVietSocialNetWorkAPI.Controllers
         public async Task<IActionResult> Edit(int id, CreateTagCommand command)
         {
             var query = "UPDATE Tags SET Tag_Name = @Tag_Name WHERE Id = @Id";
-            var parameter = new DynamicParameters();
-            parameter.Add("Id", id);
-            parameter.Add("Tag_Name", command.Tag_Name);
+            var parameters = new DynamicParameters();
+            parameters.Add("Id", id);
+            parameters.Add("Tag_Name", command.Tag_Name);
             using (var connection = _context.CreateConnection())
             {
-                await connection.ExecuteAsync(query, parameter);
-                return Ok();
+                try
+                {
+                    await connection.ExecuteAsync(query, parameters);
+                    return Ok(ResponseModel<string>.Success("Success."));
+
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest(ResponseModel<string>.Failure(ex.Message));
+                }
             }
         }
 
@@ -83,12 +101,12 @@ namespace EnVietSocialNetWorkAPI.Controllers
                         await connection.ExecuteAsync(queryJunction, parameter, transaction);
                         await connection.ExecuteAsync(query, parameter, transaction);
                         transaction.Commit();
-                        return Ok();
+                        return Ok(ResponseModel<string>.Success("Successful."));
                     }
                     catch (Exception ex)
                     {
                         transaction.Rollback();
-                        return BadRequest(ex);
+                        return BadRequest(ResponseModel<string>.Failure(ex.Message));
                     }
                 }
             }

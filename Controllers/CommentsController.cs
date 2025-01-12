@@ -2,6 +2,7 @@
 using EnVietSocialNetWorkAPI.DataConnection;
 using EnVietSocialNetWorkAPI.Model.Commands;
 using EnVietSocialNetWorkAPI.Model.Queries;
+using EnVietSocialNetWorkAPI.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Data;
@@ -21,7 +22,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
         }
 
         [HttpGet("post/{post_Id}")]
-        public async Task<IEnumerable<CommentQuery>> GetCommentsByPost_Id(Guid post_Id)
+        public async Task<IActionResult> GetCommentsByPost_Id(Guid post_Id)
         {
             var query = @"SELECT 
                             c.Id, c.Content, c.Is_Response, c.Is_SharePost,c.React_Count, c.Updated_At, c.User_Id,
@@ -60,18 +61,18 @@ namespace EnVietSocialNetWorkAPI.Controllers
                     },
                         parameter,
                         splitOn: "Attachment_Id");
-                    return commentDict.Values.ToList();
+                    return Ok(ResponseModel<IEnumerable<CommentQuery>>.Success(commentDict.Values.ToList()));
                 }
 
             }
             catch (Exception ex)
             {
-                throw ex;
+                return BadRequest(ResponseModel<IEnumerable<CommentQuery>>.Failure(ex.Message));
             }
         }
 
         [HttpGet("detail/post/{Post_Id}")]
-        public async Task<IEnumerable<CommentDetailQuery>> GetCommentDetailsByPost_Id(Guid Post_Id)
+        public async Task<IActionResult> GetCommentDetailsByPost_Id(Guid Post_Id)
         {
             var query = @"SELECT 
                           c.Id, c.Content, c.Is_Response, c.Is_SharePost, c.React_Count, c.Updated_At, c.User_Id, 
@@ -115,17 +116,18 @@ namespace EnVietSocialNetWorkAPI.Controllers
                         },
                         parameter,
                         splitOn: "React_Type, Attachment_Id");
-                    return commentDict.Values.ToList();
+                    return Ok(ResponseModel<IEnumerable<CommentDetailQuery>>.Success(commentDict.Values.ToList()));
                 }
+
             }
             catch (Exception ex)
             {
-                throw ex;
+                return BadRequest(ResponseModel<IEnumerable<CommentDetailQuery>>.Failure(ex.Message));
             }
         }
 
         [HttpGet("{id}")]
-        public async Task<CommentDetailQuery> GetCommentByID(Guid id)
+        public async Task<IActionResult> GetCommentByID(Guid id)
         {
             var query = @"SELECT 
                           c.Id, c.Content, c.Is_Response, c.React_Count, c.Updated_At, c.User_Id, 
@@ -173,16 +175,17 @@ namespace EnVietSocialNetWorkAPI.Controllers
                     parameter,
                     splitOn: "React_Type, Attachment_Id");
                 }
-                return commentDict.Values.ToList()[0];
+                return Ok(ResponseModel<IEnumerable<CommentDetailQuery>>.Success(commentDict.Values.ToList()));
+
             }
             catch (Exception ex)
             {
-                throw ex;
+                return BadRequest(ResponseModel<IEnumerable<CommentDetailQuery>>.Failure(ex.Message));
             }
         }
 
         [HttpGet("{id}/reponse")]
-        public async Task<IEnumerable<CommentDetailQuery>> GetCommentResponseByID(Guid id)
+        public async Task<IActionResult> GetCommentResponseByID(Guid id)
         {
             var query = @"SELECT 
                           c.Id, c.Content, c.Is_Response, c.React_Count, c.Updated_At, c.User_Id, 
@@ -227,12 +230,13 @@ namespace EnVietSocialNetWorkAPI.Controllers
                         },
                         parameter,
                         splitOn: "React_Type, Attachment_Id");
-                    return commentDict.Values.ToList();
+                    return Ok(ResponseModel<IEnumerable<CommentDetailQuery>>.Success(commentDict.Values.ToList()));
                 }
+
             }
             catch (Exception ex)
             {
-                throw ex;
+                return BadRequest(ResponseModel<IEnumerable<CommentDetailQuery>>.Failure(ex.Message));
             }
         }
 
@@ -288,12 +292,13 @@ namespace EnVietSocialNetWorkAPI.Controllers
                         }
 
                         transaction.Commit();
-                        return Ok();
+                        return Ok(ResponseModel<Guid>.Success(result));
                     }
+
                     catch (Exception ex)
                     {
                         transaction.Rollback();
-                        throw ex;
+                        return BadRequest(ResponseModel<Guid>.Failure(ex.Message));
                     }
                 }
             }
@@ -309,8 +314,16 @@ namespace EnVietSocialNetWorkAPI.Controllers
             parameters.Add("Id", id, DbType.Guid);
             using (var connection = _context.CreateConnection())
             {
-                var result = await connection.ExecuteAsync(query, parameters);
-                return Ok();
+                try
+                {
+                    await connection.ExecuteAsync(query, parameters);
+                    return Ok(ResponseModel<string>.Success("Success."));
+
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest(ResponseModel<string>.Failure(ex.Message));
+                }
             }
         }
 
@@ -318,12 +331,20 @@ namespace EnVietSocialNetWorkAPI.Controllers
         public async Task<IActionResult> Delete(Guid id)
         {
             var query = "Update Comments SET Is_Deleted = 1, Updated_At = GETDATE() WHERE Id = @Id";
-            var parameters = new DynamicParameters();
-            parameters.Add("Id", id);
+            var parameter = new DynamicParameters();
+            parameter.Add("Id", id);
             using (var connection = _context.CreateConnection())
             {
-                await connection.ExecuteAsync(query, new { Id = id });
-                return Ok();
+                try
+                {
+                    await connection.ExecuteAsync(query, parameter);
+                    return Ok(ResponseModel<string>.Success("Success."));
+
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest(ResponseModel<string>.Failure(ex.Message));
+                }
             }
         }
     }

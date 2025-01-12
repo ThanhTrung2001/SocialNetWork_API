@@ -2,6 +2,7 @@
 using EnVietSocialNetWorkAPI.DataConnection;
 using EnVietSocialNetWorkAPI.Model.Commands;
 using EnVietSocialNetWorkAPI.Model.Queries;
+using EnVietSocialNetWorkAPI.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -20,7 +21,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
         }
 
         [HttpGet("post/{id}")]
-        public async Task<IEnumerable<AttachmentQuery>> GetAttachmentsByPostId(Guid id)
+        public async Task<IActionResult> GetAttachmentsByPostId(Guid id)
         {
             var query = @"SELECT pa.Attachment_Id, a.Media, a.Description
                           FROM Post_Attachment pa
@@ -30,13 +31,21 @@ namespace EnVietSocialNetWorkAPI.Controllers
             parameter.Add("Id", id);
             using (var connection = _context.CreateConnection())
             {
-                var result = await connection.QueryAsync<AttachmentQuery>(query, parameter);
-                return result;
+                try
+                {
+                    var result = await connection.QueryAsync<AttachmentQuery>(query, parameter);
+                    return Ok(ResponseModel<IEnumerable<AttachmentQuery>>.Success(result));
+
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest(ResponseModel<IEnumerable<AttachmentQuery>>.Failure(ex.Message));
+                }
             }
         }
 
         [HttpGet("comment/{id}")]
-        public async Task<IEnumerable<AttachmentQuery>> GetAttachmentsByCommentId(Guid id)
+        public async Task<IActionResult> GetAttachmentsByCommentId(Guid id)
         {
             var query = @"SELECT ca.Attachment_Id, a.Media, a.Description
                           FROM Comment_Attachment ca
@@ -46,13 +55,21 @@ namespace EnVietSocialNetWorkAPI.Controllers
             parameter.Add("Id", id);
             using (var connection = _context.CreateConnection())
             {
-                var result = await connection.QueryAsync<AttachmentQuery>(query, parameter);
-                return result;
+                try
+                {
+                    var result = await connection.QueryAsync<AttachmentQuery>(query, parameter);
+                    return Ok(ResponseModel<IEnumerable<AttachmentQuery>>.Success(result));
+
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest(ResponseModel<IEnumerable<AttachmentQuery>>.Failure(ex.Message));
+                }
             }
         }
 
         [HttpGet("message/{id}")]
-        public async Task<IEnumerable<AttachmentQuery>> GetAttachmentsByMessageId(Guid id)
+        public async Task<IActionResult> GetAttachmentsByMessageId(Guid id)
         {
             var query = @"SELECT ma.Attachment_Id, a.Media, a.Description
                           FROM Message_Attachment ma
@@ -62,8 +79,16 @@ namespace EnVietSocialNetWorkAPI.Controllers
             parameter.Add("Id", id);
             using (var connection = _context.CreateConnection())
             {
-                var result = await connection.QueryAsync<AttachmentQuery>(query, parameter);
-                return result;
+                try
+                {
+                    var result = await connection.QueryAsync<AttachmentQuery>(query, parameter);
+                    return Ok(ResponseModel<IEnumerable<AttachmentQuery>>.Success(result));
+
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest(ResponseModel<IEnumerable<AttachmentQuery>>.Failure(ex.Message));
+                }
             }
         }
 
@@ -99,12 +124,12 @@ namespace EnVietSocialNetWorkAPI.Controllers
 
                         }
                         transaction.Commit();
-                        return Ok();
+                        return Ok(ResponseModel<string>.Success("Success"));
                     }
                     catch (Exception ex)
                     {
                         transaction.Rollback();
-                        return BadRequest(ex.Message);
+                        return BadRequest(ResponseModel<string>.Failure(ex.Message));
                     }
                 }
             }
@@ -142,12 +167,12 @@ namespace EnVietSocialNetWorkAPI.Controllers
 
                         }
                         transaction.Commit();
-                        return Ok();
+                        return Ok(ResponseModel<string>.Success("Success"));
                     }
                     catch (Exception ex)
                     {
                         transaction.Rollback();
-                        return BadRequest(ex.Message);
+                        return BadRequest(ResponseModel<string>.Failure(ex.Message));
                     }
                 }
             }
@@ -185,12 +210,12 @@ namespace EnVietSocialNetWorkAPI.Controllers
 
                         }
                         transaction.Commit();
-                        return Ok();
+                        return Ok(ResponseModel<string>.Success("Success"));
                     }
                     catch (Exception ex)
                     {
                         transaction.Rollback();
-                        return BadRequest(ex.Message);
+                        return BadRequest(ResponseModel<string>.Failure(ex.Message));
                     }
                 }
             }
@@ -205,8 +230,16 @@ namespace EnVietSocialNetWorkAPI.Controllers
             parameters.Add("Description", command.Description);
             using (var connection = _context.CreateConnection())
             {
-                await connection.ExecuteAsync(query, parameters);
-                return Ok();
+                try
+                {
+                    await connection.ExecuteAsync(query, parameters);
+                    return Ok(ResponseModel<string>.Success("Success."));
+
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest(ResponseModel<string>.Failure(ex.Message));
+                }
             }
         }
 
@@ -231,13 +264,13 @@ namespace EnVietSocialNetWorkAPI.Controllers
                         await connection.ExecuteAsync(queryMessage, parameter);
                         await connection.ExecuteAsync(query, parameter);
                         transaction.Commit();
-                        return Ok();
+                        return Ok(ResponseModel<string>.Success("Success."));
 
                     }
                     catch (Exception ex)
                     {
                         transaction.Rollback();
-                        return BadRequest(ex.Message);
+                        return BadRequest(ResponseModel<string>.Failure(ex.Message));
                     }
 
                 }

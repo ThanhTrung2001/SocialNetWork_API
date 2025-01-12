@@ -2,6 +2,7 @@
 using EnVietSocialNetWorkAPI.DataConnection;
 using EnVietSocialNetWorkAPI.Model.Commands;
 using EnVietSocialNetWorkAPI.Model.Queries;
+using EnVietSocialNetWorkAPI.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Data;
@@ -22,7 +23,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
         }
 
         [HttpGet("chatgroup/{ChatGroup_Id}")]
-        public async Task<IEnumerable<MessageQuery>> GetByChatGroup_Id(Guid ChatGroup_Id)
+        public async Task<IActionResult> GetByChatGroup_Id(Guid ChatGroup_Id)
         {
             var query = @"SELECT 
                           m.Id, m.Created_At, m.Content, m.Sender_Id, m.ChatGroup_Id, m.Is_Pinned, m.Is_Response, m.Type, m.Status,
@@ -66,19 +67,19 @@ namespace EnVietSocialNetWorkAPI.Controllers
                     },
                         parameter,
                         splitOn: "Attachment_Id");
-                    return messageDict.Values.ToList();
+                    return Ok(ResponseModel<IEnumerable<MessageQuery>>.Success(messageDict.Values.ToList()));
                 }
 
             }
             catch (Exception ex)
             {
-                throw ex;
+                return BadRequest(ResponseModel<IEnumerable<MessageQuery>>.Failure(ex.Message));
             }
 
         }
 
         [HttpGet("{id}")]
-        public async Task<MessageDetailQuery> GetByID(Guid id)
+        public async Task<IActionResult> GetByID(Guid id)
         {
             var query = @"SELECT 
                           m.Id, m.Created_At, m.Content, m.Is_Pinned, m.Sender_Id, m.ChatGroup_Id, m.Is_Pinned, m.Is_Response, m.Type, m.Status,
@@ -131,12 +132,13 @@ namespace EnVietSocialNetWorkAPI.Controllers
                     },
                     parameter,
                     splitOn: "React_Type, Attachment_Id");
-                    return messageDict.Values.ToList()[0];
+                    return Ok(ResponseModel<MessageDetailQuery>.Success(messageDict.Values.ToList()[0]));
                 }
+
             }
-            catch
+            catch (Exception ex)
             {
-                throw;
+                return BadRequest(ResponseModel<MessageDetailQuery>.Failure(ex.Message));
             }
         }
 
@@ -180,12 +182,12 @@ namespace EnVietSocialNetWorkAPI.Controllers
                             await connection.ExecuteAsync(queryMessAttachment, parameters, transaction);
                         }
                         transaction.Commit();
-                        return Ok();
+                        return Ok(ResponseModel<Guid>.Success(result));
                     }
                     catch (Exception ex)
                     {
                         transaction.Rollback();
-                        throw ex;
+                        return BadRequest(ResponseModel<Guid>.Failure(ex.Message));
                     }
                 }
             }
@@ -201,8 +203,16 @@ namespace EnVietSocialNetWorkAPI.Controllers
             parameters.Add("Id", id, DbType.Guid);
             using (var connection = _context.CreateConnection())
             {
-                var result = await connection.ExecuteAsync(query, parameters);
-                return Ok();
+                try
+                {
+                    await connection.ExecuteAsync(query, parameters);
+                    return Ok(ResponseModel<string>.Success("Success."));
+
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest(ResponseModel<string>.Failure(ex.Message));
+                }
             }
         }
 
@@ -215,8 +225,16 @@ namespace EnVietSocialNetWorkAPI.Controllers
             parameters.Add("Id", id, DbType.Guid);
             using (var connection = _context.CreateConnection())
             {
-                var result = await connection.ExecuteAsync(query, parameters);
-                return Ok();
+                try
+                {
+                    await connection.ExecuteAsync(query, parameters);
+                    return Ok(ResponseModel<string>.Success("Success."));
+
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest(ResponseModel<string>.Failure(ex.Message));
+                }
             }
         }
 
@@ -224,10 +242,20 @@ namespace EnVietSocialNetWorkAPI.Controllers
         public async Task<IActionResult> Delete(Guid id)
         {
             var query = "Update Messages SET Is_Deleted = 1, Updated_At = GETDATE() WHERE Id = @Id";
+            var parameter = new DynamicParameters();
+            parameter.Add("Id", id);
             using (var connection = _context.CreateConnection())
             {
-                await connection.ExecuteAsync(query, new { Id = id });
-                return Ok();
+                try
+                {
+                    await connection.ExecuteAsync(query, parameter);
+                    return Ok(ResponseModel<string>.Success("Success."));
+
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest(ResponseModel<string>.Failure(ex.Message));
+                }
             }
         }
 

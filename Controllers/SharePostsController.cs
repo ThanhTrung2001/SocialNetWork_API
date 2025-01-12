@@ -2,8 +2,10 @@
 using EnVietSocialNetWorkAPI.DataConnection;
 using EnVietSocialNetWorkAPI.Model.Commands;
 using EnVietSocialNetWorkAPI.Model.Queries;
+using EnVietSocialNetWorkAPI.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Data;
 
 namespace EnVietSocialNetWorkAPI.Controllers
 {
@@ -21,95 +23,8 @@ namespace EnVietSocialNetWorkAPI.Controllers
         }
 
         [HttpGet]
-        public async Task<IEnumerable<SharePostQuery>> Get()
+        public async Task<IActionResult> Get()
         {
-            var query = @"SELECT 
-                            sh.Id,
-                            sh.Content AS Share_Content,
-                            sh.Created_At AS Share_Created_At,
-                            sh.Shared_By_User_Id,
-                            sh.In_Group AS Share_In_Group,
-                            uds.FirstName AS Share_FirstName,
-                            uds.LastName AS Share_LastName,
-                            uds.Avatar AS Share_Avatar,
-                            
-                            p.Id AS Post_Id,
-                            p.Content,
-                            p.Post_Type_Id,
-                            p.Created_At,
-                            p.In_Group,
-                            p.Destination_Id,
-                            p.User_Id,
-                            u.Email,
-                            ud.FirstName,
-                            ud.LastName,
-                            ud.Avatar,
-
-                            a.Id AS Attachment_Id,
-                            a.Media,
-                            a.Description,
-
-                            s.Id AS Survey_Id,
-                            s.Expired_At,
-                            s.Question,
-                            s.Survey_Type,
-                            s.Total_Vote,
-
-                            si.Id AS SurveyItem_Id,
-                            si.Option_Name AS SurveyItem_Name,
-                            si.Total_Vote AS Item_Total,
-
-                            udv.User_Id AS Vote_UserId,
-                            udv.FirstName AS Vote_FirstName,
-                            udv.LastName AS Vote_LastName,
-                            udv.Avatar AS Vote_Avatar,
-
-                            c.Id AS Comment_Id,
-                            c.Content AS Comment_Content,
-                            c.Created_At AS Comment_Created_At,
-                            c.User_Id AS Comment_UserId,
-                            udc.FirstName AS Comment_FirstName,
-                            udc.LastName AS Comment_LastName,
-                            udc.Avatar AS Comment_Avatar,
-
-                            urp.React_Type,
-                            udr.User_Id AS React_UserId,
-                            udr.FirstName AS React_FirstName,
-                            udr.LastName AS React_LastName,
-                            udr.Avatar AS React_Avatar,
-                            udr.Created_At
-
-                         FROM Share_Posts sh
-                         INNER JOIN 
-                            User_Details uds ON sh.Shared_By_User_Id = uds.User_Id
-                         LEFT JOIN 
-                            Posts p ON p.Id = sh.Shared_Post_Id
-                         LEFT JOIN 
-                            Users u ON p.User_Id = u.Id
-                        LEFT JOIN 
-                            User_Details ud ON u.Id = ud.User_Id
-                        LEFT JOIN
-                            Post_Attachment pa ON pa.Post_Id = p.Id
-                        LEFT JOIN
-                            Attachments a ON pa.Attachment_Id = a.Id
-                        LEFT JOIN 
-                            Surveys s ON p.Id = s.Id
-                        LEFT JOIN 
-                            Survey_Items si ON s.Id = si.Survey_Id
-                        LEFT JOIN
-                            User_SurveyItem_Vote uv ON si.Id = uv.SurveyItem_Id
-                        LEFT JOIN 
-                            User_Details udv ON udv.User_Id = uv.User_Id
-                        LEFT JOIN
-                            Comments c ON sh.Id = c.Post_Id
-                        LEFT JOIN
-                            User_Details udc ON c.User_Id = udc.User_Id
-                        LEFT JOIN
-                            User_React_Post urp ON sh.Id = urp.Post_Id
-                        LEFT JOIN
-                            User_Details udr ON urp.User_Id = udr.User_Id
-                        WHERE 
-                            sh.Is_Deleted = 0";
             try
             {
                 var shareDict = new Dictionary<Guid, SharePostQuery>();
@@ -117,7 +32,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
                 using (var connection = _context.CreateConnection())
                 {
                     var result = await connection.QueryAsync<SharePostQuery, AttachmentQuery, PostSurveyQuery, PostSurveyItemQuery, PostVoteQuery, PostCommentQuery, PostReactQuery, SharePostQuery>(
-                    query,
+                    "GetSharePosts",
                     map: (share, attachment, survey, surveyItem, vote, comment, react) =>
                     {
                         if (!shareDict.TryGetValue(share.Id, out var shareEntry))
@@ -154,14 +69,14 @@ namespace EnVietSocialNetWorkAPI.Controllers
                         }
                         return shareEntry;
                     },
-
+                    commandType: CommandType.StoredProcedure,
                     splitOn: "Attachment_Id, Survey_Id, SurveyItem_Id, Vote_UserId, Comment_Id, React_Type");
-                    return shareDict.Values.ToList();
+                    return Ok(ResponseModel<IEnumerable<SharePostQuery>>.Success(shareDict.Values.ToList()));
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                throw;
+                return BadRequest(ResponseModel<IEnumerable<SharePostQuery>>.Failure(ex.Message));
             }
         }
 
@@ -172,79 +87,8 @@ namespace EnVietSocialNetWorkAPI.Controllers
         //}
 
         [HttpGet("user/{id}")]
-        public async Task<IEnumerable<SharePostQuery>> GetByUserID(Guid id)
+        public async Task<IActionResult> GetByUserID(Guid id)
         {
-            var query = @"SELECT 
-                            sh.Id,
-                            sh.Content AS Share_Content,
-                            sh.Created_At AS Share_Created_At,
-                            sh.Shared_By_User_Id,
-                            sh.In_Group AS Share_In_Group,
-                            uds.FirstName AS Share_FirstName,
-                            uds.LastName AS Share_LastName,
-                            uds.Avatar AS Share_Avatar,
-                            
-                            p.Id AS Post_Id,
-                            p.Content,
-                            p.Post_Type_Id,
-                            p.Created_At,
-                            p.In_Group,
-                            p.Destination_Id,
-                            p.User_Id,
-                            u.Email,
-                            ud.FirstName,
-                            ud.LastName,
-                            ud.Avatar,
-
-                            a.Id AS Attachment_Id,
-                            a.Media,
-                            a.Description,
-
-                            s.Id AS Survey_Id,
-                            s.Expired_At,
-                            s.Question,
-                            s.Survey_Type,
-                            s.Total_Vote,
-
-                            si.Id AS SurveyItem_Id,
-                            si.Option_Name AS SurveyItem_Name,
-                            si.Total_Vote AS Item_Total,
-
-                            udv.User_Id AS Vote_UserId,
-                            udv.FirstName AS Vote_FirstName,
-                            udv.LastName AS Vote_LastName,
-                            udv.Avatar AS Vote_Avatar,
-
-                         FROM Share_Posts sh
-                         INNER JOIN 
-                            User_Details uds ON sh.Shared_By_User_Id = uds.User_Id
-                         LEFT JOIN 
-                            Posts p ON p.Id = sh.Shared_Post_Id
-                         LEFT JOIN 
-                            Users u ON p.User_Id = u.Id
-                         INNER JOIN 
-                            User_Details ud ON u.Id = ud.User_Id
-                         LEFT JOIN
-                            Post_Attachment pa ON pa.Post_Id = p.Id
-                         LEFT JOIN
-                            Attachments a ON pa.Attachment_Id = a.Id
-                         LEFT JOIN 
-                            Surveys s ON p.Id = s.Id
-                         LEFT JOIN 
-                            Survey_Items si ON s.Id = si.Survey_Id
-                         LEFT JOIN
-                            User_SurveyItem_Vote uv ON si.Id = uv.SurveyItem_Id
-                         LEFT JOIN 
-                            User_Details udv ON udv.User_Id = uv.User_Id 
-                         LEFT JOIN
-                            Comments c ON p.Id = c.Post_Id
-                         LEFT JOIN
-                            User_Details udc ON c.User_Id = udc.User_Id
-                         LEFT JOIN
-                            User_React_Post urp ON p.Id = urp.Post_Id
-                         LEFT JOIN
-                            User_Details udr ON urp.User_Id = udr.User_Id 
-                         WHERE sh.Is_Deleted = 0 AND sh.Shared_By_User_Id = @Id";
             try
             {
                 var shareDict = new Dictionary<Guid, SharePostQuery>();
@@ -253,7 +97,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
                 using (var connection = _context.CreateConnection())
                 {
                     var result = await connection.QueryAsync<SharePostQuery, AttachmentQuery, PostSurveyQuery, PostSurveyItemQuery, PostVoteQuery, PostCommentQuery, PostReactQuery, SharePostQuery>(
-                    query,
+                    "GetSharePostsByUserId",
                     map: (share, attachment, survey, surveyItem, vote, comment, react) =>
                     {
                         if (!shareDict.TryGetValue(share.Id, out var shareEntry))
@@ -292,18 +136,19 @@ namespace EnVietSocialNetWorkAPI.Controllers
                         return shareEntry;
                     },
                     parameter,
+                    commandType: CommandType.StoredProcedure,
                     splitOn: "Attachment_Id, Survey_Id, SurveyItem_Id, Vote_UserId, Comment_Id, React_Type");
-                    return shareDict.Values.ToList();
+                    return Ok(ResponseModel<IEnumerable<SharePostQuery>>.Success(shareDict.Values.ToList()));
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                throw;
+                return BadRequest(ResponseModel<IEnumerable<SharePostQuery>>.Failure(ex.Message));
             }
         }
 
         [HttpGet("post/{Post_Id}/users")]
-        public async Task<IEnumerable<ShareUserQuery>> GetShareUsersByPost_Id(Guid Post_Id)
+        public async Task<IActionResult> GetShareUsersByPost_Id(Guid Post_Id)
         {
             var query = @" SELECT s.Id, s.Shared_By_User_Id AS Share_UserId, ud.FirstName AS Share_FirstName, ud.LastName AS Share_LastName, u.Avatar as Share_Avatar
                            FROM Share_Posts s
@@ -313,8 +158,16 @@ namespace EnVietSocialNetWorkAPI.Controllers
             parameter.Add("Post_Id", Post_Id);
             using (var connection = _context.CreateConnection())
             {
-                var result = await connection.QueryAsync<ShareUserQuery>(query, parameter);
-                return result;
+                try
+                {
+                    var result = await connection.QueryAsync<ShareUserQuery>(query, parameter);
+                    return Ok(ResponseModel<IEnumerable<ShareUserQuery>>.Success(result));
+                }
+
+                catch (Exception ex)
+                {
+                    return BadRequest(ResponseModel<IEnumerable<ShareUserQuery>>.Failure(ex.Message));
+                }
             }
         }
 
@@ -322,6 +175,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
         public async Task<IActionResult> CreateSharePost(CreateSharePostCommand share)
         {
             var query = @"INSERT INTO Share_Posts (Id, Created_At, Updated_At, Is_Deleted, Shared_Post_Id ,Shared_By_User_Id, Content, In_Group, Destination_Id)
+                          OUTPUT Inserted.Id
                           VALUES
                           (NEWID(), GETDATE(), GETDATE(), 0, @Post_Id, @Shared_By_User_Id, @Content, @In_Group, @Destination_Id)";
             var parameters = new DynamicParameters();
@@ -333,8 +187,16 @@ namespace EnVietSocialNetWorkAPI.Controllers
 
             using (var connection = _context.CreateConnection())
             {
-                var result = await connection.ExecuteAsync(query, parameters);
-                return Ok();
+                try
+                {
+                    var result = await connection.QuerySingleAsync(query, parameters);
+                    return Ok(ResponseModel<Guid>.Success(result));
+
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest(ResponseModel<Guid>.Failure(ex.Message));
+                }
             }
         }
 
@@ -348,8 +210,16 @@ namespace EnVietSocialNetWorkAPI.Controllers
             parameters.Add("Content", command.Share_Content);
             using (var connection = _context.CreateConnection())
             {
-                await connection.ExecuteAsync(query, parameters);
-                return Ok();
+                try
+                {
+                    await connection.ExecuteAsync(query, parameters);
+                    return Ok(ResponseModel<string>.Success("Success."));
+
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest(ResponseModel<string>.Failure(ex.Message));
+                }
             }
         }
 
@@ -357,10 +227,20 @@ namespace EnVietSocialNetWorkAPI.Controllers
         public async Task<IActionResult> Delete(Guid id)
         {
             var query = "UPDATE Share_Posts SET Is_Deleted = 1, Updated_At = GETDATE() WHERE Id = @Id;";
+            var parameter = new DynamicParameters();
+            parameter.Add("Id", id);
             using (var connection = _context.CreateConnection())
             {
-                await connection.ExecuteAsync(query, new { Id = id });
-                return Ok();
+                try
+                {
+                    await connection.ExecuteAsync(query, parameter);
+                    return Ok(ResponseModel<string>.Success("Success."));
+
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest(ResponseModel<string>.Failure(ex.Message));
+                }
             }
         }
     }
