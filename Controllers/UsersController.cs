@@ -121,7 +121,14 @@ namespace EnVietSocialNetWorkAPI.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(CreateUserCommand user)
         {
-            var existEmailQuery = @"SELECT * FROM Users WHERE Email = @Email";
+            var existEmailQuery = @"SELECT u.Id,
+                                    u.Role,
+                                    ud.FirstName,
+                                    ud.LastName,
+                                    ud.Avatar
+                                  FROM Users u
+                                  INNER JOIN User_Details ud ON u.Id = ud.User_Id
+                                  WHERE u.Email LIKE @Email";
             var queryUser = @"INSERT INTO Users (Id, Created_At, Updated_At, Is_Deleted, UserName, Password, Email, Role)
                         OUTPUT Inserted.Id
                         VALUES 
@@ -137,12 +144,12 @@ namespace EnVietSocialNetWorkAPI.Controllers
             parameters.Add("FirstName", user.FirstName, DbType.String);
             parameters.Add("LastName", user.LastName, DbType.String);
             parameters.Add("Phone_Number", user.Phone_Number);
-            parameters.Add("Address", user.LastName, DbType.String);
-            parameters.Add("City", user.LastName, DbType.String);
-            parameters.Add("Country", user.LastName, DbType.String);
+            parameters.Add("Address", user.Address, DbType.String);
+            parameters.Add("City", user.City, DbType.String);
+            parameters.Add("Country", user.Country, DbType.String);
             parameters.Add("Avatar", user.Avatar, DbType.String);
             parameters.Add("Wallpaper", user.Wallpaper, DbType.String);
-            parameters.Add("DOB", user.DOB, DbType.String);
+            parameters.Add("DOB", user.DOB, DbType.DateTime);
             parameters.Add("Bio", user.Bio, DbType.String);
             using (var connection = _context.CreateConnection())
             {
@@ -151,10 +158,10 @@ namespace EnVietSocialNetWorkAPI.Controllers
                 {
                     try
                     {
-                        var existResult = await connection.QuerySingleAsync(existEmailQuery, parameters, transaction);
-                        if (existResult != null)
+                        var existResult = await connection.QueryAsync<UserQuery>(existEmailQuery, parameters, transaction);
+                        if (existResult.Count() >= 1)
                         {
-                            return BadRequest(ResponseModel<Guid>.Failure("User wiht this Email is existed!"));
+                            return BadRequest(ResponseModel<Guid>.Failure("User with this Email is existed!"));
                         }
                         var result = await connection.QuerySingleAsync<Guid>(queryUser, parameters, transaction);
                         parameters.Add("User_Id", result);
