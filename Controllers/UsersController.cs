@@ -167,7 +167,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
                         parameters.Add("User_Id", result);
                         await connection.ExecuteAsync(queryUserDetail, parameters, transaction);
                         transaction.Commit();
-                        _handler.SendEmailAsync(new EmailMessage() { ToEmails = [user.Email], Subject = "Registered Successful.", Body = "<h1>Welcome to our app<h1>" });
+                        _handler.SendEmail(new EmailMessage() { ToEmails = [user.Email], Subject = "Registered Successful.", Body = "<h1>Welcome to our app<h1>" });
                         return Ok(ResponseModel<Guid>.Success(result));
                     }
                     catch (Exception ex)

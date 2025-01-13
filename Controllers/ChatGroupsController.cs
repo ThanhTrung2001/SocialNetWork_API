@@ -49,7 +49,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
             var query = @"SELECT 
                           c.Id, c.Name, c.Theme, c.Group_Type
                           FROM Chat_Groups c
-                          WHERE Id = @Id;"
+                          WHERE Id = @Id AND Is_Deleted = 0;"
                       + @"SELECT ud.User_Id, ud.FirstName, ud.LastName, ud.Avatar , ucg.Role
                           FROM User_Details ud
                           INNER JOIN User_ChatGroup ucg ON ucg.User_Id = ud.User_Id

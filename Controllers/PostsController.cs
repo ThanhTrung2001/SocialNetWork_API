@@ -328,13 +328,25 @@ namespace EnVietSocialNetWorkAPI.Controllers
         public async Task<IActionResult> Delete(Guid id)
         {
             var query = "Update Posts SET Is_Deleted = 1, Updated_At = GETDATE() WHERE Id = @Id";
-            var parameters = new DynamicParameters();
-            parameters.Add("Id", id);
+            var queryReact = "Update User_React_Post SET  Is_Deleted = 1, Updated_At = GETDATE() WHERE Post_Id = @Id";
+            var queryAttachment = "Update Attachments SET Is_Deleted = 1, Updated_At = GETDATE() WHERE Id IN (SELECT Attachment_Id FROM Post_Attachment WHERE Post_Id = @Id)";
+            var queryComment = "Update Comments SET  Is_Deleted = 1, Updated_At = GETDATE() WHERE Post_Id = @Id";
+            var querySurvey = "Update Surveys SET Is_Deleted = 1 WHERE Post_Id = @Id";
+            var querySurveyItem = "Update Survey_Items SET Updated_At = GETDATE(), Is_Deleted = 1 WHERE Survey_Id = (SELECT Id From Surveys WHERE Post_Id = @Id)";
+            //var querySharePost = "UPDATE Share_Posts SET Is_Deleted = 1, Updated_At = GETDATE() WHERE Shared_Post_Id = @Id;";
+            var parameter = new DynamicParameters();
+            parameter.Add("Id", id);
             using (var connection = _context.CreateConnection())
             {
                 try
                 {
-                    await connection.ExecuteAsync(query, parameters);
+                    await connection.ExecuteAsync(query, parameter);
+                    await connection.ExecuteAsync(queryReact, parameter);
+                    await connection.ExecuteAsync(queryAttachment, parameter);
+                    await connection.ExecuteAsync(queryComment, parameter);
+                    await connection.ExecuteAsync(querySurvey, parameter);
+                    await connection.ExecuteAsync(querySurveyItem, parameter);
+                    //await connection.ExecuteAsync(querySharePost, parameters);
                     return Ok(ResponseModel<string>.Success("Success."));
 
                 }

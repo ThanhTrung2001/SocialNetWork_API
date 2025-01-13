@@ -4,6 +4,6 @@ namespace EnVietSocialNetWorkAPI.Services.Email
 {
     public interface IEmailHandler
     {
-        void SendEmailAsync(EmailMessage email);
+        void SendEmail(EmailMessage email);
     }
 }

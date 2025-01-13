@@ -227,6 +227,9 @@ namespace EnVietSocialNetWorkAPI.Controllers
         public async Task<IActionResult> Delete(Guid id)
         {
             var query = "UPDATE Share_Posts SET Is_Deleted = 1, Updated_At = GETDATE() WHERE Id = @Id;";
+            var queryReact = "Update User_React_Post SET  Is_Deleted = 1, Updated_At = GETDATE() WHERE Post_Id = @Id AND Is_SharePost = 1";
+            var queryAttachment = "Update Attachments SET Is_Deleted = 1, Updated_At = GETDATE() WHERE Id IN (SELECT Attachment_Id FROM Post_Attachment WHERE Post_Id = @Id)";
+            var queryComment = "Update Comments SET  Is_Deleted = 1, Updated_At = GETDATE() WHERE Post_Id = @Id AND Is_SharePost = 1";
             var parameter = new DynamicParameters();
             parameter.Add("Id", id);
             using (var connection = _context.CreateConnection())
@@ -234,6 +237,9 @@ namespace EnVietSocialNetWorkAPI.Controllers
                 try
                 {
                     await connection.ExecuteAsync(query, parameter);
+                    await connection.ExecuteAsync(queryReact, parameter);
+                    await connection.ExecuteAsync(queryAttachment, parameter);
+                    await connection.ExecuteAsync(queryComment, parameter);
                     return Ok(ResponseModel<string>.Success("Success."));
 
                 }

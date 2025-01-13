@@ -60,11 +60,11 @@ namespace EnVietSocialNetWorkAPI.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> SendEmail(EmailMessage message)
+        public async Task<IActionResult> TestSendEmail(EmailMessage message)
         {
             try
             {
-                _handler.SendEmailAsync(message);
+                _handler.SendEmail(message);
                 return Ok();
             }
             catch (Exception ex)

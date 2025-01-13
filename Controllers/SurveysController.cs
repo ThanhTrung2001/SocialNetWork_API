@@ -158,6 +158,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
         public async Task<IActionResult> Delete(Guid id)
         {
             var query = "Update Surveys SET Is_Deleted = 1 WHERE Id = @Id";
+            var querySurveyItem = "Update Survey_Items SET Updated_At = GETDATE(), Is_Deleted = 1 WHERE Survey_Id = @Id";
             var parameters = new DynamicParameters();
             parameters.Add("Id", id);
             using (var connection = _context.CreateConnection())
@@ -165,6 +166,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
                 try
                 {
                     await connection.ExecuteAsync(query, parameters);
+                    await connection.ExecuteAsync(querySurveyItem, parameters);
                     return Ok(ResponseModel<string>.Success("Success."));
 
                 }

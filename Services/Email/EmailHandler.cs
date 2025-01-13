@@ -13,7 +13,7 @@ namespace EnVietSocialNetWorkAPI.Services.Email
             _emailConfig = emailConfig;
         }
 
-        public void SendEmailAsync(EmailMessage email)
+        public void SendEmail(EmailMessage email)
         {
             var message = new MailMessage()
             {
@@ -40,9 +40,6 @@ namespace EnVietSocialNetWorkAPI.Services.Email
             {
                 throw ex;
             }
-
-
-
         }
     }
 }

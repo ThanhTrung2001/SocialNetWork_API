@@ -41,10 +41,10 @@ namespace EnVietSocialNetWorkAPI.Services
 
         }
 
-        public async Task LeaveRoom(string userName, Guid? chatRoomId)
+        public async Task LeaveRoom(string userName, string chatRoomId)
         {
-            await Groups.RemoveFromGroupAsync(Context.ConnectionId, chatRoomId.ToString());
-            await Clients.Group(chatRoomId.ToString()).SendAsync("SendMessage", $"{Context.ConnectionId}, {userName} has leave the group {chatRoomId}.");
+            await Groups.RemoveFromGroupAsync(Context.ConnectionId, chatRoomId);
+            await Clients.Group(chatRoomId).SendAsync("SendMessage", $"{Context.ConnectionId}, {userName} has leave the group {chatRoomId}.");
         }
 
         public override async Task OnDisconnectedAsync(Exception? e)
