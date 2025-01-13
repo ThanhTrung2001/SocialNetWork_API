@@ -228,6 +228,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
             var parameters = new DynamicParameters();
             parameters.Add("Media", command.Media);
             parameters.Add("Description", command.Description);
+            parameters.Add("Id", id);
             using (var connection = _context.CreateConnection())
             {
                 try
@@ -263,6 +264,8 @@ namespace EnVietSocialNetWorkAPI.Controllers
                         await connection.ExecuteAsync(queryComment, parameter);
                         await connection.ExecuteAsync(queryMessage, parameter);
                         await connection.ExecuteAsync(query, parameter);
+                        //Delete online files
+
                         transaction.Commit();
                         return Ok(ResponseModel<string>.Success("Success."));
 

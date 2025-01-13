@@ -66,7 +66,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
             {
                 try
                 {
-                    var result = await connection.QuerySingleAsync(query, parameters);
+                    var result = await connection.QuerySingleAsync<Guid>(query, parameters);
                     return Ok(ResponseModel<Guid>.Success(result));
 
                 }

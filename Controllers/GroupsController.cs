@@ -346,19 +346,27 @@ namespace EnVietSocialNetWorkAPI.Controllers
         public async Task<IActionResult> Delete(Guid id)
         {
             var query = "UPDATE Groups SET Is_Deleted = 1, Updated_At = GETDATE() WHERE Id = @Id;";
+            var queryUserGroup = "UPDATE User_Group SET Is_Deleted = 1, Updated_At = GETDATE() WHERE Group_Id = @Id;";
             var parameter = new DynamicParameters();
             parameter.Add("Id", id, DbType.Guid);
             using (var connection = _context.CreateConnection())
             {
-                try
+                connection.Open();
+                using (var transaction = connection.BeginTransaction())
                 {
-                    await connection.ExecuteAsync(query, parameter);
-                    return Ok(ResponseModel<string>.Success("Success."));
+                    try
+                    {
+                        await connection.ExecuteAsync(query, parameter);
+                        await connection.ExecuteAsync(queryUserGroup, parameter);
+                        transaction.Commit();
+                        return Ok(ResponseModel<string>.Success("Success."));
 
-                }
-                catch (Exception ex)
-                {
-                    return BadRequest(ResponseModel<string>.Failure(ex.Message));
+                    }
+                    catch (Exception ex)
+                    {
+                        transaction.Rollback();
+                        return BadRequest(ResponseModel<string>.Failure(ex.Message));
+                    }
                 }
             }
         }
@@ -366,9 +374,9 @@ namespace EnVietSocialNetWorkAPI.Controllers
         [HttpDelete("{id}/user")]
         public async Task<IActionResult> DeleteUserIn_Group(Guid id)
         {
-            var query = "UPDATE User_Group SET Is_Deleted = 1, Updated_At = GETDATE() WHERE Id = @Id;";
+            var query = "UPDATE User_Group SET Is_Deleted = 1, Updated_At = GETDATE() WHERE Group_Id = @Id;";
             var parameter = new DynamicParameters();
-            parameter.Add("Id", id, DbType.Guid);
+            parameter.Add("Group_Id", id, DbType.Guid);
             using (var connection = _context.CreateConnection())
             {
                 try

@@ -339,6 +339,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
         public async Task<IActionResult> DeletePage(Guid id)
         {
             var query = "UPDATE Pages SET Is_Deleted = 1, Updated_At = GETDATE() WHERE Id = @Id;";
+            var queryUserPage = "UPDATE User_Page SET Is_Deleted = 1, Updated_At = GETDATE() WHERE Page_Id = @Id;";
             var parameter = new DynamicParameters();
             parameter.Add("Id", id);
             using (var connection = _context.CreateConnection())
@@ -346,6 +347,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
                 try
                 {
                     await connection.ExecuteAsync(query, parameter);
+                    await connection.ExecuteAsync(queryUserPage, parameter);
                     return Ok(ResponseModel<string>.Success("Success."));
 
                 }

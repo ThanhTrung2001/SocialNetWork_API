@@ -1,5 +1,4 @@
-﻿
-namespace EnVietSocialNetWorkAPI.Services.Upload
+﻿namespace EnVietSocialNetWorkAPI.Services.Upload
 {
     public class UploadFileService : IUploadFileService
     {
