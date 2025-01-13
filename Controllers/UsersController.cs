@@ -3,6 +3,8 @@ using EnVietSocialNetWorkAPI.DataConnection;
 using EnVietSocialNetWorkAPI.Model.Commands;
 using EnVietSocialNetWorkAPI.Model.Queries;
 using EnVietSocialNetWorkAPI.Models;
+using EnVietSocialNetWorkAPI.Services.Email;
+using EnVietSocialNetWorkAPI.Services.Email.Model;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Data;
@@ -16,9 +18,11 @@ namespace EnVietSocialNetWorkAPI.Controllers
     public class UsersController : ControllerBase
     {
         private readonly DapperContext _context;
-        public UsersController(DapperContext context)
+        private readonly IEmailHandler _handler;
+        public UsersController(DapperContext context, IEmailHandler handler)
         {
             _context = context;
+            _handler = handler;
         }
 
         [HttpGet]
@@ -117,6 +121,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(CreateUserCommand user)
         {
+            var existEmailQuery = @"SELECT * FROM Users WHERE Email = @Email";
             var queryUser = @"INSERT INTO Users (Id, Created_At, Updated_At, Is_Deleted, UserName, Password, Email, Role)
                         OUTPUT Inserted.Id
                         VALUES 
@@ -146,10 +151,16 @@ namespace EnVietSocialNetWorkAPI.Controllers
                 {
                     try
                     {
+                        var existResult = await connection.QuerySingleAsync(existEmailQuery, parameters, transaction);
+                        if (existResult != null)
+                        {
+                            return BadRequest(ResponseModel<Guid>.Failure("User wiht this Email is existed!"));
+                        }
                         var result = await connection.QuerySingleAsync<Guid>(queryUser, parameters, transaction);
                         parameters.Add("User_Id", result);
                         await connection.ExecuteAsync(queryUserDetail, parameters, transaction);
                         transaction.Commit();
+                        _handler.SendEmailAsync(new EmailMessage() { ToEmails = [user.Email], Subject = "Registered Successful.", Body = "<h1>Welcome to our app<h1>" });
                         return Ok(ResponseModel<Guid>.Success(result));
                     }
                     catch (Exception ex)

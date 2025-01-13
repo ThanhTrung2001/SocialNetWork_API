@@ -4,6 +4,8 @@ using EnVietSocialNetWorkAPI.Auth.Services;
 using EnVietSocialNetWorkAPI.DataConnection;
 using EnVietSocialNetWorkAPI.Model.Queries;
 using EnVietSocialNetWorkAPI.Models;
+using EnVietSocialNetWorkAPI.Services.Email;
+using EnVietSocialNetWorkAPI.Services.Email.Model;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -16,11 +18,13 @@ namespace EnVietSocialNetWorkAPI.Controllers
     {
         private readonly DapperContext _context;
         private readonly JWTHelper _helper;
+        private readonly IEmailHandler _handler;
 
-        public SessionController(DapperContext context, JWTHelper helper)
+        public SessionController(DapperContext context, JWTHelper helper, IEmailHandler handler)
         {
             _context = context;
             _helper = helper;
+            _handler = handler;
         }
 
         [HttpPost("login")]
@@ -52,6 +56,20 @@ namespace EnVietSocialNetWorkAPI.Controllers
                     return BadRequest(ResponseModel<JWTReturn>.Failure(ex.Message));
                 }
 
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> SendEmail(EmailMessage message)
+        {
+            try
+            {
+                _handler.SendEmailAsync(message);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
             }
         }
     }

@@ -1,6 +1,8 @@
 using EnVietSocialNetWorkAPI.Auth.Services;
 using EnVietSocialNetWorkAPI.DataConnection;
 using EnVietSocialNetWorkAPI.Services;
+using EnVietSocialNetWorkAPI.Services.Email;
+using EnVietSocialNetWorkAPI.Services.Email.Model;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -36,6 +38,11 @@ builder.Services.AddAuthentication
         };
     });
 //builder.Services.AddSingleton<Database>();
+var emailConfig = builder.Configuration
+        .GetSection("EmailConfiguration")
+        .Get<EmailConfiguration>();
+builder.Services.AddSingleton(emailConfig);
+builder.Services.AddScoped<IEmailHandler, EmailHandler>();
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
