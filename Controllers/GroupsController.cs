@@ -64,6 +64,50 @@ namespace EnVietSocialNetWorkAPI.Controllers
             }
         }
 
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById(Guid id)
+        {
+            var query = @"SELECT g.Id, g.Name, g.Avatar, g.Wallpaper, ug.User_Id, ug.Role, ug.Joined_At,  ud.FirstName, ud.LastName, ud.Avatar as User_Avatar
+                          FROM Groups g
+                          LEFT JOIN User_Group ug ON g.Id = ug.Group_Id
+                          LEFT JOIN User_Details ud ON ug.User_Id = ud.User_Id
+                          WHERE g.Is_Deleted = 0 AND g.Id = @Id;";
+            try
+            {
+                var parameter = new DynamicParameters();
+                parameter.Add("Id", id);
+                var groupDict = new Dictionary<Guid, GroupQuery>();
+
+                using (var connection = _context.CreateConnection())
+                {
+                    var result = await connection.QueryAsync<GroupQuery, UserGroupQuery, GroupQuery>(
+                    query,
+                    map: (group, user) =>
+                    {
+                        if (!groupDict.TryGetValue(group.Id, out var groupEntry))
+                        {
+                            groupEntry = group;
+                            groupDict.Add(group.Id, groupEntry);
+                        }
+
+                        if (user != null && !groupEntry.Users.Any((item) => item.User_Id == user.User_Id))
+                        {
+                            groupEntry.Users.Add(user);
+                        }
+                        return groupEntry;
+                    },
+                    parameter,
+                    splitOn: "User_Id");
+                    return Ok(ResponseModel<GroupQuery>.Success(groupDict.Values.ToList()[0] ?? null));
+                }
+
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ResponseModel<GroupQuery>.Failure(ex.Message));
+            }
+        }
+
         [HttpGet("search")]
         public async Task<IActionResult> GetBySearch([FromQuery] string name)
         {
