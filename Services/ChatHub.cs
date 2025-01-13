@@ -1,15 +1,12 @@
-﻿using EnVietSocialNetWorkAPI.Services.Repositories;
-using Microsoft.AspNetCore.SignalR;
+﻿using Microsoft.AspNetCore.SignalR;
 
 namespace EnVietSocialNetWorkAPI.Services
 {
     public class ChatHub : Hub
     {
-        private readonly IChatRepository _repository;
 
-        public ChatHub(IChatRepository repository)
+        public ChatHub()
         {
-            this._repository = repository;
         }
 
         public override async Task OnConnectedAsync()
@@ -32,7 +29,6 @@ namespace EnVietSocialNetWorkAPI.Services
         public async Task SendMessage(string user, string message)
         {
             await Clients.All.SendAsync("ReceiveMessage", user, message);
-
         }
 
         public async Task SendMessageToSpecific(Guid userName, Guid group, string message)

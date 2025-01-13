@@ -12,9 +12,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddSingleton<DapperContext>();
-//builder.Services.AddScoped<IChatRepository, ChatRepository>();
 builder.Services.AddSingleton<JWTHelper>();
-//builder.Services.AddSingleton<ChatHub>();
 builder.Services.AddSignalR();
 builder.Services.AddAuthentication
     (options =>
@@ -37,15 +35,16 @@ builder.Services.AddAuthentication
             ClockSkew = TimeSpan.Zero
         };
     });
-//builder.Services.AddSingleton<Database>();
+
+//Email Config
 var emailConfig = builder.Configuration
         .GetSection("EmailConfiguration")
         .Get<EmailConfiguration>();
 builder.Services.AddSingleton(emailConfig);
 builder.Services.AddScoped<IEmailHandler, EmailHandler>();
 
+
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddAuthorization();
 //builder.Services.AddSwaggerGen();
@@ -103,7 +102,6 @@ builder.Services.AddCors(options =>
               .AllowCredentials(); // If using cookies or tokens
     });
 });
-
 
 var app = builder.Build();
 
