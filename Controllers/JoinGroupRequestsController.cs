@@ -105,6 +105,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
             var parameters = new DynamicParameters();
             parameters.Add("User_Id", command.User_Id);
             parameters.Add("Group_Id", command.Group_Id);
+            parameters.Add("Status", command.Status);
             using (var connection = _context.CreateConnection())
             {
                 connection.Open();

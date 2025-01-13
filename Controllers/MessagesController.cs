@@ -51,20 +51,20 @@ namespace EnVietSocialNetWorkAPI.Controllers
 
                     var result = await connection.QueryAsync<MessageQuery, AttachmentQuery, MessageQuery>(
                         query,
-                    map: (message, attachment) =>
-                    {
-                        if (!messageDict.TryGetValue(message.Id, out var messageEntry))
+                        map: (message, attachment) =>
                         {
-                            messageEntry = message;
-                            messageDict.Add(message.Id, messageEntry);
-                        }
+                            if (!messageDict.TryGetValue(message.Id, out var messageEntry))
+                            {
+                                messageEntry = message;
+                                messageDict.Add(message.Id, messageEntry);
+                            }
 
-                        if (attachment != null && !message.Attachments.Any((item) => item.Attachment_Id == attachment.Attachment_Id))
-                        {
-                            messageEntry.Attachments.Add(attachment);
-                        }
-                        return messageEntry;
-                    },
+                            if (attachment != null && !message.Attachments.Any((item) => item.Attachment_Id == attachment.Attachment_Id))
+                            {
+                                messageEntry.Attachments.Add(attachment);
+                            }
+                            return messageEntry;
+                        },
                         parameter,
                         splitOn: "Attachment_Id");
                     return Ok(ResponseModel<IEnumerable<MessageQuery>>.Success(messageDict.Values.ToList()));

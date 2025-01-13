@@ -298,15 +298,14 @@ namespace EnVietSocialNetWorkAPI.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> Put(Guid id, CreatePostRequest request)
         {
-            var newPost = request.NewPost;
             var query = @"UPDATE Posts
                           SET In_Group = @In_Group, Post_Type_Id = @Post_Type_Id, Content = @Content, Destination_Id = @Destination_Id 
                           WHERE Id = @Id AND UserId = @UserId";
             var parameters = new DynamicParameters();
-            parameters.Add("In_Group", newPost.In_Group);
-            parameters.Add("Destination_Id", newPost.Destination_Id);
-            parameters.Add("Post_Type_Id", newPost.Post_Type_Id);
-            parameters.Add("Content", newPost.Content);
+            parameters.Add("In_Group", request.NewPost.In_Group);
+            parameters.Add("Destination_Id", request.NewPost.Destination_Id);
+            parameters.Add("Post_Type_Id", request.NewPost.Post_Type_Id);
+            parameters.Add("Content", request.NewPost.Content);
             parameters.Add("UserId", request.UserId);
             parameters.Add("Id", id);
             using (var connection = _context.CreateConnection())
