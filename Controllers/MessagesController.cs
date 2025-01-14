@@ -156,6 +156,9 @@ namespace EnVietSocialNetWorkAPI.Controllers
             var queryMessAttachment = @"INSERT INTO Message_Attachment (Message_Id, Attachment_Id)
                                         VALUES
                                         (@Message_Id, @Attachment_Id)";
+            var queryResponse = @"INSERT INTO Message_Response (Message_Id, Response_Id)
+                                  VALUES
+                                  (@Message_Id, @Response_Id)";
             var parameters = new DynamicParameters();
             parameters.Add("Content", message.Content, DbType.String);
             parameters.Add("Sender_Id", message.Sender_Id, DbType.Guid);
@@ -180,6 +183,14 @@ namespace EnVietSocialNetWorkAPI.Controllers
                             parameters.Add("Message_Id", result);
                             parameters.Add("Attachment_Id", attachmentResult);
                             await connection.ExecuteAsync(queryMessAttachment, parameters, transaction);
+                        }
+
+                        if (message.Is_Response == true)
+                        {
+                            parameters = new DynamicParameters();
+                            parameters.Add("Message_Id", message.Message_Id);
+                            parameters.Add("Response_Id", result);
+                            await connection.ExecuteAsync(queryResponse, parameters, transaction);
                         }
                         transaction.Commit();
                         return Ok(ResponseModel<Guid>.Success(result));

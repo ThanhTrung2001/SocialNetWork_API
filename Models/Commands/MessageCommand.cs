@@ -7,6 +7,7 @@
         public Guid Sender_Id { get; set; }
         public bool Is_Response { get; set; }
         public string Type { get; set; }
+        public Guid? Message_Id { get; set; }
         public List<CreateAttachmentCommand>? Attachments { get; set; } = new List<CreateAttachmentCommand>();
 
         //public bool IsPinned { get; set; }
