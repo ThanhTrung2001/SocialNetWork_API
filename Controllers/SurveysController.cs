@@ -90,8 +90,8 @@ namespace EnVietSocialNetWorkAPI.Controllers
                             s.ID, s.Created_At, s.Expired_At, s.Total_Vote, s.Survey_Type, s.Question,
                             
                             si.Id AS SurveyItem_Id,
-                            si.Option_Name AS SurveyItem_Name,
-                            si.Total_Vote AS Item_Total,
+                            si.Option_Name,
+                            si.Total_Vote
 
                             uv.User_Id AS Vote_UserId,
                             udv.FirstName AS Vote_FirstName,
