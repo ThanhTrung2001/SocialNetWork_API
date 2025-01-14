@@ -24,7 +24,14 @@ namespace EnVietSocialNetWorkAPI.Controllers
         [HttpGet("option/{surveyItem_Id}")]
         public async Task<IActionResult> GetByOptionId(Guid surveyItem_Id)
         {
-            var query = "SELECT * FROM User_SurveyItem_Vote WHERE SurveyItem_Id = @Id";
+            var query = @"SELECT 
+                          usv.User_Id AS Vote_UserId,
+                          ud.FirstName AS Vote_FirstName,
+                          ud.LastName AS Vote_LastName,
+                          ud.Avatar AS Vote_Avatar
+                          FROM User_SurveyItem_Vote usv
+                          INNER JOIN User_Details ud ON usv.User_Id = ud.User_Id
+                          WHERE SurveyItem_Id = @Id";
             var parameters = new DynamicParameters();
             parameters.Add("Id", surveyItem_Id, DbType.Guid);
             using (var connection = _context.CreateConnection())
@@ -48,7 +55,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
             var query = @"INSERT INTO User_SurveyItem_Vote (SurveyItem_Id, User_Id)
                           VALUES
                           (@SurveyItem_Id, @User_Id)";
-            var surveyItemQuery = @"UPDATE Survey_items 
+            var surveyItemQuery = @"UPDATE Survey_Items 
                                 SET Total_Vote = Total_Vote + 1 
                                 WHERE Id = @SurveyItem_Id";
             var surveyQuery = @"UPDATE Surveys 
@@ -64,9 +71,9 @@ namespace EnVietSocialNetWorkAPI.Controllers
                 {
                     try
                     {
-                        await connection.ExecuteAsync(query, parameters);
-                        await connection.ExecuteAsync(surveyItemQuery, parameters);
-                        await connection.ExecuteAsync(surveyQuery, parameters);
+                        await connection.ExecuteAsync(query, parameters, transaction);
+                        await connection.ExecuteAsync(surveyItemQuery, parameters, transaction);
+                        await connection.ExecuteAsync(surveyQuery, parameters, transaction);
                         transaction.Commit();
                         return Ok(ResponseModel<string>.Success("Success."));
 
@@ -88,7 +95,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
                                 SET Total_Vote = Total_Vote - 1 
                                 WHERE Id = @SurveyItem_Id";
             var surveyQuery = @"UPDATE Surveys 
-                                SET Total_Vote = Total_Vote -1 1 
+                                SET Total_Vote = Total_Vote -1
                                 WHERE Id = (SELECT Survey_Id from Survey_Items WHERE Id = @SurveyItem_Id)";
             var parameters = new DynamicParameters();
             parameters.Add("User_Id", command.User_Id);
@@ -100,9 +107,9 @@ namespace EnVietSocialNetWorkAPI.Controllers
                 {
                     try
                     {
-                        await connection.ExecuteAsync(query, parameters);
-                        await connection.ExecuteAsync(surveyItemQuery, parameters);
-                        await connection.ExecuteAsync(surveyQuery, parameters);
+                        await connection.ExecuteAsync(query, parameters, transaction);
+                        await connection.ExecuteAsync(surveyItemQuery, parameters, transaction);
+                        await connection.ExecuteAsync(surveyQuery, parameters, transaction);
                         transaction.Commit();
                         return Ok(ResponseModel<string>.Success("Success."));
 

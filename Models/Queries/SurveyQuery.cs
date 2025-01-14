@@ -13,7 +13,6 @@
     public class SurveyItemQuery
     {
         public Guid SurveyItem_Id { get; set; }
-        public Guid Survey_Id { get; set; }
         public string Option_Name { get; set; }
         public int Total_Vote { get; set; }
         public List<SurveyVoteQuery> Votes { get; set; } = new List<SurveyVoteQuery>();

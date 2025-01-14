@@ -51,7 +51,7 @@ CREATE TABLE [posts] (
   [content] nvarchar(max),
   [react_count] int NOT NULL DEFAULT (0),
   [user_id] uniqueidentifier NOT NULL,
-  [post_type_id] int NOT NULL
+  [post_type] nvarchar(255) NOT NULL CHECK ([post_type] IN ('Normal', 'Survey', 'Notification'))
 )
 GO
 
@@ -337,6 +337,8 @@ CREATE TABLE [user_request_group] (
   [user_id] uniqueidentifier NOT NULL,
   [group_id] uniqueidentifier NOT NULL,
   [status] nvarchar(255) NOT NULL CHECK ([status] IN ('Pending', 'Accept', 'Reject', 'Cancel')),
+  [is_admin_request] bit NOT NULL DEFAULT (0),
+  [admin_id] uniqueidentifier,
   [created_at] datetime NOT NULL DEFAULT (getdate()),
   [updated_at] datetime NOT NULL DEFAULT (getdate()),
   [is_deleted] bit NOT NULL DEFAULT (0),
@@ -348,9 +350,6 @@ ALTER TABLE [user_details] ADD FOREIGN KEY ([user_id]) REFERENCES [users] ([id])
 GO
 
 ALTER TABLE [posts] ADD FOREIGN KEY ([user_id]) REFERENCES [users] ([id])
-GO
-
-ALTER TABLE [posts] ADD FOREIGN KEY ([post_type_id]) REFERENCES [post_types] ([id])
 GO
 
 ALTER TABLE [comments] ADD FOREIGN KEY ([user_id]) REFERENCES [users] ([id])
@@ -468,4 +467,7 @@ ALTER TABLE [user_request_group] ADD FOREIGN KEY ([user_id]) REFERENCES [users] 
 GO
 
 ALTER TABLE [user_request_group] ADD FOREIGN KEY ([group_id]) REFERENCES [groups] ([id])
+GO
+
+ALTER TABLE [user_request_group] ADD FOREIGN KEY ([admin_id]) REFERENCES [users] ([id])
 GO

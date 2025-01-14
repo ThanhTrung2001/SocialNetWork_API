@@ -109,7 +109,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
         }
 
         [HttpGet("{id}/followers")]
-        public async Task<IActionResult> GetUserFollowPage(Guid id)
+        public async Task<IActionResult> GetUsersFollow(Guid id)
         {
             var query = @"SELECT up.User_Id,  up.Role, up.Is_Follow, ud.FirstName, ud.LastName, ud.Avatar as User_Avatar, up.Joined_At
                           FROM User_Page up
@@ -132,7 +132,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
         }
 
         [HttpGet("{id}/admins")]
-        public async Task<IActionResult> GetUserManagePage(Guid id)
+        public async Task<IActionResult> GetUsersManage(Guid id)
         {
             var query = @"SELECT up.User_Id, up.Role, up.Is_Follow, ud.FirstName, ud.LastName, ud.Avatar as User_Avatar, up.Joined_At
                           FROM User_Page up
@@ -156,7 +156,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
         }
 
         [HttpGet("{id}/posts")]
-        public async Task<IActionResult> GetPostsInPage(Guid id)
+        public async Task<IActionResult> GetPosts(Guid id)
         {
             try
             {
@@ -176,12 +176,12 @@ namespace EnVietSocialNetWorkAPI.Controllers
                             postDict.Add(post.Id, postEntry);
                         }
 
-                        if (post.Post_Type_Id == 1 && attachment != null && !postEntry.Attachments.Any((item) => item.Attachment_Id == attachment.Attachment_Id))
+                        if (post.Post_Type == "Normal" && attachment != null && !postEntry.Attachments.Any((item) => item.Attachment_Id == attachment.Attachment_Id))
                         {
                             postEntry.Attachments.Add(attachment);
                         }
 
-                        if (post.Post_Type_Id == 2 && survey != null)
+                        if (post.Post_Type == "Survey" && survey != null)
                         {
                             postEntry.Survey = survey;
                             if (surveyItem != null && !postEntry.Survey.SurveyItems.Any((item) => item.SurveyItem_Id == surveyItem.SurveyItem_Id))
@@ -257,7 +257,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
         }
 
         [HttpPost("{id}/user")]
-        public async Task<IActionResult> AddPageUser(Guid id, ModifyPageUserCommand command)
+        public async Task<IActionResult> AddUser(Guid id, ModifyPageUserCommand command)
         {
             //check if exist
             var existQuery = @"SELECT COUNT(1) FROM User_Page
@@ -311,7 +311,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
         }
 
         [HttpPut("{id}/user")]
-        public async Task<IActionResult> ModifyPageUser(Guid id, ModifyPageUserCommand command)
+        public async Task<IActionResult> ModifyUser(Guid id, ModifyPageUserCommand command)
         {
             var query = @"UPDATE User_Page
                           SET Role = @Role
@@ -336,7 +336,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeletePage(Guid id)
+        public async Task<IActionResult> Delete(Guid id)
         {
             var query = "UPDATE Pages SET Is_Deleted = 1, Updated_At = GETDATE() WHERE Id = @Id;";
             var queryUserPage = "UPDATE User_Page SET Is_Deleted = 1, Updated_At = GETDATE() WHERE Page_Id = @Id;";
@@ -359,7 +359,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
         }
 
         [HttpDelete("{id}/users")]
-        public async Task<IActionResult> RemoveUserFromPage(Guid id, ModifyFollowPageCommand command)
+        public async Task<IActionResult> RemoveUser(Guid id, ModifyFollowPageCommand command)
         {
             var query = "UPDATE User_Page SET Is_Deleted = 1, Updated_At = GETDATE() WHERE User_Id = @User_Id AND Page_Id = @Id;";
             var parameter = new DynamicParameters();
@@ -378,8 +378,5 @@ namespace EnVietSocialNetWorkAPI.Controllers
                 }
             }
         }
-
-
-
     }
 }

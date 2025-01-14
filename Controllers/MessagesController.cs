@@ -217,17 +217,16 @@ namespace EnVietSocialNetWorkAPI.Controllers
         }
 
         [HttpPut("{id}/pin")]
-        public async Task<IActionResult> PinMessage(Guid id, CreateMessageCommand message)
+        public async Task<IActionResult> PinMessage(Guid id)
         {
-            var query = "UPDATE Messages SET Is_Pinned = 1, Updated_At = GETDATE() WHERE Id = @Id AND Sender_Id = @Sender_Id";
-            var parameters = new DynamicParameters();
-            parameters.Add("Sender_Id", message.Sender_Id, DbType.Guid);
-            parameters.Add("Id", id, DbType.Guid);
+            var query = "UPDATE Messages SET Is_Pinned = 1, Updated_At = GETDATE() WHERE Id = @Id";
+            var parameter = new DynamicParameters();
+            parameter.Add("Id", id, DbType.Guid);
             using (var connection = _context.CreateConnection())
             {
                 try
                 {
-                    await connection.ExecuteAsync(query, parameters);
+                    await connection.ExecuteAsync(query, parameter);
                     return Ok(ResponseModel<string>.Success("Success."));
 
                 }
@@ -242,19 +241,29 @@ namespace EnVietSocialNetWorkAPI.Controllers
         public async Task<IActionResult> Delete(Guid id)
         {
             var query = "Update Messages SET Is_Deleted = 1, Updated_At = GETDATE() WHERE Id = @Id";
+            var queryReact = "Update User_React_Message SET  Is_Deleted = 1, Updated_At = GETDATE() WHERE Message_Id = @Id";
+            var queryAttachment = "Update Attachments SET Is_Deleted = 1, Updated_At = GETDATE() WHERE Id IN (SELECT Attachment_Id FROM Message_Attachment WHERE Message_Id = @Id)";
             var parameter = new DynamicParameters();
             parameter.Add("Id", id);
             using (var connection = _context.CreateConnection())
             {
-                try
+                connection.Open();
+                using (var transaction = connection.BeginTransaction())
                 {
-                    await connection.ExecuteAsync(query, parameter);
-                    return Ok(ResponseModel<string>.Success("Success."));
+                    try
+                    {
+                        await connection.ExecuteAsync(query, parameter, transaction);
+                        await connection.ExecuteAsync(queryReact, parameter, transaction);
+                        await connection.ExecuteAsync(queryAttachment, parameter, transaction);
+                        transaction.Commit();
+                        return Ok(ResponseModel<string>.Success("Success."));
 
-                }
-                catch (Exception ex)
-                {
-                    return BadRequest(ResponseModel<string>.Failure(ex.Message));
+                    }
+                    catch (Exception ex)
+                    {
+                        transaction.Rollback();
+                        return BadRequest(ResponseModel<string>.Failure(ex.Message));
+                    }
                 }
             }
         }

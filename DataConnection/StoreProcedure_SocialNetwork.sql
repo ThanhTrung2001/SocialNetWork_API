@@ -5,11 +5,12 @@ BEGIN
 	SELECT 
 		p.Id,
 		p.Content,
-		p.Post_Type_Id,
+		p.Post_Type,
 		p.Created_At,
 		p.In_Group,
 		p.Destination_Id,
 		p.User_Id,
+		p.React_Count,
 		u.Email,
 		ud.FirstName,
 		ud.LastName,
@@ -60,7 +61,7 @@ BEGIN
 	LEFT JOIN
 		Attachments a ON pa.Attachment_Id = a.Id
 	LEFT JOIN 
-		Surveys s ON p.Id = s.Id
+		Surveys s ON p.Id = s.Post_Id
 	LEFT JOIN 
 		Survey_Items si ON s.Id = si.Survey_Id
 	LEFT JOIN
@@ -87,11 +88,12 @@ BEGIN
 	SELECT 
 		p.Id,
 		p.Content,
-		p.Post_Type_Id,
+		p.Post_Type,
 		p.Created_At,
 		p.In_Group,
 		p.Destination_Id,
 		p.User_Id,
+		p.React_Count,
 		u.Email,
 		ud.FirstName,
 		ud.LastName,
@@ -142,7 +144,7 @@ BEGIN
 	LEFT JOIN
 		Attachments a ON pa.Attachment_Id = a.Id
 	LEFT JOIN 
-		Surveys s ON p.Id = s.Id
+		Surveys s ON p.Id = s.Post_Id
 	LEFT JOIN 
 		Survey_Items si ON s.Id = si.Survey_Id
 	LEFT JOIN
@@ -170,11 +172,12 @@ BEGIN
 	SELECT 
 		p.Id,
 		p.Content,
-		p.Post_Type_Id,
+		p.Post_Type,
 		p.Created_At,
 		p.In_Group,
 		p.Destination_Id,
 		p.User_Id,
+		p.React_Count,
 		u.Email,
 		ud.FirstName,
 		ud.LastName,
@@ -225,7 +228,7 @@ BEGIN
 	LEFT JOIN
 		Attachments a ON pa.Attachment_Id = a.Id
 	LEFT JOIN 
-		Surveys s ON p.Id = s.Id
+		Surveys s ON p.Id = s.Post_Id
 	LEFT JOIN 
 		Survey_Items si ON s.Id = si.Survey_Id
 	LEFT JOIN
@@ -252,11 +255,12 @@ BEGIN
 	SELECT 
 		p.Id,
 		p.Content,
-		p.Post_Type_Id,
+		p.Post_Type,
 		p.Created_At,
 		p.In_Group,
 		p.Destination_Id,
 		p.User_Id,
+		p.React_Count,
 		u.Email,
 		ud.FirstName,
 		ud.LastName,
@@ -307,7 +311,7 @@ BEGIN
 	LEFT JOIN
 		Attachments a ON pa.Attachment_Id = a.Id
 	LEFT JOIN 
-		Surveys s ON p.Id = s.Id
+		Surveys s ON p.Id = s.Post_Id
 	LEFT JOIN 
 		Survey_Items si ON s.Id = si.Survey_Id
 	LEFT JOIN
@@ -337,13 +341,14 @@ BEGIN
                             sh.Created_At AS Share_Created_At,
                             sh.Shared_By_User_Id,
                             sh.In_Group AS Share_In_Group,
+							sh.React_Count,
                             uds.FirstName AS Share_FirstName,
                             uds.LastName AS Share_LastName,
                             uds.Avatar AS Share_Avatar,
                             
                             p.Id AS Post_Id,
                             p.Content,
-                            p.Post_Type_Id,
+                            p.Post_Type,
                             p.Created_At,
                             p.In_Group,
                             p.Destination_Id,
@@ -401,7 +406,7 @@ BEGIN
                         LEFT JOIN
                             Attachments a ON pa.Attachment_Id = a.Id
                         LEFT JOIN 
-                            Surveys s ON p.Id = s.Id
+                            Surveys s ON p.Id = s.Post_Id
                         LEFT JOIN 
                             Survey_Items si ON s.Id = si.Survey_Id
                         LEFT JOIN
@@ -432,13 +437,14 @@ BEGIN
                             sh.Created_At AS Share_Created_At,
                             sh.Shared_By_User_Id,
                             sh.In_Group AS Share_In_Group,
+							sh.React_Count,
                             uds.FirstName AS Share_FirstName,
                             uds.LastName AS Share_LastName,
                             uds.Avatar AS Share_Avatar,
                             
                             p.Id AS Post_Id,
                             p.Content,
-                            p.Post_Type_Id,
+                            p.Post_Type,
                             p.Created_At,
                             p.In_Group,
                             p.Destination_Id,
@@ -465,7 +471,22 @@ BEGIN
                             udv.User_Id AS Vote_UserId,
                             udv.FirstName AS Vote_FirstName,
                             udv.LastName AS Vote_LastName,
-                            udv.Avatar AS Vote_Avatar
+                            udv.Avatar AS Vote_Avatar,
+
+							c.Id AS Comment_Id,
+                            c.Content AS Comment_Content,
+                            c.Created_At AS Comment_Created_At,
+                            c.User_Id AS Comment_UserId,
+                            udc.FirstName AS Comment_FirstName,
+                            udc.LastName AS Comment_LastName,
+                            udc.Avatar AS Comment_Avatar,
+
+                            urp.React_Type,
+                            udr.User_Id AS React_UserId,
+                            udr.FirstName AS React_FirstName,
+                            udr.LastName AS React_LastName,
+                            udr.Avatar AS React_Avatar,
+                            udr.Created_At
 
                          FROM Share_Posts sh
                          INNER JOIN 
@@ -481,7 +502,7 @@ BEGIN
                          LEFT JOIN
                             Attachments a ON pa.Attachment_Id = a.Id
                          LEFT JOIN 
-                            Surveys s ON p.Id = s.Id
+                            Surveys s ON p.Id = s.Post_Id
                          LEFT JOIN 
                             Survey_Items si ON s.Id = si.Survey_Id
                          LEFT JOIN
@@ -489,11 +510,11 @@ BEGIN
                          LEFT JOIN 
                             User_Details udv ON udv.User_Id = uv.User_Id 
                          LEFT JOIN
-                            Comments c ON p.Id = c.Post_Id
+                            Comments c ON sh.Id = c.Post_Id
                          LEFT JOIN
                             User_Details udc ON c.User_Id = udc.User_Id
                          LEFT JOIN
-                            User_React_Post urp ON p.Id = urp.Post_Id
+                            User_React_Post urp ON sh.Id = urp.Post_Id
                          LEFT JOIN
                             User_Details udr ON urp.User_Id = udr.User_Id 
                          WHERE sh.Is_Deleted = 0 AND sh.Shared_By_User_Id = @Id

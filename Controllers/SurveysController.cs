@@ -21,11 +21,73 @@ namespace EnVietSocialNetWorkAPI.Controllers
             _context = context;
         }
 
-        [HttpGet("survey/{survey_Id}")]
-        public async Task<IActionResult> GetBysurvey_Id(Guid survey_Id)
+        [HttpGet("post/{id}")]
+        public async Task<IActionResult> GetByPostId(Guid id)
         {
             var query = @"SELECT
-                            s.ID, s.Created_At, s.Expired_At, s.Total_Vote, s.Survey_Type, s.survey_Id, s.Question,
+                            s.ID, s.Created_At, s.Expired_At, s.Total_Vote, s.Survey_Type, s.Question,
+                            
+                            si.Id AS SurveyItem_Id,
+                            si.Option_Name,
+                            si.Total_Vote,
+
+                            uv.User_Id AS Vote_UserId,
+                            udv.FirstName AS Vote_FirstName,
+                            udv.LastName AS Vote_LastName,
+                            udv.Avatar AS Vote_Avatar
+
+                          FROM Surveys s
+                          INNER JOIN Survey_Items si ON s.Id = si.Survey_Id
+                          LEFT JOIN User_SurveyItem_Vote uv ON uv.SurveyItem_Id = si.Id
+                          LEFT JOIN User_Details udv ON udv.User_Id = uv.User_Id
+                          WHERE s.Is_Deleted = 0 AND s.Post_Id = @Id;";
+
+            try
+            {
+                var parameter = new DynamicParameters();
+                parameter.Add("Id", id);
+                var surveyDict = new Dictionary<Guid, SurveyQuery>();
+
+                using (var connection = _context.CreateConnection())
+                {
+                    var result = await connection.QueryAsync<SurveyQuery, SurveyItemQuery, SurveyVoteQuery, SurveyQuery>(
+                    query,
+                    map: (survey, surveyItem, vote) =>
+                    {
+                        if (!surveyDict.TryGetValue(survey.Id, out var surveyEntry))
+                        {
+                            surveyEntry = survey;
+                            surveyDict.Add(survey.Id, surveyEntry);
+                        }
+
+                        if (surveyItem != null && !surveyEntry.SurveyItems.Any((item) => item.SurveyItem_Id == surveyItem.SurveyItem_Id))
+                        {
+                            surveyEntry.SurveyItems.Add(surveyItem);
+                            var result = surveyEntry.SurveyItems.FirstOrDefault((x) => x.SurveyItem_Id == surveyItem.SurveyItem_Id);
+                            if (vote != null && !result.Votes.Any((item) => item.Vote_UserId == vote.Vote_UserId))
+                            {
+                                result.Votes.Add(vote);
+                            }
+                        }
+                        return surveyEntry;
+                    },
+
+                    parameter,
+                    splitOn: "SurveyItem_Id, Vote_UserId");
+                    return Ok(ResponseModel<IEnumerable<SurveyQuery>>.Success(surveyDict.Values.ToList()));
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ResponseModel<IEnumerable<SurveyQuery>>.Failure(ex.Message));
+            }
+        }
+
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById(Guid id)
+        {
+            var query = @"SELECT
+                            s.ID, s.Created_At, s.Expired_At, s.Total_Vote, s.Survey_Type, s.Question,
                             
                             si.Id AS SurveyItem_Id,
                             si.Option_Name AS SurveyItem_Name,
@@ -34,18 +96,18 @@ namespace EnVietSocialNetWorkAPI.Controllers
                             uv.User_Id AS Vote_UserId,
                             udv.FirstName AS Vote_FirstName,
                             udv.LastName AS Vote_LastName,
-                            udv.Avatar AS Vote_Avatar,
+                            udv.Avatar AS Vote_Avatar
 
                           FROM Surveys s
                           INNER JOIN Survey_Items si ON s.Id = si.Survey_Id
-                          LEFT JOIN User_SurveyItem_vote uv ON uv.SurveyItem_Id = si.Id
+                          LEFT JOIN User_SurveyItem_Vote uv ON uv.SurveyItem_Id = si.Id
                           LEFT JOIN User_Details udv ON udv.User_Id = uv.User_Id
-                          WHERE Is_Deleted = 0 AND p.survey_Id = @survey_Id;";
+                          WHERE s.Is_Deleted = 0 AND s.Id = @Id;";
 
             try
             {
                 var parameter = new DynamicParameters();
-                parameter.Add("Id", survey_Id);
+                parameter.Add("Id", id);
                 var surveyDict = new Dictionary<Guid, SurveyQuery>();
 
                 using (var connection = _context.CreateConnection())
@@ -86,16 +148,16 @@ namespace EnVietSocialNetWorkAPI.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateBySurveyId(CreateSurveyCommand survey)
         {
-            var query = @"INSERT INTO Surveys (ID, Created_At, Updated_At, Is_Deleted, Expired_At, Total_Vote, Survey_Type, Question)
+            var query = @"INSERT INTO Surveys (ID, Created_At, Updated_At, Is_Deleted, Expired_At, Total_Vote, Post_Id, Survey_Type, Question)
                           OUTPUT Inserted.Id
                           VALUES
-                          (NEWID(), GETDATE(), GETDATE(), 0, @Expired_At, 0, @Survey_Type ,@Question)";
-            var querySurveyItem = @"INSERT INTO SurveyItems (ID, Created_At, Updated_At, Is_Deleted, Option_Name, Total_Vote)
+                          (NEWID(), GETDATE(), GETDATE(), 0, @Expired_At, 0, @Post_Id ,@Survey_Type ,@Question)";
+            var querySurveyItem = @"INSERT INTO Survey_Items (ID, Created_At, Updated_At, Is_Deleted, Option_Name, Total_Vote)
                           VALUES
                           (NEWID(), GETDATE(), GETDATE(), 0, @Content, 0)";
 
             var parameters = new DynamicParameters();
-
+            parameters.Add("Post_Id", survey.Post_Id);
             parameters.Add("Expired_At", survey.Expired_At, DbType.DateTime);
             parameters.Add("Question", survey.Question, DbType.String);
             parameters.Add("Survey_Type", survey.Survey_Type);
@@ -130,15 +192,36 @@ namespace EnVietSocialNetWorkAPI.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateSurvey(Guid id, CreateSurveyCommand survey)
+        public async Task<IActionResult> UpdateSurvey(Guid id, EditSurveyCommand survey)
         {
-            var query = @"UPDATE Surveys SET Expired_At = @Expired_At, Question = @Question WHERE Id = @Id;";
+            var query = @"UPDATE Surveys SET Expired_At = @Expired_At, Question = @Question, Updated_At = GETDATE() WHERE Id = @Id;";
             var parameters = new DynamicParameters();
-
-            parameters.Add("Expired_At", survey.Expired_At, DbType.DateTime);
             parameters.Add("Id", id, DbType.Guid);
+            parameters.Add("Expired_At", survey.Expired_At, DbType.DateTime);
             parameters.Add("Question", survey.Question, DbType.String);
 
+            using (var connection = _context.CreateConnection())
+            {
+                try
+                {
+                    await connection.ExecuteAsync(query, parameters);
+                    return Ok(ResponseModel<string>.Success("Success."));
+
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest(ResponseModel<string>.Failure(ex.Message));
+                }
+            }
+        }
+
+        [HttpPut("item/{id}")]
+        public async Task<IActionResult> UpdateSurveyItem(Guid id, EditSurveyItemCommand surveyItem)
+        {
+            var query = @"UPDATE Survey_Items SET Option_Name = @Option_Name, Updated_At = GETDATE() WHERE Id = @Id;";
+            var parameters = new DynamicParameters();
+            parameters.Add("Id", id);
+            parameters.Add("Option_Name", surveyItem.Option_Name);
             using (var connection = _context.CreateConnection())
             {
                 try

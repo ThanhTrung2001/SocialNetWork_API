@@ -17,7 +17,7 @@
     {
         public Guid User_Id { get; set; }
         public string Role { get; set; }
-        //public bool? Is_Follow { get; set; }
+        public bool? Is_Follow { get; set; } = true;
     }
 
     public class DeleteGroupUserCommand

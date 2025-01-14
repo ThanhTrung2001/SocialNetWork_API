@@ -44,12 +44,12 @@ namespace EnVietSocialNetWorkAPI.Controllers
                             postDict.Add(post.Id, postEntry);
                         }
 
-                        if (post.Post_Type_Id == 1 && attachment != null && !postEntry.Attachments.Any((item) => item.Attachment_Id == attachment.Attachment_Id))
+                        if (post.Post_Type == "Normal" && attachment != null && !postEntry.Attachments.Any((item) => item.Attachment_Id == attachment.Attachment_Id))
                         {
                             postEntry.Attachments.Add(attachment);
                         }
 
-                        if (post.Post_Type_Id == 2 && survey != null)
+                        if (post.Post_Type == "Survey" && survey != null)
                         {
                             postEntry.Survey = survey;
                             if (surveyItem != null && !postEntry.Survey.SurveyItems.Any((item) => item.SurveyItem_Id == surveyItem.SurveyItem_Id))
@@ -106,12 +106,12 @@ namespace EnVietSocialNetWorkAPI.Controllers
                             postDict.Add(post.Id, postEntry);
                         }
 
-                        if (post.Post_Type_Id == 1 && attachment != null && !postEntry.Attachments.Any((item) => item.Attachment_Id == attachment.Attachment_Id))
+                        if (post.Post_Type == "Normal" && attachment != null && !postEntry.Attachments.Any((item) => item.Attachment_Id == attachment.Attachment_Id))
                         {
                             postEntry.Attachments.Add(attachment);
                         }
 
-                        if (post.Post_Type_Id == 2 && survey != null)
+                        if (post.Post_Type == "Survey" && survey != null)
                         {
                             postEntry.Survey = survey;
                             if (surveyItem != null && !postEntry.Survey.SurveyItems.Any((item) => item.SurveyItem_Id == surveyItem.SurveyItem_Id))
@@ -154,7 +154,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
         {
             try
             {
-                PostQuery postBasic = null;
+                var postDict = new Dictionary<Guid, PostQuery>();
                 var parameter = new DynamicParameters();
                 parameter.Add("Id", id);
 
@@ -165,23 +165,24 @@ namespace EnVietSocialNetWorkAPI.Controllers
                     "GetPostById",
                     map: (post, attachment, survey, surveyItem, vote, comment, react) =>
                     {
-                        if (postBasic == null)
+                        if (!postDict.TryGetValue(post.Id, out var postEntry))
                         {
-                            postBasic = post;
+                            postEntry = post;
+                            postDict.Add(post.Id, postEntry);
                         }
 
-                        if (post.Post_Type_Id == 1 && attachment != null && !postBasic.Attachments.Any((item) => item.Attachment_Id == attachment.Attachment_Id))
+                        if (post.Post_Type == "Normal" && attachment != null && !postEntry.Attachments.Any((item) => item.Attachment_Id == attachment.Attachment_Id))
                         {
-                            postBasic.Attachments.Add(attachment);
+                            postEntry.Attachments.Add(attachment);
                         }
 
-                        if (post.Post_Type_Id == 2 && survey != null)
+                        if (post.Post_Type == "Survey" && survey != null)
                         {
-                            postBasic.Survey = survey;
-                            if (surveyItem != null && !postBasic.Survey.SurveyItems.Any((item) => item.SurveyItem_Id == surveyItem.SurveyItem_Id))
+                            postEntry.Survey = survey;
+                            if (surveyItem != null && !postEntry.Survey.SurveyItems.Any((item) => item.SurveyItem_Id == surveyItem.SurveyItem_Id))
                             {
-                                postBasic.Survey.SurveyItems.Add(surveyItem);
-                                var result = postBasic.Survey.SurveyItems.FirstOrDefault((x) => x.SurveyItem_Id == surveyItem.SurveyItem_Id);
+                                postEntry.Survey.SurveyItems.Add(surveyItem);
+                                var result = postEntry.Survey.SurveyItems.FirstOrDefault((x) => x.SurveyItem_Id == surveyItem.SurveyItem_Id);
                                 if (vote != null && !result.Votes.Any((item) => item.Vote_UserId == vote.Vote_UserId))
                                 {
                                     result.Votes.Add(vote);
@@ -189,20 +190,20 @@ namespace EnVietSocialNetWorkAPI.Controllers
                             }
                         }
 
-                        if (comment != null && !postBasic.Comments.Any((item) => item.Comment_Id == comment.Comment_Id))
+                        if (comment != null && !postEntry.Comments.Any((item) => item.Comment_Id == comment.Comment_Id))
                         {
-                            postBasic.Comments.Add(comment);
+                            postEntry.Comments.Add(comment);
                         }
-                        if (react != null && !postBasic.Reacts.Any((item) => item.React_UserId == react.React_UserId))
+                        if (react != null && !postEntry.Reacts.Any((item) => item.React_UserId == react.React_UserId))
                         {
-                            postBasic.Reacts.Add(react);
+                            postEntry.Reacts.Add(react);
                         }
-                        return postBasic;
+                        return postEntry;
                     },
                     parameter,
                     commandType: CommandType.StoredProcedure,
                     splitOn: "Attachment_Id, Survey_Id, SurveyItem_Id, Vote_UserId, Comment_Id, React_Type");
-                    return Ok(ResponseModel<PostQuery>.Success(postBasic));
+                    return Ok(ResponseModel<PostQuery>.Success(postDict.Values.ToList()[0]));
                 }
 
             }
@@ -214,13 +215,12 @@ namespace EnVietSocialNetWorkAPI.Controllers
 
         // POST api/<PostController>
         [HttpPost]
-        public async Task<IActionResult> Post(CreatePostRequest request)
+        public async Task<IActionResult> Create(CreatePostRequest request)
         {
-            var newPost = request.NewPost;
-            var queryPost = @"INSERT INTO Posts (Id, Created_At, Updated_At, Is_Deleted, Destination_Id, In_Group, Post_Type_Id, Content, User_Id, React_Count)
+            var queryPost = @"INSERT INTO Posts (Id, Created_At, Updated_At, Is_Deleted, Destination_Id, In_Group, Post_Type, Content, User_Id, React_Count)
                               OUTPUT Inserted.Id
                               VALUES 
-                              (NEWID(), GETDATE(), GETDATE(), 0, @Destination_Id, @In_Group, @Post_Type_Id, @Content, @User_Id, 0);";
+                              (NEWID(), GETDATE(), GETDATE(), 0, @Destination_Id, @In_Group, @Post_Type, @Content, @User_Id, 0);";
             var queryAttachment = @"INSERT INTO Attachments (Id, Created_At, Updated_At, Is_Deleted, Media, Description)
                                OUTPUT Inserted.Id
                                VALUES 
@@ -228,14 +228,13 @@ namespace EnVietSocialNetWorkAPI.Controllers
             var queryPost_Attachment = @"INSERT INTO Post_Attachment (Post_Id, Attachment_Id)
                                VALUES 
                                (@Id, @Attachment_Id)";
-            var querySurvey = @"INSERT INTO Surveys (ID, Created_At, Updated_At, Is_Deleted, Expired_At, Total, Survey_Type, Id, Question)
-                                OUTPUT Inserted.Id
-                                VALUES
-                                (NEWID(), GETDATE(), GETDATE(), 0, @Expired_At, 0, @Survey_Type, @Id, @Question)";
-            var querySurveyItem = @"INSERT INTO Survey_Items (ID, Created_At, Updated_At, Is_Deleted, Option_Name, Total, Survey_Id)
-                                    OUTPUT Inserted.Id
-                                    VALUES
-                                    (NEWID(), GETDATE(), GETDATE(), 0, @Option_Name, 0, @Survey_Id)";
+            var querySurvey = @"INSERT INTO Surveys (ID, Created_At, Updated_At, Is_Deleted, Expired_At, Total_Vote, Post_Id ,Survey_Type, Question)
+                          OUTPUT Inserted.Id
+                          VALUES
+                          (NEWID(), GETDATE(), GETDATE(), 0, @Expired_At, 0, @Id ,@Survey_Type ,@Question)";
+            var querySurveyItem = @"INSERT INTO Survey_Items (ID, Created_At, Updated_At, Is_Deleted, Option_Name, Total_Vote, Survey_Id)
+                          VALUES
+                          (NEWID(), GETDATE(), GETDATE(), 0, @Option_Name, 0, @Survey_Id)";
 
             using (var connection = _context.CreateConnection())
             {
@@ -245,14 +244,14 @@ namespace EnVietSocialNetWorkAPI.Controllers
                     try
                     {
                         var parameters = new DynamicParameters();
-                        parameters.Add("In_Group", newPost.In_Group);
-                        parameters.Add("Destination_Id", newPost.Destination_Id);
-                        parameters.Add("Post_Type_Id", newPost.Post_Type_Id);
-                        parameters.Add("Content", newPost.Content);
-                        parameters.Add("UserId", request.UserId);
+                        parameters.Add("In_Group", request.NewPost.In_Group);
+                        parameters.Add("Destination_Id", request.NewPost.Destination_Id);
+                        parameters.Add("Post_Type", request.NewPost.Post_Type);
+                        parameters.Add("Content", request.NewPost.Content);
+                        parameters.Add("User_Id", request.User_Id);
                         //insert post first
                         var resultPost = await connection.QuerySingleAsync<Guid>(queryPost, parameters, transaction);
-                        if (request.NewPost.Post_Type_Id == 1)
+                        if (request.NewPost.Post_Type == "Normal")
                         {
                             foreach (var item in request.NewPost.Attachments)
                             {
@@ -265,7 +264,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
                                 await connection.ExecuteAsync(queryPost_Attachment, parameters, transaction);
                             }
                         }
-                        else if (request.NewPost.Post_Type_Id == 2)
+                        else if (request.NewPost.Post_Type == "Survey" && request.NewPost.Survey.SurveyItems != null)
                         {
                             parameters = new DynamicParameters();
                             parameters.Add("Id", resultPost);
@@ -296,17 +295,15 @@ namespace EnVietSocialNetWorkAPI.Controllers
 
         // PUT api/<PostController>/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> Put(Guid id, CreatePostRequest request)
+        public async Task<IActionResult> Edit(Guid id, EditPostRequest request)
         {
             var query = @"UPDATE Posts
-                          SET In_Group = @In_Group, Post_Type_Id = @Post_Type_Id, Content = @Content, Destination_Id = @Destination_Id 
+                          SET Post_Type = @Post_Type, Content = @Content 
                           WHERE Id = @Id AND UserId = @UserId";
             var parameters = new DynamicParameters();
-            parameters.Add("In_Group", request.NewPost.In_Group);
-            parameters.Add("Destination_Id", request.NewPost.Destination_Id);
-            parameters.Add("Post_Type_Id", request.NewPost.Post_Type_Id);
-            parameters.Add("Content", request.NewPost.Content);
-            parameters.Add("UserId", request.UserId);
+            parameters.Add("Post_Type", request.Post_Type);
+            parameters.Add("Content", request.Content);
+            parameters.Add("User_Id", request.User_Id);
             parameters.Add("Id", id);
             using (var connection = _context.CreateConnection())
             {

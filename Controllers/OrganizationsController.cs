@@ -80,7 +80,10 @@ namespace EnVietSocialNetWorkAPI.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> Edit(Guid id, CreateOrganizeNodeCommand node)
         {
-            var query = @"UPDATE Organizations SET Name = @Name, Department = @Department, Email = @Email, Phone_Number = @Phone_Number, Address = @Address, City = @City, Country = @Country ,Level = @Level, ParentId = @ParentId WHERE ID = @Id";
+            var query = @"UPDATE Organizations 
+                          SET 
+                          Name = @Name, Department = @Department, Email = @Email, Phone_Number = @Phone_Number, Address = @Address, City = @City, Country = @Country ,Level = @Level, Parent_Id = @Parent_Id 
+                          WHERE ID = @Id";
             var parameters = new DynamicParameters();
             parameters.Add("Id", id);
             parameters.Add("Name", node.Name);
@@ -92,7 +95,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
             parameters.Add("City", node.City);
             parameters.Add("Country", node.Country);
             parameters.Add("Level", node.Level);
-            parameters.Add("ParentId", node.Parent_Id);
+            parameters.Add("Parent_Id", node.Parent_Id);
             using (var connection = _context.CreateConnection())
             {
                 try

@@ -22,7 +22,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
         }
 
         [HttpGet("post/{post_Id}")]
-        public async Task<IActionResult> GetCommentsByPost_Id(Guid post_Id)
+        public async Task<IActionResult> GetCommentsByPostId(Guid post_Id)
         {
             var query = @"SELECT 
                             c.Id, c.Content, c.Is_Response, c.Is_SharePost,c.React_Count, c.Updated_At, c.User_Id,
@@ -71,8 +71,8 @@ namespace EnVietSocialNetWorkAPI.Controllers
             }
         }
 
-        [HttpGet("detail/post/{Post_Id}")]
-        public async Task<IActionResult> GetCommentDetailsByPost_Id(Guid Post_Id)
+        [HttpGet("detail/post/{post_Id}")]
+        public async Task<IActionResult> GetCommentDetailsByPostId(Guid post_Id)
         {
             var query = @"SELECT 
                           c.Id, c.Content, c.Is_Response, c.Is_SharePost, c.React_Count, c.Updated_At, c.User_Id, 
@@ -90,7 +90,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
                             Attachments a ON ca.Attachment_Id = a.Id
                           Where c.Post_Id = @Id AND c.Is_Deleted = 0";
             var parameter = new DynamicParameters();
-            parameter.Add("Id", Post_Id);
+            parameter.Add("Id", post_Id);
             try
             {
                 var commentDict = new Dictionary<Guid, CommentDetailQuery>();

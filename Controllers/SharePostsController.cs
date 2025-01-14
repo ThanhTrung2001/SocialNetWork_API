@@ -41,12 +41,12 @@ namespace EnVietSocialNetWorkAPI.Controllers
                             shareDict.Add(share.Id, shareEntry);
                         }
 
-                        if (share.Post_Type_Id == 1 && attachment != null && !shareEntry.Attachments.Any((item) => item == attachment))
+                        if (share.Post_Type == "Normal" && attachment != null && !shareEntry.Attachments.Any((item) => item == attachment))
                         {
                             shareEntry.Attachments.Add(attachment);
                         }
 
-                        if (share.Post_Type_Id == 2 && survey != null)
+                        if (share.Post_Type == "Survey" && survey != null)
                         {
                             share.Survey = survey;
                             if (surveyItem != null && !share.Survey.SurveyItems.Any((item) => item.SurveyItem_Id == surveyItem.SurveyItem_Id))
@@ -106,12 +106,12 @@ namespace EnVietSocialNetWorkAPI.Controllers
                             shareDict.Add(share.Id, shareEntry);
                         }
 
-                        if (share.Post_Type_Id == 1 && attachment != null && !shareEntry.Attachments.Any((item) => item == attachment))
+                        if (share.Post_Type == "Normal" && attachment != null && !shareEntry.Attachments.Any((item) => item == attachment))
                         {
                             shareEntry.Attachments.Add(attachment);
                         }
 
-                        if (share.Post_Type_Id == 2 && survey != null)
+                        if (share.Post_Type == "Survey" && survey != null)
                         {
                             share.Survey = survey;
                             if (surveyItem != null && !share.Survey.SurveyItems.Any((item) => item.SurveyItem_Id == surveyItem.SurveyItem_Id))
@@ -189,7 +189,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
             {
                 try
                 {
-                    var result = await connection.QuerySingleAsync(query, parameters);
+                    var result = await connection.QuerySingleAsync<Guid>(query, parameters);
                     return Ok(ResponseModel<Guid>.Success(result));
 
                 }

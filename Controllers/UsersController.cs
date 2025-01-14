@@ -181,7 +181,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> EditUserByID(Guid id, EditUserCommand edit)
+        public async Task<IActionResult> Edit(Guid id, EditUserCommand edit)
         {
             var query = "UPDATE Users SET Updated_At = GETDATE(), UserName = @UserName, Email = @Email, Role = @Role WHERE Id = @Id";
             var parameters = new DynamicParameters();
@@ -205,7 +205,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
         }
 
         [HttpPut("{id}/detail")]
-        public async Task<IActionResult> EditUserDetailByID(Guid id, EditUserDetailCommand edit)
+        public async Task<IActionResult> EditUserDetail(Guid id, EditUserDetailCommand edit)
         {
             var query = "UPDATE User_Details SET Updated_At = GETDATE(), FirstName = @FirstName, LastName = @LastName, Phone_Number=@Phone_Number, Address = @Address, City = @City, Country = @Country ,Avatar = @Avatar, Wallpaper = @Wallpaper, DOB = @DOB, Bio = @Bio WHERE User_Id = @User_Id";
             var parameters = new DynamicParameters();

@@ -15,4 +15,9 @@
         //public ICollection<MessageReact>? Reacts { get; set; }
 
     }
+
+    public class PinMessageCommand
+    {
+        public Guid Sender_Id { get; set; }
+    }
 }

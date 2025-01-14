@@ -87,7 +87,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateChatGroup(CreateChatGroupCommand ChatGroup)
         {
-            if (ChatGroup.Group_Type == "private" && ChatGroup.Users.Count == 2)
+            if (ChatGroup.Group_Type == "Private" && ChatGroup.Users.Count == 2)
             {
                 var existResult = await GetPrivateChatGroup(ChatGroup.Users[0].User_Id, ChatGroup.Users[1].User_Id);
                 if (existResult != Guid.Empty)
@@ -100,7 +100,6 @@ namespace EnVietSocialNetWorkAPI.Controllers
                                 VALUES 
                                 (NEWID(), GETDATE(), GETDATE(), 0, @Name, @Theme, @Group_Type);";
             var execUserChatGroup = @"INSERT INTO User_ChatGroup (User_Id, ChatGroup_Id, Role, Is_Not_Notification, Delay_Until)
-                                      OUTPUT Inserted.Id
                                       VALUES 
                                       (@User_Id, @ChatGroup_Id, @Role, 0, GETDATE())";
             //
@@ -140,7 +139,28 @@ namespace EnVietSocialNetWorkAPI.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(Guid id)
         {
-            var query = "Update Chat_Groups SET Is_Deleted = 1, Updated_At = GETDATE() WHERE Id = @Id";
+            var query = "UPDATE Chat_Groups SET Is_Deleted = 1, Updated_At = GETDATE() WHERE Id = @Id";
+            var parameter = new DynamicParameters();
+            parameter.Add("Id", id);
+            using (var connection = _context.CreateConnection())
+            {
+                try
+                {
+                    await connection.ExecuteAsync(query, parameter);
+                    return Ok(ResponseModel<string>.Success("Success."));
+
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest(ResponseModel<string>.Failure(ex.Message));
+                }
+            }
+        }
+
+        [HttpDelete("{id}/terminate")]
+        public async Task<IActionResult> DeleteTerminate(Guid id)
+        {
+            var query = "DELETE Chat_Groups WHERE Id = @Id";
             var parameter = new DynamicParameters();
             parameter.Add("Id", id);
             using (var connection = _context.CreateConnection())

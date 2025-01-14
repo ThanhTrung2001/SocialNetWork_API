@@ -40,7 +40,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
             }
         }
 
-        [HttpGet("/type")]
+        [HttpGet("type")]
         public async Task<IActionResult> GetNotificationsBySearch([FromQuery] string noti_Type)
         {
             var query = "SELECT Id, Title, Description, Noti_Type, Destination_Id, Organization_Name, Started_At, Ended_At FROM Notifications WHERE Is_Deleted = 0 AND Noti_Type = @Noti_Type;";

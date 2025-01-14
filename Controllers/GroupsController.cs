@@ -208,7 +208,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
             parameter.Add("Id", id);
             using (var connection = _context.CreateConnection())
             {
-                var result = await connection.QueryAsync<UserGroupQuery>(query, new { Id = id });
+                var result = await connection.QueryAsync<UserGroupQuery>(query, parameter);
                 return result;
             }
         }
@@ -234,12 +234,12 @@ namespace EnVietSocialNetWorkAPI.Controllers
                             postDict.Add(post.Id, postEntry);
                         }
 
-                        if (post.Post_Type_Id == 1 && attachment != null && !postEntry.Attachments.Any((item) => item.Attachment_Id == attachment.Attachment_Id))
+                        if (post.Post_Type == "Normal" && attachment != null && !postEntry.Attachments.Any((item) => item.Attachment_Id == attachment.Attachment_Id))
                         {
                             postEntry.Attachments.Add(attachment);
                         }
 
-                        if (post.Post_Type_Id == 2 && survey != null)
+                        if (post.Post_Type == "Survey" && survey != null)
                         {
                             postEntry.Survey = survey;
                             if (surveyItem != null && !postEntry.Survey.SurveyItems.Any((item) => item.SurveyItem_Id == surveyItem.SurveyItem_Id))
@@ -318,7 +318,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
 
             var query = @"INSERT INTO User_Group (User_Id, Group_Id, Role, Is_Follow, Joined_At, Updated_At ,Is_Deleted)
                               VALUES      
-                              (@User_Id, @group_Id, @Role, 1 ,GETDATE(), GETDATE() ,0);";
+                              (@User_Id, @group_Id, @Role, @Is_Follow ,GETDATE(), GETDATE() ,0);";
             using (var connection = _context.CreateConnection())
             {
                 foreach (var item in group.Users)
@@ -327,6 +327,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
                     parameters.Add("User_Id", item.User_Id);
                     parameters.Add("Group_Id", id);
                     parameters.Add("Role", item.Role);
+                    parameters.Add("Is_Follow", item.Is_Follow ?? true);
                     bool existed = await connection.ExecuteScalarAsync<bool>(existQuery, parameters);
                     if (existed)
                     {
@@ -338,6 +339,36 @@ namespace EnVietSocialNetWorkAPI.Controllers
                     }
                 }
                 return Ok(ResponseModel<string>.Success("Success"));
+            }
+        }
+
+        [HttpPut("{id}/users")]
+        public async Task<IActionResult> EditUserInGroup(Guid id, ModifyGroupUserCommand group)
+        {
+            var queryUserGroup = "UPDATE User_Group SET Is_Follow = @Is_Follow, Role = @Role WHERE Group_Id = @Id AND User_Id = @User_Id;";
+            var parameters = new DynamicParameters();
+            parameters.Add("Id", id, DbType.Guid);
+            parameters.Add("User_Id", group.User_Id);
+            parameters.Add("Role", group.Role);
+            parameters.Add("Is_Follow", group.Is_Follow);
+            using (var connection = _context.CreateConnection())
+            {
+                connection.Open();
+                using (var transaction = connection.BeginTransaction())
+                {
+                    try
+                    {
+                        await connection.ExecuteAsync(queryUserGroup, parameters, transaction);
+                        transaction.Commit();
+                        return Ok(ResponseModel<string>.Success("Success."));
+
+                    }
+                    catch (Exception ex)
+                    {
+                        transaction.Rollback();
+                        return BadRequest(ResponseModel<string>.Failure(ex.Message));
+                    }
+                }
             }
         }
 
@@ -356,8 +387,8 @@ namespace EnVietSocialNetWorkAPI.Controllers
                 {
                     try
                     {
-                        await connection.ExecuteAsync(query, parameter);
-                        await connection.ExecuteAsync(queryUserGroup, parameter);
+                        await connection.ExecuteAsync(query, parameter, transaction);
+                        await connection.ExecuteAsync(queryUserGroup, parameter, transaction);
                         transaction.Commit();
                         return Ok(ResponseModel<string>.Success("Success."));
 
@@ -371,8 +402,8 @@ namespace EnVietSocialNetWorkAPI.Controllers
             }
         }
 
-        [HttpDelete("{id}/user")]
-        public async Task<IActionResult> DeleteUserIn_Group(Guid id)
+        [HttpDelete("{id}/users")]
+        public async Task<IActionResult> DeleteUserInGroup(Guid id)
         {
             var query = "UPDATE User_Group SET Is_Deleted = 1, Updated_At = GETDATE() WHERE Group_Id = @Id;";
             var parameter = new DynamicParameters();

@@ -10,15 +10,15 @@
         public string Share_FirstName { get; set; }
         public string Share_LastName { get; set; }
         public string Share_Avatar { get; set; }
+        public int React_Count { get; set; }
 
         public Guid Post_Id { get; set; }
         public string Content { get; set; }
-        public int Post_Type_Id { get; set; }
+        public string Post_Type { get; set; }
         public DateTime Created_At { get; set; }
         public DateTime Updated_At { get; set; }
         public bool In_Group { get; set; }
         public Guid? Destination_Id { get; set; }
-        public int React_Count { get; set; }
 
         public Guid User_Id { get; set; }
         public string Email { get; set; }
