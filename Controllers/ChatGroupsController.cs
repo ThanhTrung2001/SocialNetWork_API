@@ -43,6 +43,33 @@ namespace EnVietSocialNetWorkAPI.Controllers
             }
         }
 
+        [HttpGet("private/{User_Id1}/{User_Id2}")]
+        public async Task<Guid> GetPrivateChatGroup(Guid User_Id1, Guid User_Id2)
+        {
+
+            var query = @"SELECT cb.Id AS ChatGroup_Id
+                          FROM Chat_Groups cb
+                          INNER JOIN User_ChatGroup ucb1 ON cb.Id = ucb1.ChatGroup_Id
+                          INNER JOIN User_ChatGroup ucb2 ON cb.Id = ucb2.ChatGroup_Id                         
+                          WHERE ucb1.User_Id = @User1Id AND ucb2.User_Id = @User2Id AND cb.Is_Deleted = 0;";
+            var parameters = new DynamicParameters();
+            parameters.Add("User1Id", User_Id1);
+            parameters.Add("User2Id", User_Id2);
+            using (var connection = _context.CreateConnection())
+            {
+                try
+                {
+                    var result = await connection.QuerySingleAsync<Guid>(query, parameters);
+                    return result;
+
+                }
+                catch (Exception ex)
+                {
+                    return Guid.Empty;
+                }
+            }
+        }
+
         [HttpGet("{id}")]
         public async Task<IActionResult> GetChatGroupDetail(Guid id)
         {
@@ -135,50 +162,6 @@ namespace EnVietSocialNetWorkAPI.Controllers
             }
         }
 
-
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(Guid id)
-        {
-            var query = "UPDATE Chat_Groups SET Is_Deleted = 1, Updated_At = GETDATE() WHERE Id = @Id";
-            var parameter = new DynamicParameters();
-            parameter.Add("Id", id);
-            using (var connection = _context.CreateConnection())
-            {
-                try
-                {
-                    await connection.ExecuteAsync(query, parameter);
-                    return Ok(ResponseModel<string>.Success("Success."));
-
-                }
-                catch (Exception ex)
-                {
-                    return BadRequest(ResponseModel<string>.Failure(ex.Message));
-                }
-            }
-        }
-
-        [HttpDelete("{id}/terminate")]
-        public async Task<IActionResult> DeleteTerminate(Guid id)
-        {
-            var query = "DELETE Chat_Groups WHERE Id = @Id";
-            //delete all thing related to: user_chatgroup, message, attachment message, attachment
-            var parameter = new DynamicParameters();
-            parameter.Add("Id", id);
-            using (var connection = _context.CreateConnection())
-            {
-                try
-                {
-                    await connection.ExecuteAsync(query, parameter);
-                    return Ok(ResponseModel<string>.Success("Success."));
-
-                }
-                catch (Exception ex)
-                {
-                    return BadRequest(ResponseModel<string>.Failure(ex.Message));
-                }
-            }
-        }
-
         [HttpPost("{id}/users")]
         public async Task<IActionResult> AddUsersToChatGroup(Guid id, AddUsersToChatGroupCommand group)
         {
@@ -255,6 +238,27 @@ namespace EnVietSocialNetWorkAPI.Controllers
             }
         }
 
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(Guid id)
+        {
+            var query = "UPDATE Chat_Groups SET Is_Deleted = 1, Updated_At = GETDATE() WHERE Id = @Id";
+            var parameter = new DynamicParameters();
+            parameter.Add("Id", id);
+            using (var connection = _context.CreateConnection())
+            {
+                try
+                {
+                    await connection.ExecuteAsync(query, parameter);
+                    return Ok(ResponseModel<string>.Success("Success."));
+
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest(ResponseModel<string>.Failure(ex.Message));
+                }
+            }
+        }
+
 
         [HttpDelete("{id}/users")]
         public async Task<IActionResult> DeleteUsersFromChatGroup(Guid id, DeleteChatGroupUsersCommand group)
@@ -308,31 +312,27 @@ namespace EnVietSocialNetWorkAPI.Controllers
             }
         }
 
-        [HttpGet("private/{User_Id1}/{User_Id2}")]
-        public async Task<Guid> GetPrivateChatGroup(Guid User_Id1, Guid User_Id2)
+        [HttpDelete("{id}/terminate")]
+        public async Task<IActionResult> DeleteTerminate(Guid id)
         {
-
-            var query = @"SELECT cb.Id AS ChatGroup_Id
-                          FROM Chat_Groups cb
-                          INNER JOIN User_ChatGroup ucb1 ON cb.Id = ucb1.ChatGroup_Id
-                          INNER JOIN User_ChatGroup ucb2 ON cb.Id = ucb2.ChatGroup_Id                         
-                          WHERE ucb1.User_Id = @User1Id AND ucb2.User_Id = @User2Id AND cb.Is_Deleted = 0;";
-            var parameters = new DynamicParameters();
-            parameters.Add("User1Id", User_Id1);
-            parameters.Add("User2Id", User_Id2);
+            var query = "DELETE Chat_Groups WHERE Id = @Id";
+            //delete all thing related to: user_chatgroup, message, attachment message, attachment
+            var parameter = new DynamicParameters();
+            parameter.Add("Id", id);
             using (var connection = _context.CreateConnection())
             {
                 try
                 {
-                    var result = await connection.QuerySingleAsync<Guid>(query, parameters);
-                    return result;
+                    await connection.ExecuteAsync(query, parameter);
+                    return Ok(ResponseModel<string>.Success("Success."));
 
                 }
                 catch (Exception ex)
                 {
-                    return Guid.Empty;
+                    return BadRequest(ResponseModel<string>.Failure(ex.Message));
                 }
             }
         }
+
     }
 }
