@@ -20,6 +20,11 @@
         public bool? Is_Follow { get; set; } = true;
     }
 
+    public class DeleteGroupUsersCommand
+    {
+        public List<DeleteGroupUserCommand> Users { get; set; } = new List<DeleteGroupUserCommand>();
+    }
+
     public class DeleteGroupUserCommand
     {
         public Guid User_Id { get; set; }

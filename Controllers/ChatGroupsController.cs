@@ -161,6 +161,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
         public async Task<IActionResult> DeleteTerminate(Guid id)
         {
             var query = "DELETE Chat_Groups WHERE Id = @Id";
+            //delete all thing related to: user_chatgroup, message, attachment message, attachment
             var parameter = new DynamicParameters();
             parameter.Add("Id", id);
             using (var connection = _context.CreateConnection())
@@ -179,7 +180,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
         }
 
         [HttpPost("{id}/users")]
-        public async Task<IActionResult> AddUsersToChatGroup(Guid id, ModifyGroupUsersCommand group)
+        public async Task<IActionResult> AddUsersToChatGroup(Guid id, AddUsersToChatGroupCommand group)
         {
             var query = @"INSERT INTO User_ChatGroup (User_Id, ChatGroup_Id, Role, Is_Not_Notification, Delay_Until)
                               VALUES      
@@ -194,6 +195,81 @@ namespace EnVietSocialNetWorkAPI.Controllers
                         parameter.Add("User_Id", item.User_Id);
                         parameter.Add("Group_Id", id);
                         parameter.Add("Role", item.Role);
+                        await connection.ExecuteAsync(query, parameter);
+                    }
+                    return Ok(ResponseModel<string>.Success("Success."));
+
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest(ResponseModel<string>.Failure(ex.Message));
+                }
+            }
+        }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> EditChatGroup(Guid id, EditChatGroupCommand group)
+        {
+            var query = @"UPDATE Chat_groups SET Name = @Name, Theme = @Theme, Group_Type = @Group_Type WHERE Id = @Id;";
+            var parameters = new DynamicParameters();
+            parameters.Add("Id", id);
+            parameters.Add("Name", group.Name);
+            parameters.Add("Theme", group.Theme);
+            parameters.Add("Group_Type", group.Group_Type);
+            using (var connection = _context.CreateConnection())
+            {
+                try
+                {
+                    await connection.ExecuteAsync(query, parameters);
+                    return Ok(ResponseModel<string>.Success("Success"));
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest(ResponseModel<string>.Failure(ex.Message));
+                }
+            }
+        }
+
+        [HttpPut("{id}/users")]
+        public async Task<IActionResult> EditUserInChatGroup(Guid id, ModifyChatGroupUserCommand group)
+        {
+            var query = @"UPDATE User_ChatGroup
+                          SET Role = @Role
+                          WHERE ChatGroup_Id = @ChatGroup_Id AND User_Id = @User_Id";
+            using (var connection = _context.CreateConnection())
+            {
+                try
+                {
+                    var parameter = new DynamicParameters();
+                    parameter.Add("User_Id", group.User_Id);
+                    parameter.Add("ChatGroup_Id", id);
+                    parameter.Add("Role", group.Role);
+                    await connection.ExecuteAsync(query, parameter);
+                    return Ok(ResponseModel<string>.Success("Success."));
+
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest(ResponseModel<string>.Failure(ex.Message));
+                }
+            }
+        }
+
+
+        [HttpDelete("{id}/users")]
+        public async Task<IActionResult> DeleteUsersFromChatGroup(Guid id, DeleteChatGroupUsersCommand group)
+        {
+            var query = @"DELETE FROM User_ChatGroup
+                          WHERE ChatGroup_Id = @ChatGroup_Id AND User_Id = @User_Id";
+            using (var connection = _context.CreateConnection())
+            {
+                try
+                {
+                    foreach (var item in group.Users)
+                    {
+                        var parameter = new DynamicParameters();
+                        parameter.Add("User_Id", item);
+                        parameter.Add("ChatGroup_Id", id);
                         await connection.ExecuteAsync(query, parameter);
                     }
                     return Ok(ResponseModel<string>.Success("Success."));

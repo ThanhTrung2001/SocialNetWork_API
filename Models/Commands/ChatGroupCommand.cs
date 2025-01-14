@@ -31,6 +31,11 @@
         public DateTime Delay_Until { get; set; }
     }
 
+    public class DeleteChatGroupUsersCommand
+    {
+        public List<Guid> Users { get; set; } = new List<Guid>();
+    }
+
     public class DeleteChatGroupUserCommand
     {
         public Guid User_Id { get; set; }
