@@ -59,9 +59,9 @@ BEGIN
 	LEFT JOIN
 		Post_Attachment pa ON pa.Post_Id = p.Id
 	LEFT JOIN
-		Attachments a ON pa.Attachment_Id = a.Id
+		Attachments a ON pa.Attachment_Id = a.Id AND a.Is_Deleted = 0
 	LEFT JOIN 
-		Surveys s ON p.Id = s.Post_Id
+		Surveys s ON p.Id = s.Post_Id AND s.Is_Deleted = 0
 	LEFT JOIN 
 		Survey_Items si ON s.Id = si.Survey_Id
 	LEFT JOIN
@@ -69,7 +69,7 @@ BEGIN
 	LEFT JOIN 
 		User_Details udv ON udv.User_Id = uv.User_Id 
 	LEFT JOIN
-		Comments c ON p.Id = c.Post_Id
+		Comments c ON p.Id = c.Post_Id AND c.Is_Deleted = 0
 	LEFT JOIN
 		User_Details udc ON c.User_Id = udc.User_Id
 	LEFT JOIN
@@ -142,9 +142,9 @@ BEGIN
 	LEFT JOIN
 		Post_Attachment pa ON pa.Post_Id = p.Id
 	LEFT JOIN
-		Attachments a ON pa.Attachment_Id = a.Id
+		Attachments a ON pa.Attachment_Id = a.Id AND a.Is_Deleted = 0
 	LEFT JOIN 
-		Surveys s ON p.Id = s.Post_Id
+		Surveys s ON p.Id = s.Post_Id AND s.Is_Deleted = 0
 	LEFT JOIN 
 		Survey_Items si ON s.Id = si.Survey_Id
 	LEFT JOIN
@@ -152,7 +152,7 @@ BEGIN
 	LEFT JOIN 
 		User_Details udv ON udv.User_Id = uv.User_Id 
 	LEFT JOIN
-		Comments c ON p.Id = c.Post_Id
+		Comments c ON p.Id = c.Post_Id AND c.Is_Deleted = 0
 	LEFT JOIN
 		User_Details udc ON c.User_Id = udc.User_Id
 	LEFT JOIN
@@ -226,9 +226,9 @@ BEGIN
 	LEFT JOIN
 		Post_Attachment pa ON pa.Post_Id = p.Id
 	LEFT JOIN
-		Attachments a ON pa.Attachment_Id = a.Id
+		Attachments a ON pa.Attachment_Id = a.Id AND a.Is_Deleted = 0
 	LEFT JOIN 
-		Surveys s ON p.Id = s.Post_Id
+		Surveys s ON p.Id = s.Post_Id AND s.Is_Deleted = 0
 	LEFT JOIN 
 		Survey_Items si ON s.Id = si.Survey_Id
 	LEFT JOIN
@@ -236,7 +236,7 @@ BEGIN
 	LEFT JOIN 
 		User_Details udv ON udv.User_Id = uv.User_Id 
 	LEFT JOIN
-		Comments c ON p.Id = c.Post_Id
+		Comments c ON p.Id = c.Post_Id AND c.Is_Deleted = 0
 	LEFT JOIN
 		User_Details udc ON c.User_Id = udc.User_Id
 	LEFT JOIN
@@ -309,9 +309,9 @@ BEGIN
 	LEFT JOIN
 		Post_Attachment pa ON pa.Post_Id = p.Id
 	LEFT JOIN
-		Attachments a ON pa.Attachment_Id = a.Id
+		Attachments a ON pa.Attachment_Id = a.Id AND a.Is_Deleted = 0
 	LEFT JOIN 
-		Surveys s ON p.Id = s.Post_Id
+		Surveys s ON p.Id = s.Post_Id AND s.Is_Deleted = 0
 	LEFT JOIN 
 		Survey_Items si ON s.Id = si.Survey_Id
 	LEFT JOIN
@@ -319,7 +319,7 @@ BEGIN
 	LEFT JOIN 
 		User_Details udv ON udv.User_Id = uv.User_Id 
 	LEFT JOIN
-		Comments c ON p.Id = c.Post_Id
+		Comments c ON p.Id = c.Post_Id AND c.Is_Deleted = 0
 	LEFT JOIN
 		User_Details udc ON c.User_Id = udc.User_Id
 	LEFT JOIN
@@ -403,10 +403,10 @@ BEGIN
                             User_Details ud ON u.Id = ud.User_Id
                         LEFT JOIN
                             Post_Attachment pa ON pa.Post_Id = p.Id
-                        LEFT JOIN
-                            Attachments a ON pa.Attachment_Id = a.Id
-                        LEFT JOIN 
-                            Surveys s ON p.Id = s.Post_Id
+						LEFT JOIN
+							Attachments a ON pa.Attachment_Id = a.Id AND a.Is_Deleted = 0
+						LEFT JOIN 
+							Surveys s ON p.Id = s.Post_Id AND s.Is_Deleted = 0
                         LEFT JOIN 
                             Survey_Items si ON s.Id = si.Survey_Id
                         LEFT JOIN
@@ -414,7 +414,7 @@ BEGIN
                         LEFT JOIN 
                             User_Details udv ON udv.User_Id = uv.User_Id
                         LEFT JOIN
-                            Comments c ON sh.Id = c.Post_Id
+                            Comments c ON sh.Id = c.Post_Id AND c.Is_Deleted = 0
                         LEFT JOIN
                             User_Details udc ON c.User_Id = udc.User_Id
                         LEFT JOIN
@@ -499,10 +499,10 @@ BEGIN
                             User_Details ud ON u.Id = ud.User_Id
                          LEFT JOIN
                             Post_Attachment pa ON pa.Post_Id = p.Id
-                         LEFT JOIN
-                            Attachments a ON pa.Attachment_Id = a.Id
-                         LEFT JOIN 
-                            Surveys s ON p.Id = s.Post_Id
+						LEFT JOIN
+							Attachments a ON pa.Attachment_Id = a.Id AND a.Is_Deleted = 0
+						LEFT JOIN 
+							Surveys s ON p.Id = s.Post_Id AND s.Is_Deleted = 0
                          LEFT JOIN 
                             Survey_Items si ON s.Id = si.Survey_Id
                          LEFT JOIN
@@ -510,7 +510,7 @@ BEGIN
                          LEFT JOIN 
                             User_Details udv ON udv.User_Id = uv.User_Id 
                          LEFT JOIN
-                            Comments c ON sh.Id = c.Post_Id
+                            Comments c ON sh.Id = c.Post_Id AND c.Is_Deleted = 0
                          LEFT JOIN
                             User_Details udc ON c.User_Id = udc.User_Id
                          LEFT JOIN
