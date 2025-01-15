@@ -331,19 +331,29 @@ namespace EnVietSocialNetWorkAPI.Controllers
         public async Task<IActionResult> Delete(Guid id)
         {
             var query = "Update Comments SET Is_Deleted = 1, Updated_At = GETDATE() WHERE Id = @Id";
+            var queryReact = "Update User_React_Comment SET  Is_Deleted = 1, Updated_At = GETDATE() WHERE Comment_Id = @Id";
+            var queryAttachment = "Update Attachments SET Is_Deleted = 1, Updated_At = GETDATE() WHERE Id IN (SELECT Attachment_Id FROM Comment_Attachment WHERE Comment_Id = @Id)";
             var parameter = new DynamicParameters();
             parameter.Add("Id", id);
             using (var connection = _context.CreateConnection())
             {
-                try
+                connection.Open();
+                using (var transaction = connection.BeginTransaction())
                 {
-                    await connection.ExecuteAsync(query, parameter);
-                    return Ok(ResponseModel<string>.Success("Success."));
+                    try
+                    {
+                        await connection.ExecuteAsync(query, parameter, transaction);
+                        await connection.ExecuteAsync(queryReact, parameter, transaction);
+                        await connection.ExecuteAsync(queryAttachment, parameter, transaction);
+                        transaction.Commit();
+                        return Ok(ResponseModel<string>.Success("Success."));
 
-                }
-                catch (Exception ex)
-                {
-                    return BadRequest(ResponseModel<string>.Failure(ex.Message));
+                    }
+                    catch (Exception ex)
+                    {
+                        transaction.Rollback();
+                        return BadRequest(ResponseModel<string>.Failure(ex.Message));
+                    }
                 }
             }
         }

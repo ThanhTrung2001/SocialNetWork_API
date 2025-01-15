@@ -7,7 +7,7 @@
         public string React_FirstName { get; set; }
         public string React_LastName { get; set; }
         public string React_Avatar { get; set; }
-        public DateTime CreatedAt { get; set; }
+        public DateTime Created_At { get; set; }
     }
 
     public class PostReactQuery : ReactQuery

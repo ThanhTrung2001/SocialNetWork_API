@@ -183,14 +183,22 @@ namespace EnVietSocialNetWorkAPI.Controllers
 
                         if (post.Post_Type == "Survey" && survey != null)
                         {
-                            postEntry.Survey = survey;
-                            if (surveyItem != null && !postEntry.Survey.SurveyItems.Any((item) => item.SurveyItem_Id == surveyItem.SurveyItem_Id))
+                            var existSurvey = postEntry.Survey ??= survey; // Initialize survey if null
+
+                            if (surveyItem != null)
                             {
-                                postEntry.Survey.SurveyItems.Add(surveyItem);
-                                var result = postEntry.Survey.SurveyItems.FirstOrDefault((x) => x.SurveyItem_Id == surveyItem.SurveyItem_Id);
-                                if (vote != null && !result.Votes.Any((item) => item.Vote_UserId == vote.Vote_UserId))
+                                // Add SurveyItem if not exists
+                                var existingItem = existSurvey.SurveyItems.FirstOrDefault(item => item.SurveyItem_Id == surveyItem.SurveyItem_Id);
+                                if (existingItem == null)
                                 {
-                                    result.Votes.Add(vote);
+                                    existingItem = surveyItem;
+                                    existSurvey.SurveyItems.Add(existingItem);
+                                }
+
+                                // Add Vote if not exists in the correct SurveyItem
+                                if (vote != null && !existingItem.Votes.Any(v => v.Vote_UserId == vote.Vote_UserId))
+                                {
+                                    existingItem.Votes.Add(vote);
                                 }
                             }
                         }

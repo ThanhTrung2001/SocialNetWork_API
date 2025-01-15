@@ -39,7 +39,7 @@
     public class PostSurveyQuery
     {
         public Guid Survey_Id { get; set; }
-        public DateTime Expired_dAt { get; set; }
+        public DateTime Expired_At { get; set; }
         public string Question { get; set; }
         public string Survey_Type { get; set; }
         public int Total_Vote { get; set; }

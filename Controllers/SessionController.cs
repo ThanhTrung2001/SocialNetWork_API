@@ -53,13 +53,13 @@ namespace EnVietSocialNetWorkAPI.Controllers
 
                 catch (Exception ex)
                 {
-                    return BadRequest(ResponseModel<JWTReturn>.Failure(ex.Message));
+                    return Unauthorized(ResponseModel<JWTReturn>.Failure(ex.Message));
                 }
 
             }
         }
 
-        [HttpPost]
+        [HttpPost("send-email")]
         public async Task<IActionResult> TestSendEmail(EmailMessage message)
         {
             try

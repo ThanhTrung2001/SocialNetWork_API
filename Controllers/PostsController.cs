@@ -51,14 +51,22 @@ namespace EnVietSocialNetWorkAPI.Controllers
 
                         if (post.Post_Type == "Survey" && survey != null)
                         {
-                            postEntry.Survey = survey;
-                            if (surveyItem != null && !postEntry.Survey.SurveyItems.Any((item) => item.SurveyItem_Id == surveyItem.SurveyItem_Id))
+                            var existSurvey = postEntry.Survey ??= survey; // Initialize survey if null
+
+                            if (surveyItem != null)
                             {
-                                postEntry.Survey.SurveyItems.Add(surveyItem);
-                                var result = postEntry.Survey.SurveyItems.FirstOrDefault((x) => x.SurveyItem_Id == surveyItem.SurveyItem_Id);
-                                if (vote != null && !result.Votes.Any((item) => item.Vote_UserId == vote.Vote_UserId))
+                                // Add SurveyItem if not exists
+                                var existingItem = existSurvey.SurveyItems.FirstOrDefault(item => item.SurveyItem_Id == surveyItem.SurveyItem_Id);
+                                if (existingItem == null)
                                 {
-                                    result.Votes.Add(vote);
+                                    existingItem = surveyItem;
+                                    existSurvey.SurveyItems.Add(existingItem);
+                                }
+
+                                // Add Vote if not exists in the correct SurveyItem
+                                if (vote != null && !existingItem.Votes.Any(v => v.Vote_UserId == vote.Vote_UserId))
+                                {
+                                    existingItem.Votes.Add(vote);
                                 }
                             }
                         }
@@ -113,14 +121,22 @@ namespace EnVietSocialNetWorkAPI.Controllers
 
                         if (post.Post_Type == "Survey" && survey != null)
                         {
-                            postEntry.Survey = survey;
-                            if (surveyItem != null && !postEntry.Survey.SurveyItems.Any((item) => item.SurveyItem_Id == surveyItem.SurveyItem_Id))
+                            var existSurvey = postEntry.Survey ??= survey; // Initialize survey if null
+
+                            if (surveyItem != null)
                             {
-                                postEntry.Survey.SurveyItems.Add(surveyItem);
-                                var result = postEntry.Survey.SurveyItems.FirstOrDefault((x) => x.SurveyItem_Id == surveyItem.SurveyItem_Id);
-                                if (vote != null && !result.Votes.Any((item) => item.Vote_UserId == vote.Vote_UserId))
+                                // Add SurveyItem if not exists
+                                var existingItem = existSurvey.SurveyItems.FirstOrDefault(item => item.SurveyItem_Id == surveyItem.SurveyItem_Id);
+                                if (existingItem == null)
                                 {
-                                    result.Votes.Add(vote);
+                                    existingItem = surveyItem;
+                                    existSurvey.SurveyItems.Add(existingItem);
+                                }
+
+                                // Add Vote if not exists in the correct SurveyItem
+                                if (vote != null && !existingItem.Votes.Any(v => v.Vote_UserId == vote.Vote_UserId))
+                                {
+                                    existingItem.Votes.Add(vote);
                                 }
                             }
                         }
@@ -178,14 +194,22 @@ namespace EnVietSocialNetWorkAPI.Controllers
 
                         if (post.Post_Type == "Survey" && survey != null)
                         {
-                            postEntry.Survey = survey;
-                            if (surveyItem != null && !postEntry.Survey.SurveyItems.Any((item) => item.SurveyItem_Id == surveyItem.SurveyItem_Id))
+                            var existSurvey = postEntry.Survey ??= survey; // Initialize survey if null
+
+                            if (surveyItem != null)
                             {
-                                postEntry.Survey.SurveyItems.Add(surveyItem);
-                                var result = postEntry.Survey.SurveyItems.FirstOrDefault((x) => x.SurveyItem_Id == surveyItem.SurveyItem_Id);
-                                if (vote != null && !result.Votes.Any((item) => item.Vote_UserId == vote.Vote_UserId))
+                                // Add SurveyItem if not exists
+                                var existingItem = existSurvey.SurveyItems.FirstOrDefault(item => item.SurveyItem_Id == surveyItem.SurveyItem_Id);
+                                if (existingItem == null)
                                 {
-                                    result.Votes.Add(vote);
+                                    existingItem = surveyItem;
+                                    existSurvey.SurveyItems.Add(existingItem);
+                                }
+
+                                // Add Vote if not exists in the correct SurveyItem
+                                if (vote != null && !existingItem.Votes.Any(v => v.Vote_UserId == vote.Vote_UserId))
+                                {
+                                    existingItem.Votes.Add(vote);
                                 }
                             }
                         }
@@ -330,7 +354,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
             var queryComment = "Update Comments SET  Is_Deleted = 1, Updated_At = GETDATE() WHERE Post_Id = @Id";
             var querySurvey = "Update Surveys SET Is_Deleted = 1 WHERE Post_Id = @Id";
             var querySurveyItem = "Update Survey_Items SET Updated_At = GETDATE(), Is_Deleted = 1 WHERE Survey_Id = (SELECT Id From Surveys WHERE Post_Id = @Id)";
-            //var querySharePost = "UPDATE Share_Posts SET Is_Deleted = 1, Updated_At = GETDATE() WHERE Shared_Post_Id = @Id;";
+            var querySharePost = "UPDATE Share_Posts SET Is_Deleted = 1, Updated_At = GETDATE() WHERE Shared_Post_Id = @Id;";
             var parameter = new DynamicParameters();
             parameter.Add("Id", id);
             using (var connection = _context.CreateConnection())
@@ -343,6 +367,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
                     await connection.ExecuteAsync(queryComment, parameter);
                     await connection.ExecuteAsync(querySurvey, parameter);
                     await connection.ExecuteAsync(querySurveyItem, parameter);
+                    await connection.ExecuteAsync(querySharePost, parameter);
                     //await connection.ExecuteAsync(querySharePost, parameters);
                     return Ok(ResponseModel<string>.Success("Success."));
 

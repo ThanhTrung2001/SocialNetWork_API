@@ -60,13 +60,20 @@ namespace EnVietSocialNetWorkAPI.Controllers
                             surveyDict.Add(survey.Id, surveyEntry);
                         }
 
-                        if (surveyItem != null && !surveyEntry.SurveyItems.Any((item) => item.SurveyItem_Id == surveyItem.SurveyItem_Id))
+                        if (surveyItem != null)
                         {
-                            surveyEntry.SurveyItems.Add(surveyItem);
-                            var result = surveyEntry.SurveyItems.FirstOrDefault((x) => x.SurveyItem_Id == surveyItem.SurveyItem_Id);
-                            if (vote != null && !result.Votes.Any((item) => item.Vote_UserId == vote.Vote_UserId))
+                            var existingItem = surveyEntry.SurveyItems
+                                .FirstOrDefault(item => item.SurveyItem_Id == surveyItem.SurveyItem_Id);
+
+                            if (existingItem == null)
                             {
-                                result.Votes.Add(vote);
+                                existingItem = surveyItem;
+                                surveyEntry.SurveyItems.Add(existingItem);
+                            }
+
+                            if (vote != null && !existingItem.Votes.Any(v => v.Vote_UserId == vote.Vote_UserId))
+                            {
+                                existingItem.Votes.Add(vote);
                             }
                         }
                         return surveyEntry;
@@ -91,7 +98,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
                             
                             si.Id AS SurveyItem_Id,
                             si.Option_Name,
-                            si.Total_Vote
+                            si.Total_Vote,
 
                             uv.User_Id AS Vote_UserId,
                             udv.FirstName AS Vote_FirstName,
@@ -122,13 +129,20 @@ namespace EnVietSocialNetWorkAPI.Controllers
                             surveyDict.Add(survey.Id, surveyEntry);
                         }
 
-                        if (surveyItem != null && !surveyEntry.SurveyItems.Any((item) => item.SurveyItem_Id == surveyItem.SurveyItem_Id))
+                        if (surveyItem != null)
                         {
-                            surveyEntry.SurveyItems.Add(surveyItem);
-                            var result = surveyEntry.SurveyItems.FirstOrDefault((x) => x.SurveyItem_Id == surveyItem.SurveyItem_Id);
-                            if (vote != null && !result.Votes.Any((item) => item.Vote_UserId == vote.Vote_UserId))
+                            var existingItem = surveyEntry.SurveyItems
+                                .FirstOrDefault(item => item.SurveyItem_Id == surveyItem.SurveyItem_Id);
+
+                            if (existingItem == null)
                             {
-                                result.Votes.Add(vote);
+                                existingItem = surveyItem;
+                                surveyEntry.SurveyItems.Add(existingItem);
+                            }
+
+                            if (vote != null && !existingItem.Votes.Any(v => v.Vote_UserId == vote.Vote_UserId))
+                            {
+                                existingItem.Votes.Add(vote);
                             }
                         }
                         return surveyEntry;
