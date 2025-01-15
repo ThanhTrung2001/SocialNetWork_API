@@ -41,21 +41,29 @@ namespace EnVietSocialNetWorkAPI.Controllers
                             shareDict.Add(share.Id, shareEntry);
                         }
 
-                        if (share.Post_Type == "Normal" && attachment != null && !shareEntry.Attachments.Any((item) => item == attachment))
+                        if (share.Post_Type == "Normal" && attachment != null && !shareEntry.Attachments.Any((item) => item.Attachment_Id == attachment.Attachment_Id))
                         {
                             shareEntry.Attachments.Add(attachment);
                         }
 
                         if (share.Post_Type == "Survey" && survey != null)
                         {
-                            share.Survey = survey;
-                            if (surveyItem != null && !share.Survey.SurveyItems.Any((item) => item.SurveyItem_Id == surveyItem.SurveyItem_Id))
+                            var existSurvey = shareEntry.Survey ??= survey; // Initialize survey if null
+
+                            if (surveyItem != null)
                             {
-                                share.Survey.SurveyItems.Add(surveyItem);
-                                var result = share.Survey.SurveyItems.FirstOrDefault((x) => x.SurveyItem_Id == surveyItem.SurveyItem_Id);
-                                if (vote != null && !result.Votes.Any((item) => item.Vote_UserId == vote.Vote_UserId))
+                                // Add SurveyItem if not exists
+                                var existingItem = existSurvey.SurveyItems.FirstOrDefault(item => item.SurveyItem_Id == surveyItem.SurveyItem_Id);
+                                if (existingItem == null)
                                 {
-                                    result.Votes.Add(vote);
+                                    existingItem = surveyItem;
+                                    existSurvey.SurveyItems.Add(existingItem);
+                                }
+
+                                // Add Vote if not exists in the correct SurveyItem
+                                if (vote != null && !existingItem.Votes.Any(v => v.Vote_UserId == vote.Vote_UserId))
+                                {
+                                    existingItem.Votes.Add(vote);
                                 }
                             }
                         }
@@ -106,21 +114,29 @@ namespace EnVietSocialNetWorkAPI.Controllers
                             shareDict.Add(share.Id, shareEntry);
                         }
 
-                        if (share.Post_Type == "Normal" && attachment != null && !shareEntry.Attachments.Any((item) => item == attachment))
+                        if (share.Post_Type == "Normal" && attachment != null && !shareEntry.Attachments.Any((item) => item.Attachment_Id == attachment.Attachment_Id))
                         {
                             shareEntry.Attachments.Add(attachment);
                         }
 
                         if (share.Post_Type == "Survey" && survey != null)
                         {
-                            share.Survey = survey;
-                            if (surveyItem != null && !share.Survey.SurveyItems.Any((item) => item.SurveyItem_Id == surveyItem.SurveyItem_Id))
+                            var existSurvey = shareEntry.Survey ??= survey; // Initialize survey if null
+
+                            if (surveyItem != null)
                             {
-                                share.Survey.SurveyItems.Add(surveyItem);
-                                var result = share.Survey.SurveyItems.FirstOrDefault((x) => x.SurveyItem_Id == surveyItem.SurveyItem_Id);
-                                if (vote != null && !result.Votes.Any((item) => item.Vote_UserId == vote.Vote_UserId))
+                                // Add SurveyItem if not exists
+                                var existingItem = existSurvey.SurveyItems.FirstOrDefault(item => item.SurveyItem_Id == surveyItem.SurveyItem_Id);
+                                if (existingItem == null)
                                 {
-                                    result.Votes.Add(vote);
+                                    existingItem = surveyItem;
+                                    existSurvey.SurveyItems.Add(existingItem);
+                                }
+
+                                // Add Vote if not exists in the correct SurveyItem
+                                if (vote != null && !existingItem.Votes.Any(v => v.Vote_UserId == vote.Vote_UserId))
+                                {
+                                    existingItem.Votes.Add(vote);
                                 }
                             }
                         }
