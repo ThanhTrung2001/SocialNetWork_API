@@ -205,7 +205,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> EditMessage(Guid id, CreateMessageCommand message)
+        public async Task<IActionResult> EditMessage(Guid id, EditMessageCommand message)
         {
             var query = "UPDATE Messages SET Content = @Content, Updated_At = GETDATE() WHERE Id = @Id AND Sender_Id = @Sender_Id";
             var parameters = new DynamicParameters();

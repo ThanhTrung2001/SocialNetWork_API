@@ -366,7 +366,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
             }
         }
 
-        [HttpGet("{id}/users/follow")]
+        [HttpPost("{id}/users/follow")]
         public async Task<IActionResult> ModifyUserChatNotification(Guid id, ChangeNotificationCommand command)
         {
             var query = "UPDATE User_ChatGroup SET Is_Not_Notification = @Is_Not_Notification, Delay_Until = @Delay_Until WHERE User_Id = @User_Id AND ChatGroup_Id = @ChatGroup_Id";

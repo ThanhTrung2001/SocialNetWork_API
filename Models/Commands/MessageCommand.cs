@@ -17,6 +17,13 @@
 
     }
 
+    public class EditMessageCommand
+    {
+        public Guid Sender_Id { get; set; }
+        public string? Content { get; set; }
+
+    }
+
     public class PinMessageCommand
     {
         public Guid Sender_Id { get; set; }
