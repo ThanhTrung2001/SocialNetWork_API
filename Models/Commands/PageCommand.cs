@@ -11,7 +11,6 @@
     public class ModifyPageUserCommand
     {
         public Guid User_Id { get; set; }
-        public Guid Page_Id { get; set; }
         public string Role { get; set; }
     }
 

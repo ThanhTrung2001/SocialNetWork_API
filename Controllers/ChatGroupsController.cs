@@ -111,6 +111,30 @@ namespace EnVietSocialNetWorkAPI.Controllers
             }
         }
 
+        [HttpGet("{id}/users")]
+        public async Task<IActionResult> GetUsersInGroup(Guid id)
+        {
+            var query = @"SELECT ud.User_Id, ud.FirstName, ud.LastName, ud.Avatar , ucg.Role
+                          FROM User_Details ud
+                          INNER JOIN User_ChatGroup ucg ON ucg.User_Id = ud.User_Id
+                          WHERE ucg.ChatGroup_Id = @Id;";
+            var parameter = new DynamicParameters();
+            parameter.Add("Id", id);
+            using (var connection = _context.CreateConnection())
+            {
+                try
+                {
+                    var result = await connection.QueryAsync<UserChatGroupQuery>(query, parameter);
+                    return Ok(ResponseModel<IEnumerable<UserChatGroupQuery>>.Success(result));
+
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest(ResponseModel<IEnumerable<UserChatGroupQuery>>.Failure(ex.Message));
+                }
+            }
+        }
+
         [HttpPost]
         public async Task<IActionResult> CreateChatGroup(CreateChatGroupCommand ChatGroup)
         {
@@ -242,19 +266,27 @@ namespace EnVietSocialNetWorkAPI.Controllers
         public async Task<IActionResult> Delete(Guid id)
         {
             var query = "UPDATE Chat_Groups SET Is_Deleted = 1, Updated_At = GETDATE() WHERE Id = @Id";
+            var queryMessage = "UPDATE Messages SET Is_Deleted = 1, Updated_At = GETDATE() WHERE ChatGroup_Id = @Id";
             var parameter = new DynamicParameters();
             parameter.Add("Id", id);
             using (var connection = _context.CreateConnection())
             {
-                try
+                connection.Open();
+                using (var transaction = connection.BeginTransaction())
                 {
-                    await connection.ExecuteAsync(query, parameter);
-                    return Ok(ResponseModel<string>.Success("Success."));
+                    try
+                    {
+                        await connection.ExecuteAsync(query, parameter, transaction);
+                        await connection.ExecuteAsync(queryMessage, parameter, transaction);
+                        transaction.Commit();
+                        return Ok(ResponseModel<string>.Success("Success."));
 
-                }
-                catch (Exception ex)
-                {
-                    return BadRequest(ResponseModel<string>.Failure(ex.Message));
+                    }
+                    catch (Exception ex)
+                    {
+                        transaction.Rollback();
+                        return BadRequest(ResponseModel<string>.Failure(ex.Message));
+                    }
                 }
             }
         }
@@ -332,6 +364,30 @@ namespace EnVietSocialNetWorkAPI.Controllers
                     return BadRequest(ResponseModel<string>.Failure(ex.Message));
                 }
             }
+        }
+
+        [HttpGet("{id}/users/follow")]
+        public async Task<IActionResult> ModifyUserChatNotification(Guid id, ChangeNotificationCommand command)
+        {
+            var query = "UPDATE User_ChatGroup SET Is_Not_Notification = @Is_Not_Notification, Delay_Until = @Delay_Until WHERE User_Id = @User_Id AND ChatGroup_Id = @ChatGroup_Id";
+            var parameters = new DynamicParameters();
+            parameters.Add("Is_Not_Notification", command.Is_Not_Notification);
+            parameters.Add("Delay_Until", command.Delay_Until);
+            parameters.Add("User_Id", command.User_Id);
+            parameters.Add("ChatGroup_Id", id);
+            using (var connection = _context.CreateConnection())
+            {
+                try
+                {
+                    await connection.ExecuteAsync(query, parameters);
+                    return Ok(ResponseModel<string>.Success("Success."));
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest(ResponseModel<string>.Failure(ex.Message));
+                }
+            }
+
         }
 
     }

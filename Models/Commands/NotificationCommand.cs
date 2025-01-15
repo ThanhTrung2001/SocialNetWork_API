@@ -2,6 +2,7 @@
 {
     public class CreateNotificationCommand
     {
+        public Guid User_Id { get; set; }
         public string Title { get; set; }
         public string Description { get; set; }
         public string Noti_Type { get; set; }

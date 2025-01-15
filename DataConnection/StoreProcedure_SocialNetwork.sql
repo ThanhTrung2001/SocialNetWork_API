@@ -338,7 +338,7 @@ BEGIN
 	SELECT 
                             sh.Id,
                             sh.Content AS Share_Content,
-                            sh.Created_At AS Share_Created_At,
+                            sh.Created_At AS Share_CreatedAt,
                             sh.Shared_By_User_Id,
                             sh.In_Group AS Share_In_Group,
 							sh.React_Count,
@@ -434,7 +434,7 @@ BEGIN
 	SELECT 
                             sh.Id,
                             sh.Content AS Share_Content,
-                            sh.Created_At AS Share_Created_At,
+                            sh.Created_At AS Share_CreatedAt,
                             sh.Shared_By_User_Id,
                             sh.In_Group AS Share_In_Group,
 							sh.React_Count,

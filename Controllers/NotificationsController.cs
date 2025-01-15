@@ -24,7 +24,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
         [HttpGet]
         public async Task<IActionResult> GetNotifications()
         {
-            var query = "SELECT Id, Title, Description, Noti_Type, Destination_Id, Organization_Name, Started_At, Ended_At FROM Notifications WHERE Is_Deleted = 0;";
+            var query = "SELECT Id, User_Id,Title, Description, Noti_Type, Destination_Id, Organization_Name, Started_At, Ended_At FROM Notifications WHERE Is_Deleted = 0;";
             using (var connection = _context.CreateConnection())
             {
                 try
@@ -43,7 +43,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
         [HttpGet("type")]
         public async Task<IActionResult> GetNotificationsBySearch([FromQuery] string noti_Type)
         {
-            var query = "SELECT Id, Title, Description, Noti_Type, Destination_Id, Organization_Name, Started_At, Ended_At FROM Notifications WHERE Is_Deleted = 0 AND Noti_Type = @Noti_Type;";
+            var query = "SELECT Id, User_Id, Title, Description, Noti_Type, Destination_Id, Organization_Name, Started_At, Ended_At FROM Notifications WHERE Is_Deleted = 0 AND Noti_Type = @Noti_Type;";
             var parameter = new DynamicParameters();
             parameter.Add("Noti_Type", noti_Type);
             using (var connection = _context.CreateConnection())
@@ -64,7 +64,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetNotification(Guid id)
         {
-            var query = "SELECT Id, Title, Description, Noti_Type, Destination_Id, Organization_Name, Started_At, Ended_At FROM Notifications WHERE Is_Deleted = 0 AND Id = @Id;";
+            var query = "SELECT Id, User_Id, Title, Description, Noti_Type, Destination_Id, Organization_Name, Started_At, Ended_At FROM Notifications WHERE Is_Deleted = 0 AND Id = @Id;";
             var parameter = new DynamicParameters();
             parameter.Add("Id", id);
             using (var connection = _context.CreateConnection())
@@ -85,14 +85,15 @@ namespace EnVietSocialNetWorkAPI.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(CreateNotificationCommand notification)
         {
-            var query = @"INSERT INTO Notifications (Id, CreatedAt, UpdatedAt, Is_Deleted, Title, Description, Noti_Type, Destination_Id, Started_At, Ended_At, Organization_Name)
+            var query = @"INSERT INTO Notifications (Id, Created_At, Updated_At, Is_Deleted, User_Id,Title, Description, Noti_Type, Destination_Id, Started_At, Ended_At, Organization_Name)
                         OUTPUT Inserted.Id        
                         VALUES
-                        (NEWID(), GETDATE(), GETDATE(), 0, @Title, @Description, @Noti_Type, @Destination_Id, @Started_At, @Ended_At, @Organization_Name);";
+                        (NEWID(), GETDATE(), GETDATE(), 0, @User_Id, @Title, @Description, @Noti_Type, @Destination_Id, @Started_At, @Ended_At, @Organization_Name);";
             var parameters = new DynamicParameters();
+            parameters.Add("User_Id", notification.User_Id);
             parameters.Add("Title", notification.Title, DbType.String);
             parameters.Add("Description", notification.Description, DbType.String);
-            parameters.Add("Noti_Type", notification.Noti_Type, DbType.Int32);
+            parameters.Add("Noti_Type", notification.Noti_Type);
             parameters.Add("Destination_Id", notification.Destination_Id, DbType.Guid);
             parameters.Add("Started_At", notification.Started_At, DbType.DateTime);
             parameters.Add("Ended_At", notification.Ended_At, DbType.DateTime);

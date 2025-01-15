@@ -188,7 +188,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
                     bool existed = await connection.ExecuteScalarAsync<bool>(existQuery, parameters);
                     if (existed)
                     {
-                        return BadRequest(ResponseModel<Guid>.Failure("Existed Connection between User and Organization"));
+                        return BadRequest(ResponseModel<Guid>.Failure("Existed Connection between User and Organization."));
                     }
                     else
                     {

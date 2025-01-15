@@ -256,7 +256,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
 
         }
 
-        [HttpPost("{id}/user")]
+        [HttpPost("{id}/users")]
         public async Task<IActionResult> AddUser(Guid id, ModifyPageUserCommand command)
         {
             //check if exist
@@ -268,18 +268,18 @@ namespace EnVietSocialNetWorkAPI.Controllers
             var parameters = new DynamicParameters();
             parameters.Add("Role", command.Role);
             parameters.Add("User_Id", command.User_Id);
-            parameters.Add("Page_Id", command.Page_Id);
+            parameters.Add("Page_Id", id);
             using (var connection = _context.CreateConnection())
             {
                 bool existed = await connection.ExecuteScalarAsync<bool>(existQuery, parameters);
                 if (existed)
                 {
-                    return BadRequest(ResponseModel<string>.Failure("Existed Connection between User and Page"));
+                    return BadRequest(ResponseModel<string>.Failure("E "));
                 }
                 else
                 {
                     await connection.ExecuteAsync(query, parameters);
-                    return Ok(ResponseModel<string>.Failure("Success."));
+                    return Ok(ResponseModel<string>.Success("Success."));
 
                 }
             }
@@ -310,7 +310,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
             }
         }
 
-        [HttpPut("{id}/user")]
+        [HttpPut("{id}/users")]
         public async Task<IActionResult> ModifyUser(Guid id, ModifyPageUserCommand command)
         {
             var query = @"UPDATE User_Page
@@ -319,7 +319,31 @@ namespace EnVietSocialNetWorkAPI.Controllers
             var parameters = new DynamicParameters();
             parameters.Add("Role", command.Role);
             parameters.Add("User_Id", command.User_Id);
-            parameters.Add("Page_Id", command.Page_Id);
+            parameters.Add("Page_Id", id);
+            using (var connection = _context.CreateConnection())
+            {
+                try
+                {
+                    await connection.ExecuteAsync(query, parameters);
+                    return Ok(ResponseModel<string>.Success("Success."));
+
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest(ResponseModel<string>.Failure(ex.Message));
+                }
+            }
+        }
+
+        [HttpPut("{id}/users/follow")]
+        public async Task<IActionResult> ModifyUserFollow(Guid id, ModifyFollowPageCommand command)
+        {
+            var query = @"UPDATE User_Page
+                          SET Is_Follow = NOT Is_Follow
+                          WHERE Page_Id = @Id AND User_Id = @User_Id;";
+            var parameters = new DynamicParameters();
+            parameters.Add("User_Id", command.User_Id);
+            parameters.Add("Page_Id", id);
             using (var connection = _context.CreateConnection())
             {
                 try

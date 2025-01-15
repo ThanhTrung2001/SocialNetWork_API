@@ -26,8 +26,10 @@
         public string Role { get; set; }
     }
 
-    public class TurnOffNotification
+    public class ChangeNotificationCommand
     {
+        public Guid User_Id { get; set; }
+        public bool Is_Not_Notification { get; set; }
         public DateTime Delay_Until { get; set; }
     }
 

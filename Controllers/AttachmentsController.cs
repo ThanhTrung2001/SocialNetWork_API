@@ -260,10 +260,10 @@ namespace EnVietSocialNetWorkAPI.Controllers
                 {
                     try
                     {
-                        await connection.ExecuteAsync(queryPost, parameter);
-                        await connection.ExecuteAsync(queryComment, parameter);
-                        await connection.ExecuteAsync(queryMessage, parameter);
-                        await connection.ExecuteAsync(query, parameter);
+                        await connection.ExecuteAsync(queryPost, parameter, transaction);
+                        await connection.ExecuteAsync(queryComment, parameter, transaction);
+                        await connection.ExecuteAsync(queryMessage, parameter, transaction);
+                        await connection.ExecuteAsync(query, parameter, transaction);
                         //Delete online files
 
                         transaction.Commit();

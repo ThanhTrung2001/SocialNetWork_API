@@ -147,15 +147,15 @@ namespace EnVietSocialNetWorkAPI.Controllers
             }
         }
 
-        [HttpGet("post/{Post_Id}/users")]
-        public async Task<IActionResult> GetShareUsersByPost_Id(Guid Post_Id)
+        [HttpGet("post/{post_Id}/users")]
+        public async Task<IActionResult> GetShareUsersByPost_Id(Guid post_Id)
         {
-            var query = @" SELECT s.Id, s.Shared_By_User_Id AS Share_UserId, ud.FirstName AS Share_FirstName, ud.LastName AS Share_LastName, u.Avatar as Share_Avatar
+            var query = @" SELECT s.Id, s.Shared_By_User_Id AS Share_UserId, ud.FirstName AS Share_FirstName, ud.LastName AS Share_LastName, ud.Avatar AS Share_Avatar
                            FROM Share_Posts s
                            LEFT JOIN User_Details ud ON s.Shared_By_User_Id = ud.User_Id
                            WHERE s.Shared_Post_Id = @Post_Id AND s.Is_Deleted = 0";
             var parameter = new DynamicParameters();
-            parameter.Add("Post_Id", Post_Id);
+            parameter.Add("Post_Id", post_Id);
             using (var connection = _context.CreateConnection())
             {
                 try
