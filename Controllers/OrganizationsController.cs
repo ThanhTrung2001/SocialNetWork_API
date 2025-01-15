@@ -1,9 +1,9 @@
 ﻿using Dapper;
-using EnVietSocialNetWorkAPI.Auth.Services;
 using EnVietSocialNetWorkAPI.DataConnection;
 using EnVietSocialNetWorkAPI.Model.Commands;
 using EnVietSocialNetWorkAPI.Model.Queries;
 using EnVietSocialNetWorkAPI.Models;
+using EnVietSocialNetWorkAPI.Services.Tree;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -16,11 +16,9 @@ namespace EnVietSocialNetWorkAPI.Controllers
     public class OrganizationsController : ControllerBase
     {
         private readonly DapperContext _context;
-        private readonly JWTHelper _helper;
-        public OrganizationsController(DapperContext context, JWTHelper helper)
+        public OrganizationsController(DapperContext context)
         {
             _context = context;
-            _helper = helper;
         }
 
         [HttpGet]
@@ -33,8 +31,29 @@ namespace EnVietSocialNetWorkAPI.Controllers
                 {
                     // Fetch all nodes from the database
                     var result = await connection.QueryAsync<OrganizeNodeQuery>(query);
-                    List<OrganizeNodeQuery> hierarchy = _helper.BuildHierarchy(result.ToList());
+                    List<OrganizeNodeQuery> hierarchy = HierachyHelper.BuildHierarchy(result.ToList());
                     return Ok(ResponseModel<IEnumerable<OrganizeNodeQuery>>.Success(hierarchy));
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest(ResponseModel<IEnumerable<OrganizeNodeQuery>>.Failure(ex.Message));
+                }
+
+            }
+        }
+
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById(Guid id)
+        {
+            var query = "SELECT * FROM Organizations;";
+            using (var connection = _context.CreateConnection())
+            {
+                try
+                {
+                    // Fetch all nodes from the database
+                    var result = await connection.QueryAsync<OrganizeNodeQuery>(query);
+                    OrganizeNodeQuery hierarchy = HierachyHelper.BuildHierarchyChild(result.ToList(), id);
+                    return Ok(ResponseModel<OrganizeNodeQuery>.Success(hierarchy));
                 }
                 catch (Exception ex)
                 {
@@ -253,6 +272,5 @@ namespace EnVietSocialNetWorkAPI.Controllers
                 }
             }
         }
-
     }
 }
