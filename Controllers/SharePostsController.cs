@@ -163,6 +163,75 @@ namespace EnVietSocialNetWorkAPI.Controllers
             }
         }
 
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetByID(Guid id)
+        {
+            try
+            {
+                var shareDict = new Dictionary<Guid, SharePostQuery>();
+                var parameter = new DynamicParameters();
+                parameter.Add("Id", id);
+                using (var connection = _context.CreateConnection())
+                {
+                    var result = await connection.QueryAsync<SharePostQuery, AttachmentQuery, PostSurveyQuery, PostSurveyItemQuery, PostVoteQuery, PostCommentQuery, PostReactQuery, SharePostQuery>(
+                    "GetSharePostsById",
+                    map: (share, attachment, survey, surveyItem, vote, comment, react) =>
+                    {
+                        if (!shareDict.TryGetValue(share.Id, out var shareEntry))
+                        {
+                            shareEntry = share;
+                            shareDict.Add(share.Id, shareEntry);
+                        }
+
+                        if (share.Post_Type == "Normal" && attachment != null && !shareEntry.Attachments.Any((item) => item.Attachment_Id == attachment.Attachment_Id))
+                        {
+                            shareEntry.Attachments.Add(attachment);
+                        }
+
+                        if (share.Post_Type == "Survey" && survey != null)
+                        {
+                            var existSurvey = shareEntry.Survey ??= survey; // Initialize survey if null
+
+                            if (surveyItem != null)
+                            {
+                                // Add SurveyItem if not exists
+                                var existingItem = existSurvey.SurveyItems.FirstOrDefault(item => item.SurveyItem_Id == surveyItem.SurveyItem_Id);
+                                if (existingItem == null)
+                                {
+                                    existingItem = surveyItem;
+                                    existSurvey.SurveyItems.Add(existingItem);
+                                }
+
+                                // Add Vote if not exists in the correct SurveyItem
+                                if (vote != null && !existingItem.Votes.Any(v => v.Vote_UserId == vote.Vote_UserId))
+                                {
+                                    existingItem.Votes.Add(vote);
+                                }
+                            }
+                        }
+
+                        if (comment != null && !shareEntry.Comments.Any((item) => item.Comment_Id == comment.Comment_Id))
+                        {
+                            shareEntry.Comments.Add(comment);
+                        }
+                        if (react != null && !shareEntry.Reacts.Any((item) => item.React_UserId == react.React_UserId))
+                        {
+                            shareEntry.Reacts.Add(react);
+                        }
+                        return shareEntry;
+                    },
+                    parameter,
+                    commandType: CommandType.StoredProcedure,
+                    splitOn: "Attachment_Id, Survey_Id, SurveyItem_Id, Vote_UserId, Comment_Id, React_Type");
+                    return Ok(ResponseModel<SharePostQuery>.Success(shareDict.Values.ToList()[0]));
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ResponseModel<IEnumerable<SharePostQuery>>.Failure(ex.Message));
+            }
+        }
+
         [HttpGet("post/{post_Id}/users")]
         public async Task<IActionResult> GetShareUsersByPost_Id(Guid post_Id)
         {

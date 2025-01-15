@@ -134,6 +134,8 @@ namespace EnVietSocialNetWorkAPI.Controllers
         public async Task<IActionResult> Delete(Guid id)
         {
             var query = "UPDATE Organizations SET Is_Deleted = 1 WHERE Id = @Id";
+            //Delete User_Organization
+
             var parameters = new DynamicParameters();
             parameters.Add("Id", id);
             using (var connection = _context.CreateConnection())

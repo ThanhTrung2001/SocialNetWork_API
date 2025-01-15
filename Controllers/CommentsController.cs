@@ -184,7 +184,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
             }
         }
 
-        [HttpGet("{id}/reponse")]
+        [HttpGet("{id}/response")]
         public async Task<IActionResult> GetCommentResponseByID(Guid id)
         {
             var query = @"SELECT 
