@@ -8,6 +8,13 @@
         public List<ModifyGroupUserCommand>? Users { get; set; } = new List<ModifyGroupUserCommand>();
     }
 
+    public class EditGroupCommand
+    {
+        public string Name { get; set; }
+        public string? Avatar { get; set; }
+        public string? Wallapper { get; set; }
+    }
+
     public class ModifyGroupUsersCommand
     {
         public List<ModifyGroupUserCommand> Users { get; set; } = new List<ModifyGroupUserCommand>();

@@ -13,11 +13,11 @@ namespace EnVietSocialNetWorkAPI.Controllers
     [AllowAnonymous]
     [Route("api/[controller]")]
     [ApiController]
-    public class React_TypesController : ControllerBase
+    public class ReactsController : ControllerBase
     {
         private readonly DapperContext _context;
 
-        public React_TypesController(DapperContext context)
+        public ReactsController(DapperContext context)
         {
             _context = context;
         }
@@ -202,7 +202,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
             }
         }
 
-        [HttpPut("{id}/post")]
+        [HttpPut("post/{id}")]
         public async Task<IActionResult> EditPostReact(Guid id, EditReactCommand react)
         {
             var query = @"UPDATE User_React_Post SET React_Type = @React_Type WHERE Post_Id = @Id AND User_Id = @User_Id";
@@ -225,7 +225,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
             }
         }
 
-        [HttpPut("{id}/comment")]
+        [HttpPut("comment/{id}")]
         public async Task<IActionResult> EditCommentReact(Guid id, EditReactCommand react)
         {
             var query = @"UPDATE User_React_Comment SET React_Type = @React_Type WHERE Comment_Id = @Id AND User_Id = @User_Id";
@@ -248,7 +248,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
             }
         }
 
-        [HttpPut("{id}/message")]
+        [HttpPut("message/{id}")]
         public async Task<IActionResult> EditMessageReact(Guid id, EditReactCommand react)
         {
             var query = @"UPDATE User_React_Message SET React_Type = @React_Type WHERE Message_Id = @Id AND User_Id = @User_Id";
@@ -272,15 +272,15 @@ namespace EnVietSocialNetWorkAPI.Controllers
         }
 
 
-        [HttpDelete("post")]
-        public async Task<IActionResult> DeletePostReact(DeleteReactCommand command)
+        [HttpDelete("post/{id}")]
+        public async Task<IActionResult> DeletePostReact(Guid id, DeletePostReactCommand command)
         {
             var query = "Update User_React_Post SET Is_Deleted = 1, Updated_At = GETDATE() Where User_Id = @User_Id AND Post_Id = @Post_Id";
             var updatePostQuery = "UPDATE Posts SET React_Count = React_Count - 1 WHERE Id = @Post_Id";
             var updateSharePostQuery = "UPDATE Share_Posts SET React_Count = React_Count - 1 WHERE Id = @Post_Id";
             var parameter = new DynamicParameters();
             parameter.Add("User_Id", command.User_Id);
-            parameter.Add("Post_Id", command.Destination_Id);
+            parameter.Add("Post_Id", id);
             using (var connection = _context.CreateConnection())
             {
                 try
@@ -303,14 +303,14 @@ namespace EnVietSocialNetWorkAPI.Controllers
             }
         }
 
-        [HttpDelete("comment")]
-        public async Task<IActionResult> DeleteCommentReact(DeleteReactCommand command)
+        [HttpDelete("comment/{id}")]
+        public async Task<IActionResult> DeleteCommentReact(Guid id, DeleteReactCommand command)
         {
             var query = "Update User_React_Comment SET Is_Deleted = 1, Updated_At = GETDATE() Where User_Id = @User_Id AND Post_Id = @Post_Id";
             var updateQuery = "UPDATE Comments SET React_Count = React_Count - 1 WHERE Id = @Comment_Id";
             var parameters = new DynamicParameters();
             parameters.Add("User_Id", command.User_Id);
-            parameters.Add("Comment_Id", command.Destination_Id);
+            parameters.Add("Comment_Id", id);
             using (var connection = _context.CreateConnection())
             {
                 try
@@ -327,15 +327,15 @@ namespace EnVietSocialNetWorkAPI.Controllers
             }
         }
 
-        [HttpDelete("message")]
-        public async Task<IActionResult> DeleteMessageReact(DeleteReactCommand command)
+        [HttpDelete("message/{id}")]
+        public async Task<IActionResult> DeleteMessageReact(Guid id, DeleteReactCommand command)
         {
             var query = "Update User_React_Message SET Is_Deleted = 1, Updated_At = GETDATE() Where User_Id = @User_Id AND Post_Id = @Post_Id";
             var updateQuery = "UPDATE Messages SET React_Count = React_Count - 1 WHERE Id = @Message_Id";
 
             var parameters = new DynamicParameters();
             parameters.Add("User_Id", command.User_Id);
-            parameters.Add("Message_Id", command.Destination_Id);
+            parameters.Add("Message_Id", id);
             using (var connection = _context.CreateConnection())
             {
                 try

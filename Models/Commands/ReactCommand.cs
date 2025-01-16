@@ -28,10 +28,15 @@
         public Guid User_Id { get; set; }
     }
 
+    public class DeletePostReactCommand
+    {
+        public Guid User_Id { get; set; }
+        public bool Is_SharePost { get; set; }
+    }
+
     public class DeleteReactCommand
     {
         public Guid User_Id { get; set; }
-        public Guid Destination_Id { get; set; }
         public bool Is_SharePost { get; set; }
     }
 }

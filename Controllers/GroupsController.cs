@@ -198,7 +198,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
         }
 
         [HttpGet("{id}/users")]
-        public async Task<IEnumerable<UserGroupQuery>> GetUsersInGroup(Guid id)
+        public async Task<IActionResult> GetUsersInGroup(Guid id)
         {
             var query = @"SELECT ug.User_Id, ud.FirstName, ud.LastName, ud.Avatar as User_Avatar, ug.Role, ug.Joined_At 
                           FROM User_Details ud
@@ -208,8 +208,17 @@ namespace EnVietSocialNetWorkAPI.Controllers
             parameter.Add("Id", id);
             using (var connection = _context.CreateConnection())
             {
-                var result = await connection.QueryAsync<UserGroupQuery>(query, parameter);
-                return result;
+                try
+                {
+                    var result = await connection.QueryAsync<UserGroupQuery>(query, parameter);
+
+                    return Ok(ResponseModel<IEnumerable<UserGroupQuery>>.Success(result));
+                }
+                catch (Exception ex)
+                {
+
+                    return BadRequest(ResponseModel<IEnumerable<UserGroupQuery>>.Failure(ex.Message));
+                }
             }
         }
 
@@ -317,6 +326,33 @@ namespace EnVietSocialNetWorkAPI.Controllers
 
         }
 
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(Guid id, EditGroupCommand group)
+        {
+            var query = @"UPDATE Groups 
+                        SET
+                        Name = @Name, Avatar = @Avatar, Wallpaper = @Wallpaper
+                        WHERE Id = @Id;";
+            var parameters = new DynamicParameters();
+            parameters.Add("Id", id);
+            parameters.Add("Name", group.Name, DbType.String);
+            parameters.Add("Avatar", group.Avatar, DbType.String);
+            parameters.Add("Wallpaper", group.Wallapper, DbType.String);
+            using (var connection = _context.CreateConnection())
+            {
+                try
+                {
+                    await connection.ExecuteAsync(query, parameters);
+                    return Ok(ResponseModel<string>.Success("Success."));
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest(ResponseModel<string>.Failure(ex.Message));
+                }
+            }
+
+        }
+
         [HttpPost("{id}/users")]
         public async Task<IActionResult> AddUsersToGroup(Guid id, ModifyGroupUsersCommand group)
         {
@@ -413,16 +449,20 @@ namespace EnVietSocialNetWorkAPI.Controllers
         }
 
         [HttpDelete("{id}/users")]
-        public async Task<IActionResult> DeleteUserInGroup(Guid id)
+        public async Task<IActionResult> DeleteUserInGroup(Guid id, DeleteGroupUsersCommand command)
         {
-            var query = "UPDATE User_Group SET Is_Deleted = 1, Updated_At = GETDATE() WHERE Group_Id = @Id;";
-            var parameter = new DynamicParameters();
-            parameter.Add("Group_Id", id, DbType.Guid);
+            var query = "UPDATE User_Group SET Is_Deleted = 1, Updated_At = GETDATE() WHERE Group_Id = @Id AND User_Id = @User_Id;";
             using (var connection = _context.CreateConnection())
             {
                 try
                 {
-                    await connection.ExecuteAsync(query, parameter);
+                    foreach (var item in command.Users)
+                    {
+                        var parameter = new DynamicParameters();
+                        parameter.Add("Group_Id", id, DbType.Guid);
+                        parameter.Add("User_Id", item.User_Id);
+                        await connection.ExecuteAsync(query, parameter);
+                    }
                     return Ok(ResponseModel<string>.Success("Success."));
 
                 }

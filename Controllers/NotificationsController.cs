@@ -71,7 +71,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
             {
                 try
                 {
-                    var result = await connection.QuerySingleAsync<NotificationQuery>(query);
+                    var result = await connection.QuerySingleAsync<NotificationQuery>(query, parameter);
                     return Ok(ResponseModel<NotificationQuery>.Success(result));
 
                 }

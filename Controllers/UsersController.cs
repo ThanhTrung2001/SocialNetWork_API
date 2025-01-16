@@ -51,7 +51,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
             }
         }
 
-        [HttpGet("/search")]
+        [HttpGet("search")]
         public async Task<IActionResult> GetBySearch([FromQuery] string name)
         {
             var query = @"SELECT 
