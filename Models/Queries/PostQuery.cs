@@ -6,7 +6,7 @@
         public string Content { get; set; }
         public string Post_Type { get; set; }
         public DateTime Created_At { get; set; }
-        public DateTime Updated_At { get; set; }
+        //public DateTime Updated_At { get; set; }
         public bool In_Group { get; set; }
         public Guid? Destination_Id { get; set; }
         public int React_Count { get; set; }
