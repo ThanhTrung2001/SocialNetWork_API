@@ -273,5 +273,35 @@ namespace EnVietSocialNetWorkAPI.Controllers
                 }
             }
         }
+
+        [HttpDelete("item/{id}")]
+        public async Task<IActionResult> DeleteSurveyItem(Guid id)
+        {
+            var query = @"Update Surveys
+                          SET Total_Vote = Total_Vote - (SELECT Total_Vote FROM Survey_Items WHERE Id = @Id ) 
+                          WHERE Id = (SELECT Survey_Id FROM Survey_Items WHERE Id = @Id );";
+            var querySurveyItem = "Update Survey_Items SET Updated_At = GETDATE(), Is_Deleted = 1 WHERE Id = @Id";
+            var parameters = new DynamicParameters();
+            parameters.Add("Id", id);
+            using (var connection = _context.CreateConnection())
+            {
+                connection.Open();
+                using (var transaction = connection.BeginTransaction())
+                {
+                    try
+                    {
+                        await connection.ExecuteAsync(query, parameters, transaction);
+                        await connection.ExecuteAsync(querySurveyItem, parameters, transaction);
+                        transaction.Commit();
+                        return Ok(ResponseModel<string>.Success("Success."));
+                    }
+                    catch (Exception ex)
+                    {
+                        transaction.Rollback();
+                        return BadRequest(ResponseModel<string>.Failure(ex.Message));
+                    }
+                }
+            }
+        }
     }
 }

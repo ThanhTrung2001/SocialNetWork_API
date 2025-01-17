@@ -175,12 +175,12 @@ namespace EnVietSocialNetWorkAPI.Controllers
                     parameter,
                     splitOn: "React_Type, Attachment_Id");
                 }
-                return Ok(ResponseModel<IEnumerable<CommentDetailQuery>>.Success(commentDict.Values.ToList()));
+                return Ok(ResponseModel<CommentDetailQuery>.Success(commentDict.Values.ToList()[0] ?? null));
 
             }
             catch (Exception ex)
             {
-                return BadRequest(ResponseModel<IEnumerable<CommentDetailQuery>>.Failure(ex.Message));
+                return BadRequest(ResponseModel<CommentDetailQuery>.Failure(ex.Message));
             }
         }
 

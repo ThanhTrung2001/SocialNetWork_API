@@ -1,5 +1,6 @@
 using EnVietSocialNetWorkAPI.Auth.Services;
 using EnVietSocialNetWorkAPI.DataConnection;
+using EnVietSocialNetWorkAPI.Middlewares;
 using EnVietSocialNetWorkAPI.Services;
 using EnVietSocialNetWorkAPI.Services.Email;
 using EnVietSocialNetWorkAPI.Services.Email.Model;
@@ -125,6 +126,8 @@ app.UseCors("AllowFrontend");
 app.UseAuthentication();
 
 app.UseAuthorization();
+
+app.UseMiddleware<CheckingRequestMasterKeyMiddleware>();
 
 app.MapControllers();
 
