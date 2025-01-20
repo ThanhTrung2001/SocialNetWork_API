@@ -24,10 +24,10 @@ namespace EnVietSocialNetWorkAPI.Services.Upload
             var files = new List<string>();
             try
             {
-                using (var client = new SftpClient(_configuration["SFTP:host"], Int32.Parse(_configuration["SFTP:port"]), _configuration["SFTP:username"], _configuration["SFTP:password"]))
+                using (var client = new SftpClient(_configuration["SFTP:Host"], Int32.Parse(_configuration["SFTP:Port"]), _configuration["SFTPUsername"], _configuration["SFTP:Password"]))
                 {
                     client.Connect();
-                    var fileList = client.ListDirectory(_configuration["SFTP:baseURL"] + "/" + album);
+                    var fileList = client.ListDirectory(_configuration["SFTP:BaseUrl"] + "/" + album);
                     foreach (var file in fileList)
                     {
                         if (!file.IsDirectory) // Skip directories
@@ -51,7 +51,7 @@ namespace EnVietSocialNetWorkAPI.Services.Upload
             var fileUrls = new List<string>();
             try
             {
-                using (var client = new SftpClient(_configuration["SFTP:host"], Int32.Parse(_configuration["SFTP:port"]), _configuration["SFTP:username"], _configuration["SFTP:password"]))
+                using (var client = new SftpClient(_configuration["SFTP:Host"], Int32.Parse(_configuration["SFTP:Port"]), _configuration["SFTPUsername"], _configuration["SFTP:Password"]))
                 {
                     client.Connect();
                     foreach (var file in blobs)
@@ -61,7 +61,7 @@ namespace EnVietSocialNetWorkAPI.Services.Upload
                         using (var stream = file.OpenReadStream())
                         {
                             await client.UploadAsync(stream, fullPath);
-                            fileUrls.Add($"{_configuration["SFTP:baseURL"]}/{fullPath}");
+                            fileUrls.Add($"{_configuration["SFTP:BaseUrl"]}/{fullPath}");
                         }
                     }
                     client.Disconnect();
@@ -80,14 +80,14 @@ namespace EnVietSocialNetWorkAPI.Services.Upload
         {
             try
             {
-                using (var client = new SftpClient(_configuration["SFTP:host"], Int32.Parse(_configuration["SFTP:port"]), _configuration["SFTP:username"], _configuration["SFTP:password"]))
+                using (var client = new SftpClient(_configuration["SFTP:Host"], Int32.Parse(_configuration["SFTP:Port"]), _configuration["SFTPUsername"], _configuration["SFTP:Password"]))
                 {
                     client.Connect();
                     foreach (var file in blobs)
                     {
                         string fileName = Path.GetFileName(file);
                         string localPath = "D:/Download";
-                        //ensure local folder exist
+                        //ensure folder existed
                         Directory.CreateDirectory(localPath);
                         using (var fileStream = new FileStream(localPath + "/" + fileName, FileMode.Create))
                         {
@@ -108,7 +108,7 @@ namespace EnVietSocialNetWorkAPI.Services.Upload
         {
             try
             {
-                using (var client = new SftpClient(_configuration["SFTP:host"], Int32.Parse(_configuration["SFTP:port"]), _configuration["SFTP:username"], _configuration["SFTP:password"]))
+                using (var client = new SftpClient(_configuration["SFTP:Host"], Int32.Parse(_configuration["SFTP:Port"]), _configuration["SFTPUsername"], _configuration["SFTP:Password"]))
                 {
                     client.Connect();
                     foreach (var file in blobs)
