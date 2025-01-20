@@ -15,7 +15,22 @@ namespace EnVietSocialNetWorkAPI.Controllers
         }
 
 
-        //Attachment Upload action
+        [HttpGet]
+        public async Task<IActionResult> TestConnection()
+        {
+            try
+            {
+                bool test = _service.TestConnection();
+                return Ok(test);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
+        }
+
+
         [HttpGet("directory/{id}")]
         public async Task<IActionResult> ListFiles(Guid id)
         {

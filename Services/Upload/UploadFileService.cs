@@ -19,15 +19,15 @@ namespace EnVietSocialNetWorkAPI.Services.Upload
             _configuration = configuration;
         }
 
-        public async Task<ResponseModel<IEnumerable<string>>> ListFilesInAlbum(Guid album)
+        public async Task<ResponseModel<IEnumerable<string>>> ListFilesInAlbum(Guid? album)
         {
             var files = new List<string>();
             try
             {
-                using (var client = new SftpClient(_configuration["SFTP:Host"], Int32.Parse(_configuration["SFTP:Port"]), _configuration["SFTPUsername"], _configuration["SFTP:Password"]))
+                using (var client = new SftpClient(_configuration["SFTP:Host"], Int32.Parse(_configuration["SFTP:Port"]), _configuration["SFTP:Username"], _configuration["SFTP:Password"]))
                 {
                     client.Connect();
-                    var fileList = client.ListDirectory(_configuration["SFTP:BaseUrl"] + "/" + album);
+                    var fileList = client.ListDirectory(_configuration["SFTP:BaseUrl"] + "/" + album ?? _configuration["SFTP:BaseUrl"] + "/");
                     foreach (var file in fileList)
                     {
                         if (!file.IsDirectory) // Skip directories
@@ -51,7 +51,7 @@ namespace EnVietSocialNetWorkAPI.Services.Upload
             var fileUrls = new List<string>();
             try
             {
-                using (var client = new SftpClient(_configuration["SFTP:Host"], Int32.Parse(_configuration["SFTP:Port"]), _configuration["SFTPUsername"], _configuration["SFTP:Password"]))
+                using (var client = new SftpClient(_configuration["SFTP:Host"], Int32.Parse(_configuration["SFTP:Port"]), _configuration["SFTP:Username"], _configuration["SFTP:Password"]))
                 {
                     client.Connect();
                     foreach (var file in blobs)
@@ -61,7 +61,7 @@ namespace EnVietSocialNetWorkAPI.Services.Upload
                         using (var stream = file.OpenReadStream())
                         {
                             await client.UploadAsync(stream, fullPath);
-                            fileUrls.Add($"{_configuration["SFTP:BaseUrl"]}/{fullPath}");
+                            fileUrls.Add($"{_configuration["SFTP:BaseUrl"]}/{type}/{fullPath}");
                         }
                     }
                     client.Disconnect();
@@ -80,7 +80,7 @@ namespace EnVietSocialNetWorkAPI.Services.Upload
         {
             try
             {
-                using (var client = new SftpClient(_configuration["SFTP:Host"], Int32.Parse(_configuration["SFTP:Port"]), _configuration["SFTPUsername"], _configuration["SFTP:Password"]))
+                using (var client = new SftpClient(_configuration["SFTP:Host"], Int32.Parse(_configuration["SFTP:Port"]), _configuration["SFTP:Username"], _configuration["SFTP:Password"]))
                 {
                     client.Connect();
                     foreach (var file in blobs)
@@ -108,7 +108,7 @@ namespace EnVietSocialNetWorkAPI.Services.Upload
         {
             try
             {
-                using (var client = new SftpClient(_configuration["SFTP:Host"], Int32.Parse(_configuration["SFTP:Port"]), _configuration["SFTPUsername"], _configuration["SFTP:Password"]))
+                using (var client = new SftpClient(_configuration["SFTP:Host"], Int32.Parse(_configuration["SFTP:Port"]), _configuration["SFTP:Username"], _configuration["SFTP:Password"]))
                 {
                     client.Connect();
                     foreach (var file in blobs)
@@ -126,6 +126,38 @@ namespace EnVietSocialNetWorkAPI.Services.Upload
             catch (Exception ex)
             {
                 return ResponseModel<string>.Failure(ex.Message);
+            }
+        }
+
+        public bool TestConnection()
+        {
+            try
+            {
+                // Create a connection to the SFTP server
+                using (var sftp = new SftpClient(_configuration["SFTP:Host"], Int32.Parse(_configuration["SFTP:Port"]), _configuration["SFTP:Username"], _configuration["SFTP:Password"]))
+                {
+                    // Try connecting to the server
+                    sftp.Connect();
+
+                    // Check if connection is successful by listing the files in the root directory
+                    var files = sftp.ListDirectory("/");
+
+                    // If we successfully get the directory listing, the connection is working
+                    Console.WriteLine("Successfully connected to SFTP server.");
+                    foreach (var file in files)
+                    {
+                        Console.WriteLine(file.Name); // Print out file names in the root directory
+                    }
+
+                    sftp.Disconnect();
+                }
+                return true;
+            }
+            catch (Exception ex)
+            {
+                // If any exception occurs, the connection failed
+                Console.WriteLine($"Error connecting to SFTP server: {ex.Message}");
+                return false;
             }
         }
 
