@@ -5,6 +5,7 @@ using EnVietSocialNetWorkAPI.Services;
 using EnVietSocialNetWorkAPI.Services.Email;
 using EnVietSocialNetWorkAPI.Services.Email.Model;
 using EnVietSocialNetWorkAPI.Services.Upload;
+using EnVietSocialNetWorkAPI.Services.Upload.Model;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -40,9 +41,15 @@ builder.Services.AddAuthentication
 
 //Email Config
 var emailConfig = builder.Configuration
-        .GetSection("EmailConfiguration")
+        .GetSection("Email-Configuration")
         .Get<EmailConfiguration>();
 builder.Services.AddSingleton(emailConfig);
+//SFTP Config
+var sftpConfig = builder.Configuration
+        .GetSection("SFTP-Configuration")
+        .Get<SFTPConfiguration>();
+builder.Services.AddSingleton(sftpConfig);
+//Service Lifetime
 builder.Services.AddScoped<IEmailHandler, EmailHandler>();
 builder.Services.AddScoped<IUploadFileService, UploadFileService>();
 

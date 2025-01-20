@@ -1,4 +1,5 @@
 ﻿using EnVietSocialNetWorkAPI.Models;
+using EnVietSocialNetWorkAPI.Services.Upload.Model;
 using Renci.SshNet;
 using Renci.SshNet.Async;
 
@@ -6,17 +7,11 @@ namespace EnVietSocialNetWorkAPI.Services.Upload
 {
     public class UploadFileService : IUploadFileService
     {
-        //private readonly string _host;
-        //private readonly int _port;
-        //private readonly string _username;
-        //private readonly string _password;
-        //private readonly string _baseUrl;
+        private readonly SFTPConfiguration _config;
 
-        private readonly IConfiguration _configuration;
-
-        public UploadFileService(IConfiguration configuration)
+        public UploadFileService(SFTPConfiguration config)
         {
-            _configuration = configuration;
+            _config = config;
         }
 
         public async Task<ResponseModel<IEnumerable<string>>> ListFilesInAlbum(Guid? album)
@@ -24,10 +19,10 @@ namespace EnVietSocialNetWorkAPI.Services.Upload
             var files = new List<string>();
             try
             {
-                using (var client = new SftpClient(_configuration["SFTP:Host"], Int32.Parse(_configuration["SFTP:Port"]), _configuration["SFTP:Username"], _configuration["SFTP:Password"]))
+                using (var client = new SftpClient(_config.Host, _config.Port, _config.Username, _config.Password))
                 {
                     client.Connect();
-                    var fileList = client.ListDirectory(_configuration["SFTP:BaseUrl"] + "/" + album ?? _configuration["SFTP:BaseUrl"] + "/");
+                    var fileList = client.ListDirectory(_config.BaseUrl + "/" + album ?? _config.BaseUrl + "/");
                     foreach (var file in fileList)
                     {
                         if (!file.IsDirectory) // Skip directories
@@ -51,7 +46,7 @@ namespace EnVietSocialNetWorkAPI.Services.Upload
             var fileUrls = new List<string>();
             try
             {
-                using (var client = new SftpClient(_configuration["SFTP:Host"], Int32.Parse(_configuration["SFTP:Port"]), _configuration["SFTP:Username"], _configuration["SFTP:Password"]))
+                using (var client = new SftpClient(_config.Host, _config.Port, _config.Username, _config.Password))
                 {
                     client.Connect();
                     foreach (var file in blobs)
@@ -61,7 +56,7 @@ namespace EnVietSocialNetWorkAPI.Services.Upload
                         using (var stream = file.OpenReadStream())
                         {
                             await client.UploadAsync(stream, fullPath);
-                            fileUrls.Add($"{_configuration["SFTP:BaseUrl"]}/{type}/{fullPath}");
+                            fileUrls.Add($"{_config.BaseUrl}/{type}/{fullPath}");
                         }
                     }
                     client.Disconnect();
@@ -80,7 +75,7 @@ namespace EnVietSocialNetWorkAPI.Services.Upload
         {
             try
             {
-                using (var client = new SftpClient(_configuration["SFTP:Host"], Int32.Parse(_configuration["SFTP:Port"]), _configuration["SFTP:Username"], _configuration["SFTP:Password"]))
+                using (var client = new SftpClient(_config.Host, _config.Port, _config.Username, _config.Password))
                 {
                     client.Connect();
                     foreach (var file in blobs)
@@ -108,7 +103,7 @@ namespace EnVietSocialNetWorkAPI.Services.Upload
         {
             try
             {
-                using (var client = new SftpClient(_configuration["SFTP:Host"], Int32.Parse(_configuration["SFTP:Port"]), _configuration["SFTP:Username"], _configuration["SFTP:Password"]))
+                using (var client = new SftpClient(_config.Host, _config.Port, _config.Username, _config.Password))
                 {
                     client.Connect();
                     foreach (var file in blobs)
@@ -134,7 +129,7 @@ namespace EnVietSocialNetWorkAPI.Services.Upload
             try
             {
                 // Create a connection to the SFTP server
-                using (var sftp = new SftpClient(_configuration["SFTP:Host"], Int32.Parse(_configuration["SFTP:Port"]), _configuration["SFTP:Username"], _configuration["SFTP:Password"]))
+                using (var sftp = new SftpClient(_config.Host, _config.Port, _config.Username, _config.Password))
                 {
                     // Try connecting to the server
                     sftp.Connect();
