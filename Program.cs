@@ -4,6 +4,7 @@ using EnVietSocialNetWorkAPI.Middlewares;
 using EnVietSocialNetWorkAPI.Services;
 using EnVietSocialNetWorkAPI.Services.Email;
 using EnVietSocialNetWorkAPI.Services.Email.Model;
+using EnVietSocialNetWorkAPI.Services.Upload;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -43,7 +44,7 @@ var emailConfig = builder.Configuration
         .Get<EmailConfiguration>();
 builder.Services.AddSingleton(emailConfig);
 builder.Services.AddScoped<IEmailHandler, EmailHandler>();
-
+builder.Services.AddScoped<IUploadFileService, UploadFileService>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -77,7 +78,6 @@ builder.Services.AddSwaggerGen(c =>
         }
     });
 });
-
 
 builder.Services.AddCors(options =>
 {
