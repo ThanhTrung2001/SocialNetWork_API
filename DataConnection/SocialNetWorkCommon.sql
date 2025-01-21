@@ -1,9 +1,3 @@
-CREATE TABLE [post_types] (
-  [id] int PRIMARY KEY IDENTITY(1, 1),
-  [name] nvarchar(100) NOT NULL
-)
-GO
-
 CREATE TABLE [tags] (
   [id] int PRIMARY KEY IDENTITY(1, 1),
   [tag_name] nvarchar(100) NOT NULL
