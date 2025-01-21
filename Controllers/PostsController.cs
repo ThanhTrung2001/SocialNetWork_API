@@ -11,8 +11,8 @@ using System.Data;
 
 namespace EnVietSocialNetWorkAPI.Controllers
 {
-    //[Authorize]
-    [AllowAnonymous]
+    [Authorize]
+    //[AllowAnonymous]
     [Route("api/[controller]")]
     [ApiController]
     public class PostsController : ControllerBase
@@ -323,26 +323,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
         {
             var query = @"UPDATE Posts
                           SET Post_Type = @Post_Type, Content = @Content 
-                          WHERE Id = @Id AND UserId = @UserId";
-
-            //get attachment ID list that belong to the post
-            //after that check if existed to update, and not existed to add new,
-            //and delete what no longer existed inside edit request
-            //var postAttachmentQuery = @"SELECT pa.Attachment_Id, a.Media, a.Description
-            //                            FROM Post_Attachment pa
-            //                            INNER JOIN Attachments a ON pa.Attachment_Id = a.Id
-            //                            WHERE Post_Id = @Id";
-            //var updateAttachmentQuery = @"UPDATE Attachments SET Media = @Media, Description = @Description WHERE Id = @Attachment_Id";
-            //var queryInsertAttachment = @"INSERT INTO Attachments (Id, Created_At, Updated_At, Is_Deleted, Media, Description)
-            //                   OUTPUT Inserted.Id
-            //                   VALUES 
-            //                   (NEWID(), GETDATE(), GETDATE(), 0, @Media, @Description)";
-            //var queryInsertPostAttachment = @"INSERT INTO Post_Attachment (Post_Id, Attachment_Id)
-            //                           VALUES 
-            //                           (@Id, @Attachment_Id)";
-            //survey
-
-            var queryAttachmentExist = @"SELECT ";
+                          WHERE Id = @Id AND User_Id = @User_Id";
             var parameters = new DynamicParameters();
             parameters.Add("Post_Type", request.Post_Type);
             parameters.Add("Content", request.Content);

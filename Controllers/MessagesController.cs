@@ -9,8 +9,8 @@ using System.Data;
 
 namespace EnVietSocialNetWorkAPI.Controllers
 {
-    //[Authorize]
-    [AllowAnonymous]
+    [Authorize]
+    //[AllowAnonymous]
     [Route("api/[controller]")]
     [ApiController]
     public class MessagesController : ControllerBase

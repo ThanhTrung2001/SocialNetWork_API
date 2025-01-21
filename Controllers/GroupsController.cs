@@ -9,8 +9,8 @@ using System.Data;
 
 namespace EnVietSocialNetWorkAPI.Controllers
 {
-    //[Authorize]
-    [AllowAnonymous]
+    [Authorize]
+    //[AllowAnonymous]
     [Route("api/[controller]")]
     [ApiController]
     public class GroupsController : ControllerBase
@@ -451,7 +451,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
         [HttpDelete("{id}/users")]
         public async Task<IActionResult> DeleteUserInGroup(Guid id, DeleteGroupUsersCommand command)
         {
-            var query = "UPDATE User_Group SET Is_Deleted = 1, Updated_At = GETDATE() WHERE Group_Id = @Id AND User_Id = @User_Id;";
+            var query = "UPDATE User_Group SET Is_Deleted = 1, Updated_At = GETDATE() WHERE Group_Id = @Group_Id AND User_Id = @User_Id;";
             using (var connection = _context.CreateConnection())
             {
                 try

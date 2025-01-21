@@ -4,7 +4,7 @@ namespace EnVietSocialNetWorkAPI.Services.Upload
 {
     public interface IUploadFileService
     {
-        Task<ResponseModel<IEnumerable<string>>> ListFilesInAlbum(Guid? album);
+        Task<ResponseModel<IEnumerable<string>>> ListFilesInAlbum(Guid? album, string type);
 
         Task<ResponseModel<IEnumerable<string>>> UploadFiles(string type, List<IFormFile> blobs, Guid album);
 

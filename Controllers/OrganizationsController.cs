@@ -9,8 +9,8 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace EnVietSocialNetWorkAPI.Controllers
 {
-    [AllowAnonymous]
-    //[Authorize]
+    //[AllowAnonymous]
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class OrganizationsController : ControllerBase

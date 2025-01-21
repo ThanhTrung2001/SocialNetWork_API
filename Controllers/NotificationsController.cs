@@ -9,8 +9,8 @@ using System.Data;
 
 namespace EnVietSocialNetWorkAPI.Controllers
 {
-    //[Authorize]
-    [AllowAnonymous]
+    [Authorize]
+    //[AllowAnonymous]
     [Route("api/[controller]")]
     [ApiController]
     public class NotificationsController : ControllerBase
@@ -43,9 +43,9 @@ namespace EnVietSocialNetWorkAPI.Controllers
         [HttpGet("type")]
         public async Task<IActionResult> GetNotificationsBySearch([FromQuery] string noti_Type)
         {
-            var query = "SELECT Id, User_Id, Title, Description, Noti_Type, Destination_Id, Organization_Name, Started_At, Ended_At FROM Notifications WHERE Is_Deleted = 0 AND Noti_Type = @Noti_Type;";
+            var query = "SELECT Id, User_Id, Title, Description, Noti_Type, Destination_Id, Organization_Name, Started_At, Ended_At FROM Notifications WHERE Is_Deleted = 0 AND Noti_Type LIKE @Noti_Type";
             var parameter = new DynamicParameters();
-            parameter.Add("Noti_Type", noti_Type);
+            parameter.Add("Noti_Type", $"%{noti_Type}%");
             using (var connection = _context.CreateConnection())
             {
                 try

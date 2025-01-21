@@ -11,8 +11,8 @@ using System.Data;
 
 namespace EnVietSocialNetWorkAPI.Controllers
 {
-    //[Authorize]
-    [AllowAnonymous]
+    [Authorize]
+    //[AllowAnonymous]
     [Route("api/[controller]")]
     [ApiController]
     public class UsersController : ControllerBase
@@ -217,7 +217,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
             parameters.Add("Country", edit.Country);
             parameters.Add("Avatar", edit.Avatar, DbType.String);
             parameters.Add("Wallpaper", edit.Wallpaper, DbType.String);
-            parameters.Add("DOB", edit.DOB, DbType.String);
+            parameters.Add("DOB", edit.DOB, DbType.DateTime);
             parameters.Add("Bio", edit.Bio, DbType.String);
             parameters.Add("User_Id", id);
             using (var connection = _context.CreateConnection())

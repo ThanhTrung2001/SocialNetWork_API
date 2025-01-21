@@ -10,8 +10,8 @@ using System.Data;
 
 namespace EnVietSocialNetWorkAPI.Controllers
 {
-    //[Authorize]
-    [AllowAnonymous]
+    [Authorize]
+    //[AllowAnonymous]
     [Route("api/[controller]")]
     [ApiController]
     public class PagesController : ControllerBase
@@ -282,24 +282,31 @@ namespace EnVietSocialNetWorkAPI.Controllers
                 bool existed = await connection.ExecuteScalarAsync<bool>(existQuery, parameters);
                 if (existed)
                 {
-                    return BadRequest(ResponseModel<string>.Failure("E "));
+                    return BadRequest(ResponseModel<string>.Failure("Existed."));
                 }
                 else
                 {
-                    await connection.ExecuteAsync(query, parameters);
-                    return Ok(ResponseModel<string>.Success("Success."));
-
+                    try
+                    {
+                        await connection.ExecuteAsync(query, parameters);
+                        return Ok(ResponseModel<string>.Success("Success."));
+                    }
+                    catch (Exception ex)
+                    {
+                        return BadRequest(ResponseModel<string>.Failure(ex.Message));
+                    }
                 }
             }
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Edit(Guid id, CreatePageCommand command)
+        public async Task<IActionResult> Edit(Guid id, EditPageCommand command)
         {
             var query = @"UPDATE Pages
                           SET Name = @Name, Avatar = @Avatar, Wallpaper = @Wallpaper 
-                          WHERE Page_Id = @Id";
+                          WHERE Id = @Id";
             var parameters = new DynamicParameters();
+            parameters.Add("Id", id);
             parameters.Add("Name", command.Name);
             parameters.Add("Avatar", command.Avatar);
             parameters.Add("Wallpaper", command.Wallpaper);
@@ -323,7 +330,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
         {
             var query = @"UPDATE User_Page
                           SET Role = @Role
-                          WHERE Page_Id = @Id AND User_Id = @User_Id";
+                          WHERE Page_Id = @Page_Id AND User_Id = @User_Id";
             var parameters = new DynamicParameters();
             parameters.Add("Role", command.Role);
             parameters.Add("User_Id", command.User_Id);
@@ -347,8 +354,8 @@ namespace EnVietSocialNetWorkAPI.Controllers
         public async Task<IActionResult> ModifyUserFollow(Guid id, ModifyFollowPageCommand command)
         {
             var query = @"UPDATE User_Page
-                          SET Is_Follow = NOT Is_Follow
-                          WHERE Page_Id = @Id AND User_Id = @User_Id;";
+                          SET Is_Follow = CASE WHEN Is_Follow = 1 THEN 0 ELSE 1 END
+                          WHERE Page_Id = @Page_Id AND User_Id = @User_Id;";
             var parameters = new DynamicParameters();
             parameters.Add("User_Id", command.User_Id);
             parameters.Add("Page_Id", id);

@@ -1,9 +1,12 @@
 ﻿using EnVietSocialNetWorkAPI.Models;
 using EnVietSocialNetWorkAPI.Services.Upload;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EnVietSocialNetWorkAPI.Controllers
 {
+    [Authorize]
+    //[AllowAnonymous]
     [Route("api/[controller]")]
     [ApiController]
     public class UploadFilesController : ControllerBase
@@ -15,7 +18,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
         }
 
 
-        [HttpGet]
+        [HttpGet("connection")]
         public async Task<IActionResult> TestConnection()
         {
             try
@@ -32,11 +35,11 @@ namespace EnVietSocialNetWorkAPI.Controllers
 
 
         [HttpGet("directory/{id}")]
-        public async Task<IActionResult> ListFiles(Guid id)
+        public async Task<IActionResult> ListFiles(Guid? id, [FromQuery] string type)
         {
             try
             {
-                var result = await _service.ListFilesInAlbum(id);
+                var result = await _service.ListFilesInAlbum(id, type);
                 return Ok(result);
             }
             catch (Exception ex)
@@ -46,7 +49,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
         }
 
         [HttpPost("upload/{id}")]
-        public async Task<IActionResult> UploadFiles(Guid id, string type, List<IFormFile> files)
+        public async Task<IActionResult> UploadFiles(Guid id, List<IFormFile> files, [FromQuery] string type)
         {
             try
             {
@@ -59,7 +62,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
             }
         }
 
-        [HttpDelete("download")]
+        [HttpPost("download")]
         public async Task<IActionResult> DownloadFiles(List<string> files)
         {
             try

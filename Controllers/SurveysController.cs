@@ -9,8 +9,8 @@ using System.Data;
 
 namespace EnVietSocialNetWorkAPI.Controllers
 {
-    //[Authorize]
-    [AllowAnonymous]
+    [Authorize]
+    //[AllowAnonymous]
     [Route("api/[controller]")]
     [ApiController]
     public class SurveysController : ControllerBase
@@ -166,9 +166,9 @@ namespace EnVietSocialNetWorkAPI.Controllers
                           OUTPUT Inserted.Id
                           VALUES
                           (NEWID(), GETDATE(), GETDATE(), 0, @Expired_At, 0, @Post_Id ,@Survey_Type ,@Question)";
-            var querySurveyItem = @"INSERT INTO Survey_Items (ID, Created_At, Updated_At, Is_Deleted, Option_Name, Total_Vote)
-                          VALUES
-                          (NEWID(), GETDATE(), GETDATE(), 0, @Content, 0)";
+            var querySurveyItem = @"INSERT INTO Survey_Items (ID, Created_At, Updated_At, Is_Deleted, Option_Name, Total_Vote, Survey_Id)
+                                  VALUES
+                                  (NEWID(), GETDATE(), GETDATE(), 0, @Option_Name, 0)";
 
             var parameters = new DynamicParameters();
             parameters.Add("Post_Id", survey.Post_Id);
@@ -201,6 +201,30 @@ namespace EnVietSocialNetWorkAPI.Controllers
                         return BadRequest(ResponseModel<Guid>.Failure(ex.Message));
                     }
 
+                }
+            }
+        }
+
+        [HttpPost("{id}/item")]
+        public async Task<IActionResult> AddNewSurveyItem(Guid id, EditSurveyItemCommand surveyItem)
+        {
+            var query = @"INSERT INTO Survey_Items (ID, Created_At, Updated_At, Is_Deleted, Option_Name, Total_Vote, Survey_Id)
+                          VALUES
+                          (NEWID(), GETDATE(), GETDATE(), 0, @Option_Name, 0, @Id)";
+            var parameters = new DynamicParameters();
+            parameters.Add("Id", id);
+            parameters.Add("Option_Name", surveyItem.Option_Name);
+            using (var connection = _context.CreateConnection())
+            {
+                try
+                {
+                    await connection.ExecuteAsync(query, parameters);
+                    return Ok(ResponseModel<string>.Success("Success."));
+
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest(ResponseModel<string>.Failure(ex.Message));
                 }
             }
         }

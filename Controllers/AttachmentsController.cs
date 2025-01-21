@@ -8,8 +8,8 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace EnVietSocialNetWorkAPI.Controllers
 {
-    //[Authorize]
-    [AllowAnonymous]
+    [Authorize]
+    //[AllowAnonymous]
     [Route("api/[controller]")]
     [ApiController]
     public class AttachmentsController : ControllerBase

@@ -14,7 +14,7 @@ namespace EnVietSocialNetWorkAPI.Services.Upload
             _config = config;
         }
 
-        public async Task<ResponseModel<IEnumerable<string>>> ListFilesInAlbum(Guid? album)
+        public async Task<ResponseModel<IEnumerable<string>>> ListFilesInAlbum(Guid? album, string type)
         {
             var files = new List<string>();
             try
@@ -22,12 +22,18 @@ namespace EnVietSocialNetWorkAPI.Services.Upload
                 using (var client = new SftpClient(_config.Host, _config.Port, _config.Username, _config.Password))
                 {
                     client.Connect();
-                    var fileList = client.ListDirectory(_config.BaseUrl + "/" + album ?? _config.BaseUrl + "/");
+                    //_config.BaseUrl
+                    var fileList = client.ListDirectory($"{_config.BaseUrl}/{type}/{album}");
                     foreach (var file in fileList)
                     {
-                        if (!file.IsDirectory) // Skip directories
+                        if (file.IsDirectory) // Skip directories
+                        {
+                            files.Add("Directory - " + file.Name);
+                        }
+                        else
                         {
                             files.Add(file.Name);
+
                         }
                     }
                     client.Disconnect();
@@ -51,12 +57,21 @@ namespace EnVietSocialNetWorkAPI.Services.Upload
                     client.Connect();
                     foreach (var file in blobs)
                     {
-                        string fullPath = $"{type}/{album}/{file.FileName}";
-                        //Upload
-                        using (var stream = file.OpenReadStream())
+                        string fullPath = $"{_config.BaseUrl}/{type}/{album}/{file.FileName}";
+                        //Create Type Folder if not existed
+                        if (!client.Exists($"{_config.BaseUrl}/{type}"))
                         {
-                            await client.UploadAsync(stream, fullPath);
-                            fileUrls.Add($"{_config.BaseUrl}/{type}/{fullPath}");
+                            client.CreateDirectory($"{_config.BaseUrl}/{type}");
+                        }
+                        //Create Type Folder if not existed
+                        if (!client.Exists($"{_config.BaseUrl}/{type}/{album}"))
+                        {
+                            client.CreateDirectory($"{_config.BaseUrl}/{type}/{album}");
+                        }
+                        using (var fs = file.OpenReadStream())
+                        {
+                            client.UploadFile(fs, fullPath);
+                            fileUrls.Add($"{fullPath}");
                         }
                     }
                     client.Disconnect();
@@ -67,7 +82,6 @@ namespace EnVietSocialNetWorkAPI.Services.Upload
             catch (Exception ex)
             {
                 return ResponseModel<IEnumerable<string>>.Failure(ex.Message);
-
             }
         }
 
@@ -111,7 +125,30 @@ namespace EnVietSocialNetWorkAPI.Services.Upload
                         if (client.Exists(file))
                         {
                             client.Delete(file);
-                            client.Disconnect();
+                        }
+                    }
+                    client.Disconnect();
+                }
+                return ResponseModel<string>.Success("Delete file successful.");
+            }
+            catch (Exception ex)
+            {
+                return ResponseModel<string>.Failure(ex.Message);
+            }
+        }
+
+        public async Task<ResponseModel<string>> DeleteDirectorues(List<string> directories)
+        {
+            try
+            {
+                using (var client = new SftpClient(_config.Host, _config.Port, _config.Username, _config.Password))
+                {
+                    client.Connect();
+                    foreach (var folder in directories)
+                    {
+                        if (client.Exists(folder))
+                        {
+                            client.Delete(folder);
                         }
                     }
                     client.Disconnect();
