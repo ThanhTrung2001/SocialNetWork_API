@@ -1,0 +1,13 @@
+D:\codespace\SocialNetworkAPI\EV.Common\bin\Debug\net8.0\EV.Common.deps.json
+D:\codespace\SocialNetworkAPI\EV.Common\bin\Debug\net8.0\EV.Common.dll
+D:\codespace\SocialNetworkAPI\EV.Common\bin\Debug\net8.0\EV.Common.pdb
+D:\codespace\SocialNetworkAPI\EV.Common\obj\Debug\net8.0\EV.Common.GeneratedMSBuildEditorConfig.editorconfig
+D:\codespace\SocialNetworkAPI\EV.Common\obj\Debug\net8.0\EV.Common.AssemblyInfoInputs.cache
+D:\codespace\SocialNetworkAPI\EV.Common\obj\Debug\net8.0\EV.Common.AssemblyInfo.cs
+D:\codespace\SocialNetworkAPI\EV.Common\obj\Debug\net8.0\EV.Common.csproj.CoreCompileInputs.cache
+D:\codespace\SocialNetworkAPI\EV.Common\obj\Debug\net8.0\EV.Common.sourcelink.json
+D:\codespace\SocialNetworkAPI\EV.Common\obj\Debug\net8.0\EV.Common.dll
+D:\codespace\SocialNetworkAPI\EV.Common\obj\Debug\net8.0\refint\EV.Common.dll
+D:\codespace\SocialNetworkAPI\EV.Common\obj\Debug\net8.0\EV.Common.pdb
+D:\codespace\SocialNetworkAPI\EV.Common\obj\Debug\net8.0\ref\EV.Common.dll
+D:\codespace\SocialNetworkAPI\EV.Common\obj\Debug\net8.0\EV.Common.csproj.AssemblyReference.cache

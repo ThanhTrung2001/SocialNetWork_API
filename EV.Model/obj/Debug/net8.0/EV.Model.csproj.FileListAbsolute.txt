@@ -1,0 +1,12 @@
+D:\codespace\SocialNetworkAPI\EV.Model\bin\Debug\net8.0\EV.Model.deps.json
+D:\codespace\SocialNetworkAPI\EV.Model\bin\Debug\net8.0\EV.Model.dll
+D:\codespace\SocialNetworkAPI\EV.Model\bin\Debug\net8.0\EV.Model.pdb
+D:\codespace\SocialNetworkAPI\EV.Model\obj\Debug\net8.0\EV.Model.GeneratedMSBuildEditorConfig.editorconfig
+D:\codespace\SocialNetworkAPI\EV.Model\obj\Debug\net8.0\EV.Model.AssemblyInfoInputs.cache
+D:\codespace\SocialNetworkAPI\EV.Model\obj\Debug\net8.0\EV.Model.AssemblyInfo.cs
+D:\codespace\SocialNetworkAPI\EV.Model\obj\Debug\net8.0\EV.Model.csproj.CoreCompileInputs.cache
+D:\codespace\SocialNetworkAPI\EV.Model\obj\Debug\net8.0\EV.Model.sourcelink.json
+D:\codespace\SocialNetworkAPI\EV.Model\obj\Debug\net8.0\EV.Model.dll
+D:\codespace\SocialNetworkAPI\EV.Model\obj\Debug\net8.0\refint\EV.Model.dll
+D:\codespace\SocialNetworkAPI\EV.Model\obj\Debug\net8.0\EV.Model.pdb
+D:\codespace\SocialNetworkAPI\EV.Model\obj\Debug\net8.0\ref\EV.Model.dll
