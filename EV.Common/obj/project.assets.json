@@ -1467,6 +1467,19 @@
           }
         }
       },
+      "System.Text.Json/4.7.2": {
+        "type": "package",
+        "compile": {
+          "lib/netcoreapp3.0/System.Text.Json.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/netcoreapp3.0/System.Text.Json.dll": {
+            "related": ".xml"
+          }
+        }
+      },
       "System.Text.RegularExpressions/4.3.0": {
         "type": "package",
         "dependencies": {
@@ -4932,6 +4945,28 @@
         "useSharedDesignerContext.txt"
       ]
     },
+    "System.Text.Json/4.7.2": {
+      "sha512": "TcMd95wcrubm9nHvJEQs70rC0H/8omiSGGpU4FQ/ZA1URIqD4pjmFJh2Mfv1yH1eHgJDWTi2hMDXwTET+zOOyg==",
+      "type": "package",
+      "path": "system.text.json/4.7.2",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "Icon.png",
+        "LICENSE.TXT",
+        "THIRD-PARTY-NOTICES.TXT",
+        "lib/net461/System.Text.Json.dll",
+        "lib/net461/System.Text.Json.xml",
+        "lib/netcoreapp3.0/System.Text.Json.dll",
+        "lib/netcoreapp3.0/System.Text.Json.xml",
+        "lib/netstandard2.0/System.Text.Json.dll",
+        "lib/netstandard2.0/System.Text.Json.xml",
+        "system.text.json.4.7.2.nupkg.sha512",
+        "system.text.json.nuspec",
+        "useSharedDesignerContext.txt",
+        "version.txt"
+      ]
+    },
     "System.Text.RegularExpressions/4.3.0": {
       "sha512": "RpT2DA+L660cBt1FssIE9CAGpLFdFPuheB7pLpKpn6ZXNby7jDERe8Ua/Ne2xGiwLVG2JOqziiaVCGDon5sKFA==",
       "type": "package",
@@ -5375,9 +5410,11 @@
       "Microsoft.AspNetCore.Http.Abstractions >= 2.3.0",
       "Microsoft.Extensions.Configuration >= 9.0.1",
       "Microsoft.Extensions.Options >= 9.0.1",
+      "Microsoft.IdentityModel.JsonWebTokens >= 8.3.1",
       "Renci.SshNet.Async >= 1.4.0",
       "SSH.NET >= 2024.2.0",
-      "System.IdentityModel.Tokens.Jwt >= 8.3.1"
+      "System.IdentityModel.Tokens.Jwt >= 8.3.1",
+      "System.Text.Json >= 4.7.2"
     ]
   },
   "packageFolders": {
@@ -5442,6 +5479,10 @@
             "target": "Package",
             "version": "[9.0.1, )"
           },
+          "Microsoft.IdentityModel.JsonWebTokens": {
+            "target": "Package",
+            "version": "[8.3.1, )"
+          },
           "Renci.SshNet.Async": {
             "target": "Package",
             "version": "[1.4.0, )"
@@ -5453,6 +5494,10 @@
           "System.IdentityModel.Tokens.Jwt": {
             "target": "Package",
             "version": "[8.3.1, )"
+          },
+          "System.Text.Json": {
+            "target": "Package",
+            "version": "[4.7.2, )"
           }
         },
         "imports": [

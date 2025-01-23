@@ -62,6 +62,10 @@
               "target": "Package",
               "version": "[9.0.1, )"
             },
+            "Microsoft.IdentityModel.JsonWebTokens": {
+              "target": "Package",
+              "version": "[8.3.1, )"
+            },
             "Renci.SshNet.Async": {
               "target": "Package",
               "version": "[1.4.0, )"
@@ -73,6 +77,10 @@
             "System.IdentityModel.Tokens.Jwt": {
               "target": "Package",
               "version": "[8.3.1, )"
+            },
+            "System.Text.Json": {
+              "target": "Package",
+              "version": "[4.7.2, )"
             }
           },
           "imports": [

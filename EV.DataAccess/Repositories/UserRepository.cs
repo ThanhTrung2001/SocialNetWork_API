@@ -1,58 +1,51 @@
 ﻿using Dapper;
-using EnVietSocialNetWorkAPI.DataConnection;
-using EnVietSocialNetWorkAPI.Model.Commands;
-using EnVietSocialNetWorkAPI.Model.Queries;
-using EnVietSocialNetWorkAPI.Models;
-using EnVietSocialNetWorkAPI.Services.Email;
-using EnVietSocialNetWorkAPI.Services.Email.Model;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+using EV.Common.Services.Email;
+using EV.Common.Services.Email.Model;
+using EV.DataAccess.DataConnection;
+using EV.Model.Handlers;
+using EV.Model.Handlers.Commands;
+using EV.Model.Handlers.Queries;
 using System.Data;
 
-namespace EnVietSocialNetWorkAPI.Controllers
+namespace EV.DataAccess.Repositories
 {
-    [Authorize]
-    //[AllowAnonymous]
-    [Route("api/[controller]")]
-    [ApiController]
-    public class UsersController : ControllerBase
+    public class UserRepository
     {
-        private readonly DapperContext _context;
+        private readonly DatabaseContext _context;
         private readonly IEmailHandler _handler;
-        public UsersController(DapperContext context, IEmailHandler handler)
+
+        public UserRepository(DatabaseContext context, IEmailHandler handler)
         {
             _context = context;
             _handler = handler;
         }
 
-        [HttpGet]
-        public async Task<IActionResult> Get()
+        public async Task<ResponseModel<IEnumerable<UserQuery>>> GetAll()
         {
             var query = @"SELECT 
-                            u.Id,
-                            u.Role,
-                            ud.FirstName,
-                            ud.LastName,
-                            ud.Avatar
-                          FROM Users u
-                          INNER JOIN User_Details ud ON u.Id = ud.User_Id
-                          WHERE u.Is_Deleted = 0;";
+                u.Id,
+                u.Role,
+                ud.FirstName,
+                ud.LastName,
+                ud.Avatar
+              FROM Users u
+              INNER JOIN User_Details ud ON u.Id = ud.User_Id
+              WHERE u.Is_Deleted = 0;";
             using (var connection = _context.CreateConnection())
             {
                 try
                 {
                     var result = await connection.QueryAsync<UserQuery>(query);
-                    return Ok(ResponseModel<IEnumerable<UserQuery>>.Success(result));
+                    return ResponseModel<IEnumerable<UserQuery>>.Success(result);
                 }
                 catch (Exception ex)
                 {
-                    return BadRequest(ResponseModel<IEnumerable<UserQuery>>.Failure(ex.Message));
+                    return ResponseModel<IEnumerable<UserQuery>>.Failure(ex.Message)!;
                 }
             }
         }
 
-        [HttpGet("search")]
-        public async Task<IActionResult> GetBySearch([FromQuery] string name)
+        public async Task<ResponseModel<IEnumerable<UserQuery>>> Search(string name)
         {
             var query = @"SELECT 
                             u.Id,
@@ -70,17 +63,16 @@ namespace EnVietSocialNetWorkAPI.Controllers
                 try
                 {
                     var result = await connection.QueryAsync<UserQuery>(query, parameter);
-                    return Ok(ResponseModel<IEnumerable<UserQuery>>.Success(result));
+                    return ResponseModel<IEnumerable<UserQuery>>.Success(result);
                 }
                 catch (Exception ex)
                 {
-                    return BadRequest(ResponseModel<IEnumerable<UserQuery>>.Failure(ex.Message));
+                    return ResponseModel<IEnumerable<UserQuery>>.Failure(ex.Message)!;
                 }
             }
         }
 
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetByID(Guid id)
+        public async Task<ResponseModel<UserQueryDetail>> GetByID(Guid id)
         {
             var query = @"SELECT 
                             u.Id,
@@ -108,18 +100,17 @@ namespace EnVietSocialNetWorkAPI.Controllers
                 {
 
                     var result = await connection.QuerySingleAsync<UserQueryDetail>(query, parameter);
-                    return Ok(ResponseModel<UserQueryDetail>.Success(result));
+                    return ResponseModel<UserQueryDetail>.Success(result);
                 }
                 catch (Exception ex)
                 {
-                    return BadRequest(ResponseModel<UserQueryDetail>.Failure(ex.Message));
+                    return ResponseModel<UserQueryDetail>.Failure(ex.Message)!;
 
                 }
             }
         }
 
-        [HttpPost]
-        public async Task<IActionResult> Create(CreateUserCommand user)
+        public async Task<ResponseModel<Guid>> Create(CreateUserCommand user)
         {
             var existEmailQuery = @"SELECT u.Id,
                                     u.Role,
@@ -161,104 +152,100 @@ namespace EnVietSocialNetWorkAPI.Controllers
                         var existResult = await connection.QueryAsync<UserQuery>(existEmailQuery, parameters, transaction);
                         if (existResult.Count() >= 1)
                         {
-                            return BadRequest(ResponseModel<Guid>.Failure("User with this Email is existed!"));
+                            return ResponseModel<Guid>.Failure("User with this Email is existed!");
                         }
                         var result = await connection.QuerySingleAsync<Guid>(queryUser, parameters, transaction);
                         parameters.Add("User_Id", result);
                         await connection.ExecuteAsync(queryUserDetail, parameters, transaction);
                         transaction.Commit();
-                        _handler.SendEmail(new EmailMessage() { ToEmails = [user.Email], Subject = "Registered Successful.", Body = "<h1>Welcome to our app<h1>" });
-                        return Ok(ResponseModel<Guid>.Success(result));
+                        _handler.SendEmail(new EmailMessage() { Receivers = [user.Email], Subject = "Registered Successful.", Body = "<h1>Welcome to our app<h1>" });
+                        return ResponseModel<Guid>.Success(result);
                     }
                     catch (Exception ex)
                     {
                         transaction.Rollback();
-                        return BadRequest(ResponseModel<Guid>.Failure(ex.Message));
+                        return ResponseModel<Guid>.Failure(ex.Message);
                     }
                 }
 
             }
         }
 
-        [HttpPut("{id}")]
-        public async Task<IActionResult> Edit(Guid id, EditUserCommand edit)
+        public async Task<ResponseModel<string>> Edit(Guid id, EditUserCommand command)
         {
             var query = "UPDATE Users SET Updated_At = GETDATE(), UserName = @UserName, Email = @Email, Role = @Role WHERE Id = @Id";
             var parameters = new DynamicParameters();
-            parameters.Add("UserName", edit.UserName, DbType.String);
-            parameters.Add("Email", edit.Email, DbType.String);
-            parameters.Add("Role", edit.Role);
+            parameters.Add("UserName", command.UserName, DbType.String);
+            parameters.Add("Email", command.Email, DbType.String);
+            parameters.Add("Role", command.Role);
             parameters.Add("Id", id);
             using (var connection = _context.CreateConnection())
             {
                 try
                 {
 
-                    await connection.ExecuteAsync(query, parameters);
-                    return Ok(ResponseModel<string>.Success("Update Successful."));
+                    var rowEffect = await connection.ExecuteAsync(query, parameters);
+                    return (rowEffect > 0) ? ResponseModel<string>.Success("Delete Successful.") : ResponseModel<string>.Failure("Nothing has changed. There is a problem from your query.")!;
                 }
                 catch (Exception ex)
                 {
-                    return BadRequest(ResponseModel<string>.Failure(ex.Message));
+                    return ResponseModel<string>.Failure(ex.Message);
                 }
             }
         }
 
-        [HttpPut("{id}/detail")]
-        public async Task<IActionResult> EditUserDetail(Guid id, EditUserDetailCommand edit)
+        public async Task<ResponseModel<string>> EditDetail(Guid user_Id, EditUserDetailCommand command)
         {
             var query = "UPDATE User_Details SET Updated_At = GETDATE(), FirstName = @FirstName, LastName = @LastName, Phone_Number=@Phone_Number, Address = @Address, City = @City, Country = @Country ,Avatar = @Avatar, Wallpaper = @Wallpaper, DOB = @DOB, Bio = @Bio WHERE User_Id = @User_Id";
             var parameters = new DynamicParameters();
-            parameters.Add("FirstName", edit.FirstName, DbType.String);
-            parameters.Add("LastName", edit.LastName, DbType.String);
-            parameters.Add("Phone_Number", edit.Phone_Number);
-            parameters.Add("Address", edit.Address);
-            parameters.Add("City", edit.City);
-            parameters.Add("Country", edit.Country);
-            parameters.Add("Avatar", edit.Avatar, DbType.String);
-            parameters.Add("Wallpaper", edit.Wallpaper, DbType.String);
-            parameters.Add("DOB", edit.DOB, DbType.DateTime);
-            parameters.Add("Bio", edit.Bio, DbType.String);
-            parameters.Add("User_Id", id);
+            parameters.Add("FirstName", command.FirstName, DbType.String);
+            parameters.Add("LastName", command.LastName, DbType.String);
+            parameters.Add("Phone_Number", command.Phone_Number);
+            parameters.Add("Address", command.Address);
+            parameters.Add("City", command.City);
+            parameters.Add("Country", command.Country);
+            parameters.Add("Avatar", command.Avatar, DbType.String);
+            parameters.Add("Wallpaper", command.Wallpaper, DbType.String);
+            parameters.Add("DOB", command.DOB, DbType.DateTime);
+            parameters.Add("Bio", command.Bio, DbType.String);
+            parameters.Add("User_Id", user_Id);
             using (var connection = _context.CreateConnection())
             {
                 try
                 {
 
-                    var result = await connection.ExecuteAsync(query, parameters);
-                    return Ok(ResponseModel<string>.Success("Update Successful."));
+                    var rowEffect = await connection.ExecuteAsync(query, parameters);
+                    return (rowEffect > 0) ? ResponseModel<string>.Success("Delete Successful.") : ResponseModel<string>.Failure("Nothing has changed. There is a problem from your query.")!;
                 }
                 catch (Exception ex)
                 {
-                    return BadRequest(ResponseModel<string>.Failure(ex.Message));
+                    return ResponseModel<string>.Failure(ex.Message)!;
                 }
             }
         }
 
-        [HttpPut("{id}/password")]
-        public async Task<IActionResult> ChangePassword(Guid id, string password)
+        public async Task<ResponseModel<string>> ChangePassword(Guid id, ChangeUserPasswordCommand command)
         {
             var queryUser = "Update Users SET Updated_At = GETDATE(), Password = @Password WHERE Id = @Id";
             var parameter = new DynamicParameters();
             parameter.Add("Id", id);
-            parameter.Add("Password", password);
+            parameter.Add("Password", command.Password);
             using (var connection = _context.CreateConnection())
             {
                 try
                 {
 
-                    await connection.ExecuteAsync(queryUser, parameter);
-                    return Ok(ResponseModel<string>.Success("Change Password Successful."));
+                    var rowEffect = await connection.ExecuteAsync(queryUser, parameter);
+                    return (rowEffect > 0) ? ResponseModel<string>.Success("ChangePassword Successful.") : ResponseModel<string>.Failure("Nothing has changed. There is a problem from your query.")!;
                 }
                 catch (Exception ex)
                 {
-                    return BadRequest(ResponseModel<string>.Failure(ex.Message));
+                    return ResponseModel<string>.Failure(ex.Message)!;
                 }
             }
         }
 
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(Guid id)
+        public async Task<ResponseModel<string>> Delete(Guid id)
         {
             var queryUser = "Update Users SET Updated_At = GETDATE(), Is_Deleted = 1 WHERE Id = @Id";
             var queryUserDetail = "Update User_Details SET Updated_At = GETDATE(), Is_Deleted = 1 WHERE User_Id = @Id";
@@ -266,20 +253,17 @@ namespace EnVietSocialNetWorkAPI.Controllers
             parameter.Add("Id", id);
             using (var connection = _context.CreateConnection())
             {
-                await connection.ExecuteAsync(queryUser, parameter);
-                await connection.ExecuteAsync(queryUserDetail, parameter);
                 try
                 {
-
-                    return Ok(ResponseModel<string>.Success("Delete Successful."));
+                    var rowUserEffect = await connection.ExecuteAsync(queryUser, parameter);
+                    var rowUserDetailEffect = await connection.ExecuteAsync(queryUserDetail, parameter);
+                    return (rowUserEffect > 0 & rowUserDetailEffect > 0) ? ResponseModel<string>.Success("Delete Successful.") : ResponseModel<string>.Failure("Nothing has changed. There is a problem from your query.")!;
                 }
                 catch (Exception ex)
                 {
-                    return BadRequest(ResponseModel<string>.Failure(ex.Message));
+                    return ResponseModel<string>.Failure(ex.Message)!;
                 }
             }
         }
-
-
     }
 }

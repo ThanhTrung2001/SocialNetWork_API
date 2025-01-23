@@ -7,6 +7,9 @@ using EV.Common.Services.UploadFile;
 using EV.Common.Services.UploadFile.Interfaces;
 using EV.Common.SettingConfigurations;
 using EV.DataAccess.DataConnection;
+using EV.DataAccess.SettingConfigurations;
+using EV.DataAccess.UnitOfWorks;
+using EV.DataAccess.UnitOfWorks.Interface;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -29,6 +32,7 @@ builder.Services.Configure<LoginMasterKey>(builder.Configuration.GetSection("Log
 builder.Services.Configure<JWTConfiguration>(builder.Configuration.GetSection("JWT"));
 builder.Services.Configure<EmailConfiguration>(builder.Configuration.GetSection("Email-Configuration"));
 builder.Services.Configure<SFTPConfiguration>(builder.Configuration.GetSection("SFTP-Configuration"));
+builder.Services.Configure<ConnectionStrings>(builder.Configuration.GetSection("ConnectionStrings"));
 
 builder.Services.AddAuthentication
     (options =>
@@ -53,6 +57,7 @@ builder.Services.AddAuthentication
     });
 
 //Service Lifetime
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();              //Register UnitOfWork, Repository
 builder.Services.AddScoped<IEmailHandler, EmailHandlerService>();
 builder.Services.AddScoped<IUploadFiles, UploadFilesService>();
 
