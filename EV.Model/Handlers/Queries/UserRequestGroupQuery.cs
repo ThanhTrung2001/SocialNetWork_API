@@ -1,4 +1,4 @@
-﻿namespace EnVietSocialNetWorkAPI.Models.Queries
+﻿namespace EV.Model.Handlers.Queries
 {
     public class RequestJoinGroupQuery
     {

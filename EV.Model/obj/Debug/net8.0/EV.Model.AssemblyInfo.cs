@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("EV.Model")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b0cfa21f908e13bcf3bcd2916887990a4ac8be0e")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+f40c341e502c548bfeb5f8c006c16e0cb8a01586")]
 [assembly: System.Reflection.AssemblyProductAttribute("EV.Model")]
 [assembly: System.Reflection.AssemblyTitleAttribute("EV.Model")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

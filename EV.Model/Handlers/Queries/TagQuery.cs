@@ -1,4 +1,4 @@
-﻿namespace EnVietSocialNetWorkAPI.Models.Queries
+﻿namespace Ev.Model.Handlers.Queries
 {
     public class TagQuery
     {

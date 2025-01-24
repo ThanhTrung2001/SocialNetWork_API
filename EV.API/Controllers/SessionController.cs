@@ -1,11 +1,10 @@
 ﻿using Dapper;
-using EnVietSocialNetWorkAPI.Auth.Model;
-using EnVietSocialNetWorkAPI.Auth.Services;
-using EnVietSocialNetWorkAPI.DataConnection;
-using EnVietSocialNetWorkAPI.Model.Queries;
-using EnVietSocialNetWorkAPI.Models;
-using EnVietSocialNetWorkAPI.Services.Email;
-using EnVietSocialNetWorkAPI.Services.Email.Model;
+using EV.Common.Helpers.Authentication;
+using EV.Common.Helpers.Authentication.Models;
+using EV.Common.Services.Email;
+using EV.Common.Services.Email.Model;
+using EV.DataAccess.DataConnection;
+using EV.Model.Handlers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -16,11 +15,11 @@ namespace EnVietSocialNetWorkAPI.Controllers
     [ApiController]
     public class SessionController : ControllerBase
     {
-        private readonly DapperContext _context;
+        private readonly DatabaseContext _context;
         private readonly JWTHelper _helper;
         private readonly IEmailHandler _handler;
 
-        public SessionController(DapperContext context, JWTHelper helper, IEmailHandler handler)
+        public SessionController(DatabaseContext context, JWTHelper helper, IEmailHandler handler)
         {
             _context = context;
             _helper = helper;
@@ -50,7 +49,6 @@ namespace EnVietSocialNetWorkAPI.Controllers
                     }
                     return Ok(ResponseModel<JWTReturn>.Success(token));
                 }
-
                 catch (Exception ex)
                 {
                     return Unauthorized(ResponseModel<JWTReturn>.Failure(ex.Message));

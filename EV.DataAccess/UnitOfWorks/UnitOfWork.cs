@@ -17,8 +17,6 @@ namespace EV.DataAccess.UnitOfWorks
 
         public UserRepository UserRepository => new Lazy<UserRepository>(() => new UserRepository(_context, _emailHandler)).Value;
 
-        public UploadFileRepository UploadFileRepository => new Lazy<UploadFileRepository>(() => new UploadFileRepository(_context)).Value;
-
         public TagRepository TagRepository => new Lazy<TagRepository>(() => new TagRepository(_context)).Value;
 
         public SurveyItemRepository SurveyItemRepository => new Lazy<SurveyItemRepository>(() => new SurveyItemRepository(_context)).Value;

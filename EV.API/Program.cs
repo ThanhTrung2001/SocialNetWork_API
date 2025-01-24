@@ -1,4 +1,3 @@
-using EnVietSocialNetWorkAPI.DataConnection;
 using EnVietSocialNetWorkAPI.Services;
 using EV.Common.Helpers.Authentication;
 using EV.Common.Middlewares;
@@ -17,7 +16,6 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddSingleton<DapperContext>();
 // Add services to the container.
 builder.Services.AddSingleton<DatabaseContext>();
 builder.Services.AddSingleton<JWTHelper>();
@@ -145,7 +143,7 @@ app.UseAuthorization();
 
 //Middleware Register Place
 app.UseMiddleware<LoginMasterKeyCheckingMiddleware>(); //check login x-master-key middleware
-app.UseWhen(                                           //check token expired
+app.UseWhen(                                           //check token expired (except for login)
     context => context.Request.Path.StartsWithSegments("/api/session/login", StringComparison.OrdinalIgnoreCase),
     builder => builder.UseMiddleware<TokenExpiredCheckingMiddleware>()
     );

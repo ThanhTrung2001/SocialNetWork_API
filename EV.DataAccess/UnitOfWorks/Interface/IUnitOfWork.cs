@@ -5,7 +5,6 @@ namespace EV.DataAccess.UnitOfWorks.Interface
     public interface IUnitOfWork
     {
         UserRepository UserRepository { get; }
-        UploadFileRepository UploadFileRepository { get; }
         TagRepository TagRepository { get; }
         SurveyItemRepository SurveyItemRepository { get; }
         SurveyRepository SurveyRepository { get; }

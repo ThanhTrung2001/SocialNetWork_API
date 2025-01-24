@@ -185,7 +185,7 @@ namespace EV.DataAccess.Repositories
                 {
 
                     var rowEffect = await connection.ExecuteAsync(query, parameters);
-                    return (rowEffect > 0) ? ResponseModel<string>.Success("Delete Successful.") : ResponseModel<string>.Failure("Nothing has changed. There is a problem from your query.")!;
+                    return (rowEffect > 0) ? ResponseModel<string>.Success("Update Successful.") : ResponseModel<string>.Failure("Nothing has changed. There is a problem from your query.")!;
                 }
                 catch (Exception ex)
                 {
@@ -215,7 +215,7 @@ namespace EV.DataAccess.Repositories
                 {
 
                     var rowEffect = await connection.ExecuteAsync(query, parameters);
-                    return (rowEffect > 0) ? ResponseModel<string>.Success("Delete Successful.") : ResponseModel<string>.Failure("Nothing has changed. There is a problem from your query.")!;
+                    return (rowEffect > 0) ? ResponseModel<string>.Success("Update Detail Successful.") : ResponseModel<string>.Failure("Nothing has changed. There is a problem from your query.")!;
                 }
                 catch (Exception ex)
                 {
@@ -236,7 +236,7 @@ namespace EV.DataAccess.Repositories
                 {
 
                     var rowEffect = await connection.ExecuteAsync(queryUser, parameter);
-                    return (rowEffect > 0) ? ResponseModel<string>.Success("ChangePassword Successful.") : ResponseModel<string>.Failure("Nothing has changed. There is a problem from your query.")!;
+                    return (rowEffect > 0) ? ResponseModel<string>.Success("Change Password Successful.") : ResponseModel<string>.Failure("Nothing has changed. There is a problem from your query.")!;
                 }
                 catch (Exception ex)
                 {
@@ -257,7 +257,7 @@ namespace EV.DataAccess.Repositories
                 {
                     var rowUserEffect = await connection.ExecuteAsync(queryUser, parameter);
                     var rowUserDetailEffect = await connection.ExecuteAsync(queryUserDetail, parameter);
-                    return (rowUserEffect > 0 & rowUserDetailEffect > 0) ? ResponseModel<string>.Success("Delete Successful.") : ResponseModel<string>.Failure("Nothing has changed. There is a problem from your query.")!;
+                    return (rowUserEffect > 0 && rowUserDetailEffect > 0) ? ResponseModel<string>.Success("Delete Successful.") : ResponseModel<string>.Failure("Nothing has changed. There is a problem from your query.")!;
                 }
                 catch (Exception ex)
                 {

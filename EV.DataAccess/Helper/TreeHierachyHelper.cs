@@ -1,8 +1,8 @@
-﻿using EnVietSocialNetWorkAPI.Model.Queries;
+﻿using EV.Model.Handlers.Queries;
 
-namespace EnVietSocialNetWorkAPI.Services.Tree
+namespace EV.DataAccess.Helper
 {
-    public class HierachyHelper
+    public class TreeHierachyHelper
     {
         public static List<OrganizeNodeQuery> BuildHierarchy(List<OrganizeNodeQuery> nodes)
         {
@@ -22,9 +22,9 @@ namespace EnVietSocialNetWorkAPI.Services.Tree
             // Find root nodes
             var rootNode = nodes.FirstOrDefault(n => n.Id == id);
 
-            AttachChildren(rootNode, nodes);
+            AttachChildren(rootNode!, nodes);
 
-            return rootNode;
+            return rootNode!;
         }
 
         public static void AttachChildren(OrganizeNodeQuery parentNode, List<OrganizeNodeQuery> allNodes)

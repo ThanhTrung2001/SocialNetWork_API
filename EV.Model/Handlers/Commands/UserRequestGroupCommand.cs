@@ -1,4 +1,4 @@
-﻿namespace EnVietSocialNetWorkAPI.Models.Commands
+﻿namespace EV.Model.Handlers.Commands
 {
     public class RequestJoinGroupCommand
     {

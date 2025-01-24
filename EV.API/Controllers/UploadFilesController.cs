@@ -1,5 +1,5 @@
-﻿using EnVietSocialNetWorkAPI.Models;
-using EnVietSocialNetWorkAPI.Services.Upload;
+﻿using EV.Common.Services.UploadFile.Interfaces;
+using EV.Model.Handlers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,8 +11,8 @@ namespace EnVietSocialNetWorkAPI.Controllers
     [ApiController]
     public class UploadFilesController : ControllerBase
     {
-        private readonly IUploadFileService _service;
-        public UploadFilesController(IUploadFileService service)
+        private readonly IUploadFiles _service;
+        public UploadFilesController(IUploadFiles service)
         {
             _service = service;
         }
@@ -40,7 +40,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
             try
             {
                 var result = await _service.ListFilesInAlbum(id, type);
-                return Ok(result);
+                return Ok(ResponseModel<IEnumerable<string>>.Success(result));
             }
             catch (Exception ex)
             {
@@ -54,7 +54,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
             try
             {
                 var result = await _service.UploadFiles(type, files, id);
-                return Ok(result);
+                return Ok(ResponseModel<IEnumerable<string>>.Success(result));
             }
             catch (Exception ex)
             {
@@ -68,7 +68,7 @@ namespace EnVietSocialNetWorkAPI.Controllers
             try
             {
                 var result = await _service.DownloadFiles(files);
-                return Ok(result);
+                return Ok(ResponseModel<IEnumerable<string>>.Success(result));
             }
             catch (Exception ex)
             {
@@ -82,11 +82,11 @@ namespace EnVietSocialNetWorkAPI.Controllers
             try
             {
                 var result = await _service.DeleteFiles(files);
-                return Ok(result);
+                return Ok(ResponseModel<string>.Success(result));
             }
             catch (Exception ex)
             {
-                return BadRequest(ResponseModel<IEnumerable<string>>.Failure(ex.Message));
+                return BadRequest(ResponseModel<string>.Failure(ex.Message));
             }
         }
     }
