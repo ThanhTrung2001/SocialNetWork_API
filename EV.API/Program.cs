@@ -55,7 +55,7 @@ builder.Services.AddAuthentication
     });
 
 //Service Lifetime
-builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();              //Register UnitOfWork, Repository
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();              //Register UnitOfWork
 builder.Services.AddScoped<IEmailHandler, EmailHandlerService>();
 builder.Services.AddScoped<IUploadFiles, UploadFilesService>();
 
@@ -144,7 +144,7 @@ app.UseAuthorization();
 //Middleware Register Place
 app.UseMiddleware<LoginMasterKeyCheckingMiddleware>(); //check login x-master-key middleware
 app.UseWhen(                                           //check token expired (except for login)
-    context => context.Request.Path.StartsWithSegments("/api/session/login", StringComparison.OrdinalIgnoreCase),
+    context => !context.Request.Path.StartsWithSegments("/api/session/login", StringComparison.OrdinalIgnoreCase),
     builder => builder.UseMiddleware<TokenExpiredCheckingMiddleware>()
     );
 
